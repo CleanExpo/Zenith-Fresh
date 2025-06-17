@@ -1,26 +1,29 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
-import Planning from './pages/Planning';
-import Files from './pages/Files';
-import Analytics from './pages/Analytics';
+import Settings from './pages/Settings';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
-function App() {
+export default function App() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return router.pathname === '/login' ? <Login /> : <Register />;
+  }
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/planning" element={<Planning />} />
-          <Route path="/files" element={<Files />} />
-          <Route path="/analytics" element={<Analytics />} />
-        </Route>
-      </Routes>
-    </Router>
+    <Layout>
+      {router.pathname === '/' && <Dashboard />}
+      {router.pathname === '/projects' && <Projects />}
+      {router.pathname === '/settings' && <Settings />}
+    </Layout>
   );
-}
-
-export default App; 
+} 

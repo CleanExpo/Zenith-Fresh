@@ -106,3 +106,5 @@ npx prisma migrate deploy
 ```
 
 This will ensure your production database is up to date with your latest schema.
+
+# Force rebuild
