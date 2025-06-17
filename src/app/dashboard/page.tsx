@@ -6,11 +6,20 @@ import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { RecentProjects } from '@/components/dashboard/RecentProjects';
 import { TeamAnalytics } from '@/components/dashboard/TeamAnalytics';
 
-export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+interface ExtendedSession {
+  user?: {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+}
 
-  if (!session) {
-    redirect('/auth/signin');
+export default async function DashboardPage() {
+  const session = await getServerSession(authOptions) as ExtendedSession;
+
+  if (!session || !session.user || !session.user.id) {
+    redirect('/login');
   }
 
   const [projects, stats] = await Promise.all([

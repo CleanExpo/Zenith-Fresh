@@ -3,6 +3,19 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/prisma';
 import { compare } from 'bcryptjs';
+import { Session } from 'next-auth';
+
+// Extend the session user type to include id
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -50,8 +63,8 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async session({ token, session }) {
-      if (token) {
-        session.user.id = token.id;
+      if (token && session.user) {
+        session.user.id = token.id as string;
         session.user.name = token.name;
         session.user.email = token.email;
       }

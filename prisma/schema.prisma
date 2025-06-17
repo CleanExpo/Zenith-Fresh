@@ -35,6 +35,7 @@ model User {
   teamInvitations TeamInvitation[] @relation("Accepter")
   sentInvitations TeamInvitation[] @relation("Inviter")
   apiKeys       ApiKey[]
+  projectMembers ProjectMember[]
 }
 
 model Account {

@@ -1,69 +1,15 @@
-import { Counter, Histogram, Registry } from 'prom-client';
+import { Gauge, Histogram, Registry } from 'prom-client';
 import { captureException } from './sentry';
 
 // Create a registry to register metrics
-const register = new Registry();
+export const registry = new Registry();
 
-// Define metrics
-const httpRequestDuration = new Histogram({
-  name: 'http_request_duration_seconds',
-  help: 'Duration of HTTP requests in seconds',
-  labelNames: ['method', 'route', 'status_code'],
-  buckets: [0.1, 0.5, 1, 2, 5],
+// Active users gauge (can go up and down)
+export const activeUsers = new Gauge({
+  name: 'active_users',
+  help: 'Number of active users',
 });
-
-const httpRequestsTotal = new Counter({
-  name: 'http_requests_total',
-  help: 'Total number of HTTP requests',
-  labelNames: ['method', 'route', 'status_code'],
-});
-
-const activeUsers = new Counter({
-  name: 'active_users_total',
-  help: 'Total number of active users',
-});
-
-const databaseOperations = new Histogram({
-  name: 'database_operation_duration_seconds',
-  help: 'Duration of database operations in seconds',
-  labelNames: ['operation', 'table'],
-  buckets: [0.01, 0.05, 0.1, 0.5, 1],
-});
-
-// Register metrics
-register.registerMetric(httpRequestDuration);
-register.registerMetric(httpRequestsTotal);
-register.registerMetric(activeUsers);
-register.registerMetric(databaseOperations);
-
-// Export metrics
-export const getMetrics = async () => {
-  try {
-    return await register.metrics();
-  } catch (error) {
-    captureException(error as Error, { context: 'metrics-collection' });
-    return '';
-  }
-};
-
-// Helper functions for metrics
-export const recordHttpRequest = (
-  method: string,
-  route: string,
-  statusCode: number,
-  duration: number
-) => {
-  httpRequestDuration.labels(method, route, statusCode.toString()).observe(duration);
-  httpRequestsTotal.labels(method, route, statusCode.toString()).inc();
-};
-
-export const recordDatabaseOperation = (
-  operation: string,
-  table: string,
-  duration: number
-) => {
-  databaseOperations.labels(operation, table).observe(duration);
-};
+registry.registerMetric(activeUsers);
 
 export const incrementActiveUsers = () => {
   activeUsers.inc();
@@ -71,4 +17,63 @@ export const incrementActiveUsers = () => {
 
 export const decrementActiveUsers = () => {
   activeUsers.dec();
+};
+
+// Example histogram for request durations
+export const requestDuration = new Histogram({
+  name: 'request_duration_seconds',
+  help: 'Duration of HTTP requests in seconds',
+  buckets: [0.1, 0.5, 1, 2, 5],
+});
+registry.registerMetric(requestDuration);
+
+export function observeRequestDuration(duration: number) {
+  requestDuration.observe(duration);
+}
+
+export function reportError(error: Error) {
+  captureException(error);
+}
+
+const httpRequestsTotal = new Histogram({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status_code'],
+  buckets: [0.1, 0.5, 1, 2, 5],
+});
+registry.registerMetric(httpRequestsTotal);
+
+const databaseOperations = new Histogram({
+  name: 'database_operations_duration_seconds',
+  help: 'Duration of database operations in seconds',
+  labelNames: ['operation', 'table'],
+  buckets: [0.01, 0.05, 0.1, 0.5, 1, 2],
+});
+registry.registerMetric(databaseOperations);
+
+export const getMetrics = async () => {
+  try {
+    return await registry.metrics();
+  } catch (error) {
+    reportError(error as Error);
+    return '';
+  }
+};
+
+export const observeHttpRequest = (
+  method: string,
+  route: string,
+  statusCode: number,
+  duration: number
+) => {
+  requestDuration.labels(method, route, statusCode.toString()).observe(duration);
+  httpRequestsTotal.labels(method, route, statusCode.toString()).observe(duration);
+};
+
+export const observeDatabaseOperation = (
+  operation: string,
+  table: string,
+  duration: number
+) => {
+  databaseOperations.labels(operation, table).observe(duration);
 }; 
