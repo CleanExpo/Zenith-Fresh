@@ -105,6 +105,4 @@ Run the following command to apply your database schema migrations:
 npx prisma migrate deploy
 ```
 
-This will ensure your production database is up to date with your latest schema. 
-
-npm start 
+This will ensure your production database is up to date with your latest schema.
