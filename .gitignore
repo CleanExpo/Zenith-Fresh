@@ -5,6 +5,8 @@
 
 # testing
 /coverage
+/playwright-report
+/test-results
 
 # next.js
 /.next/
@@ -23,16 +25,49 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
 .env
+.env*.local
+.env.development
+.env.test
+.env.production
 
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+next-debug.d.ts
 
 # IDE
-.vscode/
-.idea/ 
+.idea
+.vscode
+*.swp
+*.swo
+
+# Logs
+logs
+*.log
+
+# Database
+*.sqlite
+*.sqlite3
+
+# Cache
+.cache
+.npm
+.eslintcache
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw? 
