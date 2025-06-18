@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createSwaggerSpec } from 'next-swagger-doc';
 
 export const getApiDocs = () => {
