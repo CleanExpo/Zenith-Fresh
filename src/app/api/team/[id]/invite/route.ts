@@ -22,7 +22,13 @@ export async function POST(
     // Verify team exists and user has permission
     const team = await prisma.team.findUnique({
       where: { id: teamId },
-      include: { members: true }
+      include: { 
+        members: {
+          include: {
+            user: true
+          }
+        }
+      }
     });
 
     if (!team) {
@@ -30,7 +36,7 @@ export async function POST(
     }
 
     // Check if user is already a member
-    const existingMember = team.members.find(m => m.email === email);
+    const existingMember = team.members.find(m => m.user.email === email);
     if (existingMember) {
       return NextResponse.json({ error: 'User is already a member' }, { status: 400 });
     }
@@ -45,13 +51,14 @@ export async function POST(
         email,
         role,
         token,
-        invitedById: user.id
+        invitedBy: user.id,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
       }
     });
 
     // Send invitation email
     const teamName = team.name;
-    const inviterName = user.name;
+    const inviterName = user.email;
     const acceptUrl = `${process.env.NEXT_PUBLIC_APP_URL}/team/join?token=${token}`;
 
     const data = {
