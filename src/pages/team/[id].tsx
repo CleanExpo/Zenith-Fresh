@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import { TeamAnalytics } from '../../components/TeamAnalytics';
 import { TeamBilling } from '../../components/TeamBilling';
 import { TeamSettings } from '../../components/TeamSettings';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Card } from '../ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Card } from '../../components/ui/card';
 
 export default function TeamPage() {
   const router = useRouter();

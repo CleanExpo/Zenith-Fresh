@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 
@@ -20,12 +20,12 @@ declare global {
   }
 }
 
-export const auth = async (req: Request, res: Response, next: NextFunction) => {
+export async function auth(req: NextRequest) {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '');
 
     if (!token) {
-      throw new Error();
+      return null;
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
@@ -39,19 +39,11 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     });
 
     if (!user) {
-      throw new Error();
+      return null;
     }
 
-    req.user = user;
-    next();
+    return user;
   } catch (error) {
-    res.status(401).json({ error: 'Please authenticate.' });
+    return null;
   }
-};
-
-export const admin = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user?.role !== 'ADMIN') {
-    return res.status(403).json({ error: 'Access denied.' });
-  }
-  next();
-}; 
+} 
