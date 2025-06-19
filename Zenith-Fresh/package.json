@@ -1,6 +1,6 @@
 {
   "name": "zenith-fresh-minimal",
-  "version": "2.0.0-fresh-deploy",
+  "version": "2.1.0-sync-fix",
   "private": true,
   "scripts": {
     "dev": "next dev",
