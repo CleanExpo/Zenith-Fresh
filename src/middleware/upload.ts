@@ -5,17 +5,17 @@ import { v4 as uuidv4 } from 'uuid';
 
 // Configure storage
 const storage = multer.diskStorage({
-  destination: (req: Request, file: Express.Multer.File, cb) => {
+  destination: (req: Request, file: any, cb) => {
     cb(null, 'uploads/');
   },
-  filename: (req: Request, file: Express.Multer.File, cb) => {
+  filename: (req: Request, file: any, cb) => {
     const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
     cb(null, uniqueName);
   }
 });
 
 // File filter
-const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const fileFilter = (req: Request, file: any, cb: multer.FileFilterCallback) => {
   // Allowed file types
   const allowedTypes = [
     'image/jpeg',
@@ -48,10 +48,10 @@ export const upload = multer({
 // Error handler
 export const handleUploadError = (err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof multer.MulterError) {
-    if (err.code === 'LIMIT_FILE_SIZE') {
+    if ((err as any).code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({ error: 'File too large. Max size is 5MB' });
     }
-    if (err.code === 'LIMIT_FILE_COUNT') {
+    if ((err as any).code === 'LIMIT_FILE_COUNT') {
       return res.status(400).json({ error: 'Too many files. Max is 5 files' });
     }
     return res.status(400).json({ error: err.message });
