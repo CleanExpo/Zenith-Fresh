@@ -1,19 +1,17 @@
 import { Suspense } from 'react';
 import { Inter } from 'next/font/google';
-import { Providers } from './providers';
+import { Providers } from '../providers';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { Sidebar } from '@/components/Sidebar';
-import { Header } from '@/components/Header';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'Zenith Platform',
-  description: 'AI-Powered Content Management Platform',
+  title: 'Authentication - Zenith Platform',
+  description: 'Sign in to your Zenith account',
 };
 
-export default function RootLayout({
+export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
