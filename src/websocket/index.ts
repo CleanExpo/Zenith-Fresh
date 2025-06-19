@@ -1,4 +1,4 @@
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
@@ -22,15 +22,15 @@ export const initializeWebSocket = (httpServer: HttpServer) => {
   });
 
   // Authentication middleware
-  io.use(async (socket: AuthenticatedSocket, next) => {
+  io.use(async (socket: Socket, next) => {
     try {
-      const token = socket.handshake.auth.token;
+      const token = (socket as any).handshake.auth.token;
       if (!token) {
         return next(new Error('Authentication error'));
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-      socket.user = {
+      (socket as AuthenticatedSocket).user = {
         id: decoded.id,
         email: decoded.email
       };
@@ -41,8 +41,9 @@ export const initializeWebSocket = (httpServer: HttpServer) => {
   });
 
   // Connection handler
-  io.on('connection', (socket: AuthenticatedSocket) => {
-    console.log('Client connected:', socket.user?.email);
+  io.on('connection', (socket: Socket) => {
+    const authSocket = socket as AuthenticatedSocket;
+    console.log('Client connected:', authSocket.user?.email);
 
     // Join project room
     socket.on('join:project', (projectId: string) => {
@@ -82,7 +83,7 @@ export const initializeWebSocket = (httpServer: HttpServer) => {
 
     // Disconnect handler
     socket.on('disconnect', () => {
-      console.log('Client disconnected:', socket.user?.email);
+      console.log('Client disconnected:', authSocket.user?.email);
     });
   });
 
