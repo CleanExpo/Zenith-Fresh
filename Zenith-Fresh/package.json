@@ -1,6 +1,6 @@
 {
-  "name": "zenith-fresh-minimal",
-  "version": "2.1.0-sync-fix",
+  "name": "zenith-fresh-clean-deploy",
+  "version": "3.0.0-vercel-fix",
   "private": true,
   "scripts": {
     "dev": "next dev",
