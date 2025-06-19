@@ -34,7 +34,7 @@
 
 ### External Services
 - ✅ `REDIS_URL` - Redis Cloud connection configured
-- ✅ `RESEND_API_KEY` - Email service configured
+- ✅ `RESEND_API_KEY` - Email service configured and integrated
 - ✅ `SUPABASE_URL` - Supabase project URL
 - ✅ `SUPABASE_ANON_KEY` - Supabase anonymous key
 - ✅ `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
