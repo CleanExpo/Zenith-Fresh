@@ -7,11 +7,6 @@ Sentry.init({
   tracesSampleRate: 1.0,
   environment: process.env.NODE_ENV,
   enabled: process.env.NODE_ENV === 'production',
-  integrations: [
-    new Sentry.BrowserTracing({
-      tracePropagationTargets: ['localhost', process.env.NEXT_PUBLIC_APP_URL!],
-    }),
-  ],
   beforeSend(event) {
     // Don't send events in development
     if (process.env.NODE_ENV === 'development') {
