@@ -1,28 +1,22 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
+import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'Zenith Fresh - AI-Driven SaaS Platform',
-  description: 'Complete AI-driven optimization platform for websites and businesses',
-};
+export const metadata = {
+  title: 'Zenith Fresh - AI SaaS Platform',
+  description: 'AI-driven optimization platform',
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
         <div className="min-h-screen bg-gray-50">
-          <main className="flex-1">
-            {children}
-          </main>
+          <main>{children}</main>
         </div>
       </body>
     </html>
-  );
+  )
 }
