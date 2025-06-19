@@ -11,6 +11,8 @@ export default function Home() {
         <p className="text-lg text-gray-500 mb-12">
           Complete AI-driven optimization platform with E-E-A-T compliance, 
           GEO optimization, competitive analysis, and intelligent deployment management.
+          <br />
+          <small className="text-gray-400">Latest: AI-driven SaaS analysis engines deployed - Build #{new Date().getTime()}</small>
         </p>
         
         <div className="grid md:grid-cols-3 gap-8 mb-12">
