@@ -1,49 +1,38 @@
 import * as Sentry from '@sentry/nextjs';
 
-const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
+interface SentryContext {
+  [key: string]: any;
+}
 
-Sentry.init({
-  dsn: SENTRY_DSN,
-  tracesSampleRate: 1.0,
-  environment: process.env.NODE_ENV,
-  enabled: process.env.NODE_ENV === 'production',
-  integrations: [
-    new Sentry.BrowserTracing({
-      tracePropagationTargets: ['localhost', process.env.NEXT_PUBLIC_APP_URL!],
-    }),
-  ],
-  beforeSend(event) {
-    // Don't send events in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Sentry event:', event);
-      return null;
-    }
-    return event;
-  },
-});
-
-export const captureException = (error: Error, context?: Record<string, any>) => {
-  if (process.env.NODE_ENV === 'production') {
+export function captureException(error: Error, context?: SentryContext) {
+  // Always capture in production, and also in development if DSN is configured
+  if (process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_SENTRY_DSN) {
     Sentry.withScope((scope) => {
       if (context) {
-        Object.entries(context).forEach(([key, value]) => {
-          scope.setExtra(key, value);
+        Object.keys(context).forEach((key) => {
+          scope.setContext(key, context[key]);
         });
       }
       Sentry.captureException(error);
     });
-  } else {
-    console.error('Error:', error);
-    if (context) {
-      console.error('Context:', context);
-    }
   }
-};
+  
+  // Always log to console for debugging
+  console.error('Error:', error, context);
+}
 
-export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'info') => {
-  if (process.env.NODE_ENV === 'production') {
+export function captureMessage(message: string, level: Sentry.SeverityLevel = 'info') {
+  if (process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_SENTRY_DSN) {
     Sentry.captureMessage(message, level);
-  } else {
-    console.log(`[${level.toUpperCase()}] ${message}`);
   }
-}; 
+  
+  console.log(`[${level}]:`, message);
+}
+
+export function setUser(user: { id: string; email?: string; username?: string }) {
+  Sentry.setUser(user);
+}
+
+export function addBreadcrumb(breadcrumb: { message: string; category?: string; level?: Sentry.SeverityLevel }) {
+  Sentry.addBreadcrumb(breadcrumb);
+}

@@ -1,0 +1,84 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "node",
+      "args": ["/root/mcp-servers/development/node_modules/@modelcontextprotocol/server-github/dist/index.js"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "playwright": {
+      "command": "node",
+      "args": ["/root/mcp-servers/development/node_modules/@modelcontextprotocol/server-playwright/dist/index.js"]
+    },
+    "typescript": {
+      "command": "node",
+      "args": ["/root/mcp-servers/development/node_modules/@modelcontextprotocol/server-typescript/dist/index.js"]
+    },
+    "fastmcp": {
+      "command": "python3",
+      "args": ["-m", "fastmcp"],
+      "cwd": "/root/Zenith-Fresh"
+    },
+    "figma": {
+      "command": "node",
+      "args": ["/root/mcp-servers/development/node_modules/@modelcontextprotocol/server-figma/dist/index.js"],
+      "env": {
+        "FIGMA_ACCESS_TOKEN": "${FIGMA_ACCESS_TOKEN}"
+      }
+    },
+    "mindsdb": {
+      "command": "python3",
+      "args": ["-m", "mindsdb_mcp"],
+      "env": {
+        "MINDSDB_API_KEY": "${MINDSDB_API_KEY}"
+      }
+    },
+    "pydantic-ai": {
+      "command": "python3",
+      "args": ["-m", "pydantic_ai_mcp"]
+    },
+    "smol-developer": {
+      "command": "node",
+      "args": ["/root/mcp-servers/ai/node_modules/@modelcontextprotocol/server-smol-developer/dist/index.js"]
+    },
+    "pipedream": {
+      "command": "node",
+      "args": ["/root/mcp-servers/monitoring/node_modules/@modelcontextprotocol/server-pipedream/dist/index.js"],
+      "env": {
+        "PIPEDREAM_API_KEY": "${PIPEDREAM_API_KEY}"
+      }
+    },
+    "opik": {
+      "command": "node",
+      "args": ["/root/mcp-servers/monitoring/node_modules/@modelcontextprotocol/server-opik/dist/index.js"]
+    },
+    "taskmaster": {
+      "command": "node",
+      "args": ["/root/mcp-servers/monitoring/node_modules/@modelcontextprotocol/server-taskmaster/dist/index.js"]
+    },
+    "gpt-researcher": {
+      "command": "python3",
+      "args": ["-m", "gpt_researcher_mcp"],
+      "env": {
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+      }
+    },
+    "quickstarts": {
+      "command": "node",
+      "args": ["/root/mcp-servers/research/node_modules/@modelcontextprotocol/server-quickstarts/dist/index.js"]
+    },
+    "crawl4ai": {
+      "command": "python3",
+      "args": ["-m", "crawl4ai_mcp"]
+    },
+    "supermemory": {
+      "command": "node",
+      "args": ["/root/mcp-servers/research/node_modules/@modelcontextprotocol/server-supermemory/dist/index.js"]
+    },
+    "bloop": {
+      "command": "node",
+      "args": ["/root/mcp-servers/research/node_modules/@modelcontextprotocol/server-bloop/dist/index.js"]
+    }
+  }
+}
