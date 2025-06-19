@@ -2,20 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  HomeIcon,
-  ChartBarIcon,
-  DocumentTextIcon,
-  CogIcon,
-  BellIcon
-} from '@heroicons/react/24/outline';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
-  { name: 'Reports', href: '/dashboard/reports', icon: DocumentTextIcon },
-  { name: 'Notifications', href: '/notifications', icon: BellIcon },
-  { name: 'Settings', href: '/settings', icon: CogIcon },
+  { name: 'Dashboard', href: '/dashboard' },
+  { name: 'Analytics', href: '/dashboard/analytics' },
+  { name: 'Notifications', href: '/notifications' },
 ];
 
 export default function Sidebar() {
@@ -43,13 +34,6 @@ export default function Sidebar() {
                     }
                   `}
                 >
-                  <item.icon
-                    className={`
-                      mr-3 flex-shrink-0 h-6 w-6
-                      ${isActive ? 'text-gray-300' : 'text-gray-400 group-hover:text-gray-300'}
-                    `}
-                    aria-hidden="true"
-                  />
                   {item.name}
                 </Link>
               );
