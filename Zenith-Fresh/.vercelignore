@@ -1,0 +1,5 @@
+# Force cache invalidation
+.next/
+node_modules/
+*.log
+.env*
