@@ -1,14 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
+  // Force fresh build - cache bust
+  generateBuildId: async () => {
+    return 'cache-bust-' + Date.now()
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // Ensure clean build
+  cleanDistDir: true,
+  // Minimal configuration for basic deployment
+  output: 'standalone'
 }
 
 module.exports = nextConfig
