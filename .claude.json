@@ -3,12 +3,42 @@
   "tipsHistory": {
     "new-user-warmup": 1
   },
-  "promptQueueUseCount": 21,
+  "promptQueueUseCount": 23,
   "userID": "12fa9ead288dd05e810f61e8dfb3b18bd4ca0e0cea8e1d0dae03e4257410bae2",
   "projects": {
     "/root": {
       "allowedTools": [],
       "history": [
+        {
+          "display": "[Pasted text #1 +85 lines]",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "[20:07:31.712] Running build in Washington, D.C., USA (East) – iad1\n[20:07:31.712] Build machine configuration: 4 cores, 8 GB\n[20:07:31.729] Cloning github.com/CleanExpo/Zenith-Fresh (Branch: main, Commit: 38123e6)\n[20:07:31.737] Skipping build cache, deployment was triggered without cache.\n[20:07:32.044] Warning: Failed to fetch one or more git submodules\n[20:07:32.044] Cloning completed: 315.000ms\n[20:07:32.357] Running \"vercel build\"\n[20:07:32.802] Vercel CLI 43.1.0\n[20:07:33.114] Running \"install\" command: `npm install`...\n[20:07:37.882] npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported\n[20:07:38.610] npm warn deprecated lodash.get@4.4.2: This package is deprecated. Use the optional chaining (?.) operator instead.\n[20:07:38.665] npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.\n[20:07:39.221] npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.\n[20:07:39.530] npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported\n[20:07:39.975] npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead\n[20:07:40.581] npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead\n[20:07:41.877] npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead\n[20:07:41.921] npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead\n[20:07:42.387] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported\n[20:07:42.512] npm warn deprecated glob@7.1.6: Glob versions prior to v9 are no longer supported\n[20:07:42.548] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported\n[20:07:42.731] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported\n[20:07:42.868] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported\n[20:07:42.963] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported\n[20:07:43.055] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported\n[20:07:43.056] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported\n[20:07:47.029] npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.\n[20:08:01.424] \n[20:08:01.425] > zenith-platform@1.0.0 prepare\n[20:08:01.425] > husky install\n[20:08:01.425] \n[20:08:01.480] husky - install command is DEPRECATED\n[20:08:01.505] \n[20:08:01.506] added 988 packages, and audited 989 packages in 28s\n[20:08:01.506] \n[20:08:01.506] 192 packages are looking for funding\n[20:08:01.506]   run `npm fund` for details\n[20:08:01.507] \n[20:08:01.507] found 0 vulnerabilities\n[20:08:01.535] Detected Next.js version: 14.2.30\n[20:08:01.536] Running \"npm run build\"\n[20:08:01.675] \n[20:08:01.675] > zenith-platform@1.0.0 build\n[20:08:01.675] > prisma generate && next build\n[20:08:01.675] \n[20:08:02.346] Prisma schema loaded from prisma/schema.prisma\n[20:08:03.216] \n[20:08:03.216] ✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 322ms\n[20:08:03.216] \n[20:08:03.216] Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)\n[20:08:03.216] \n[20:08:03.216] Tip: Want to react to database changes in your app as they happen? Discover how with Pulse: https://pris.ly/tip-1-pulse\n[20:08:03.216] \n[20:08:04.446] Attention: Next.js now collects completely anonymous telemetry regarding usage.\n[20:08:04.446] This information is used to shape Next.js' roadmap and prioritize features.\n[20:08:04.446] You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:\n[20:08:04.446] https://nextjs.org/telemetry\n[20:08:04.447] \n[20:08:04.509]   ▲ Next.js 14.2.30\n[20:08:04.509] \n[20:08:04.586]    Creating an optimized production build ...\n[20:08:31.037]  ✓ Compiled successfully\n[20:08:31.038]    Skipping validation of types\n[20:08:31.038]    Skipping linting\n[20:08:31.319]    Collecting page data ...\n[20:08:32.244] TypeError: (0 , l.createContext) is not a function\n[20:08:32.245]     at 6150 (/vercel/path0/.next/server/chunks/33.js:44:214846)\n[20:08:32.245]     at t (/vercel/path0/.next/server/webpack-runtime.js:1:143)\n[20:08:32.245]     at 41882 (/vercel/path0/.next/server/app/auth/signin/page.js:1:31893)\n[20:08:32.245]     at t (/vercel/path0/.next/server/webpack-runtime.js:1:143)\n[20:08:32.245]     at 62486 (/vercel/path0/.next/server/app/auth/signin/page.js:1:28987)\n[20:08:32.245]     at t (/vercel/path0/.next/server/webpack-runtime.js:1:143)\n[20:08:32.245]     at 17361 (/vercel/path0/.next/server/app/auth/signin/page.js:1:1606)\n[20:08:32.245]     at t (/vercel/path0/.next/server/webpack-runtime.js:1:143)\n[20:08:32.245]     at r (/vercel/path0/.next/server/app/auth/signin/page.js:1:45725)\n[20:08:32.245]     at /vercel/path0/.next/server/app/auth/signin/page.js:1:45755\n[20:08:32.245] \n[20:08:32.245] > Build error occurred\n[20:08:32.245] Error: Failed to collect page data for /auth/signin\n[20:08:32.245]     at /vercel/path0/node_modules/next/dist/build/utils.js:1269:15\n[20:08:32.246]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {\n[20:08:32.246]   type: 'Error'\n[20:08:32.246] }\n[20:08:32.273] Error: Command \"npm run build\" exited with 1\n[20:08:32.702] \n[20:08:35.617] Exiting build container[I"
+            }
+          }
+        },
+        {
+          "display": "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",
+          "pastedContents": {}
+        },
+        {
+          "display": "1042641540611-v71h1kdmf4virq8j71sddggqiupthll3.apps.googleusercontent.com",
+          "pastedContents": {}
+        },
+        {
+          "display": "analyticsadmin.googleapis.com",
+          "pastedContents": {}
+        },
+        {
+          "display": "import { Resend } from 'resend';\n\nconst resend = new Resend('re_xxxxxxxxx');\n\nresend.apiKeys.create({ name: 'Production' });",
+          "pastedContents": {}
+        },
+        {
+          "display": "const checkInId = Sentry.captureCheckIn(\n  {\n    monitorSlug: '<monitor-slug>',\n    status: 'in_progress',\n  },\n  {\n    schedule: { // Specify your schedule options here\n      type: 'crontab',\n      value: '* * * * *',\n    },\n    checkinMargin: 1,\n    maxRuntime: 1,\n    timezone: 'America/Los_Angeles',\n  });\n\nSentry.captureCheckIn({\n    checkInId,\n    monitorSlug: '<monitor-slug>',\n    status: 'ok',\n  });\n  ",
+          "pastedContents": {}
+        },
         {
           "display": "npx @sentry/wizard@latest -i nextjs --saas --org zenith-9l1 --project javascript-nextjs",
           "pastedContents": {}
