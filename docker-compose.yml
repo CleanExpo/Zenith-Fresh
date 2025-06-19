@@ -6,12 +6,17 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:5173"
-    volumes:
-      - .:/app
-      - /app/node_modules
+      - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - NPM_CONFIG_UPDATE_NOTIFIER=false
-      - VITE_HOST=0.0.0.0
-    command: sh -c "npm install --no-audit --no-fund --legacy-peer-deps && npm run dev" 
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=https://goggasvuqbcyaetpitrm.supabase.co
+      - NEXT_PUBLIC_APP_URL=https://zenith.engineer
+      - NEXT_PUBLIC_APP_NAME=Zenith Platform
+      - NEXT_PUBLIC_APP_VERSION=1.0.0
+      - DATABASE_URL=postgresql://postgres:esGerRxYDOQdqCHWZXHrTLldfAzpdVFd@switchyard.proxy.rlwy.net:31569/railway
+      - NEXTAUTH_URL=https://zenith.engineer
+      - NEXTAUTH_SECRET=202e5145552bf1eec543660f0a7f7548
+      - JWT_SECRET=1gAxGqMzi0aCFUOP7iT3Szz327L4zVNTGofOH+i4WDNJMNAd1zsRf+vM26KzXpYQI8SfkzPy1ADks/unmuSkCw==
+    volumes:
+      - /app/node_modules
+    restart: unless-stopped 
