@@ -1,0 +1,1 @@
+{"version":1,"functions":{"/api/auth/[...nextauth]":{},"/api/health":{},"/api/auth/register":{},"/api/analytics":{},"/api/dashboard":{},"/api/projects/[id]/pages/[pageId]":{},"/api/projects/[id]":{},"/api/projects/[id]/pages":{},"/auth/signin":{},"/api/projects":{}}}
