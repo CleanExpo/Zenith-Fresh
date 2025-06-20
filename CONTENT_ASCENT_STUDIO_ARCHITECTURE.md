@@ -94,12 +94,12 @@ interface EditorSidebar {
 
 ## Tiered Integration Strategy
 
-### Pro Tier ($49/month)
+### Pro Tier ($79 AUD/month, $59 USD/month)
 - **Access**: Vision Sandbox + Limited Content Briefs (5/month)
 - **Purpose**: Create "need" - users can see what to do but can't execute
 - **Value Prop**: Strategic insights and planning
 
-### Business Tier ($149/month)
+### Business Tier ($249 AUD/month, $179 USD/month)
 - **Access**: Full Content Ascent Studio
 - **Features**: 
   - Unlimited content briefs
@@ -108,7 +108,7 @@ interface EditorSidebar {
   - Basic workflow integration
 - **Purpose**: Execution layer for active content creators
 
-### Enterprise Tier ($399/month)
+### Enterprise Tier ($599 AUD/month, $429 USD/month)
 - **Access**: Advanced Content Ascent Studio
 - **Features**:
   - Content Calendar with AI planning

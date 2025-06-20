@@ -434,6 +434,18 @@ export async function GET(request: Request) {
   - Predictive analytics
   - Recommendation engines
 
+## Pricing Strategy
+
+### Regional Pricing Tiers
+- **Pro Tier**: $79 AUD/month (Australia), $59 USD/month (United States)
+- **Business Tier**: $249 AUD/month (Australia), $179 USD/month (United States)  
+- **Enterprise Tier**: $599 AUD/month (Australia), $429 USD/month (United States)
+
+### Revenue Model
+- **Pro Tier**: Vision Sandbox + limited content briefs (creates demand)
+- **Business Tier**: Full Content Ascent Studio execution capabilities
+- **Enterprise Tier**: Advanced AI features, competitive analysis, white-label options
+
 ## Cost Management & Monitoring
 
 ### API Cost Tracking
