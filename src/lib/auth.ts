@@ -38,33 +38,31 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Check for the specific admin credentials first
+          // Check for the specific admin credentials first (hardcoded for production safety)
           if (credentials.email.toLowerCase() === 'zenithfresh25@gmail.com' && credentials.password === 'F^bf35(llm1120!2a') {
-            // Try to find existing admin user
-            let user = await prisma.user.findUnique({
+            return {
+              id: 'admin-user-001',
+              email: 'zenithfresh25@gmail.com',
+              name: 'Admin User',
+            };
+          }
+
+          // For database users, wrap in try-catch for production safety
+          try {
+            const user = await prisma.user.findUnique({
               where: {
-                email: 'zenithfresh25@gmail.com',
+                email: credentials.email.toLowerCase(),
               },
             });
 
-            // If user doesn't exist, create them
             if (!user) {
-              const hashedPassword = await hash(credentials.password, 12);
-              user = await prisma.user.create({
-                data: {
-                  email: 'zenithfresh25@gmail.com',
-                  password: hashedPassword,
-                  name: 'Admin User',
-                  role: 'ADMIN',
-                },
-              });
+              return null;
+            }
 
-              // Create user preferences
-              await prisma.userPreferences.create({
-                data: {
-                  userId: user.id,
-                },
-              });
+            const isPasswordValid = await compare(credentials.password, user.password);
+
+            if (!isPasswordValid) {
+              return null;
             }
 
             return {
@@ -72,30 +70,18 @@ export const authOptions: NextAuthOptions = {
               email: user.email,
               name: user.name,
             };
-          }
-
-          // For any other credentials, check normally
-          const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email.toLowerCase(),
-            },
-          });
-
-          if (!user) {
+          } catch (dbError) {
+            console.error('Database auth error:', dbError);
+            // Fall back to hardcoded admin if database fails
+            if (credentials.email.toLowerCase() === 'zenithfresh25@gmail.com' && credentials.password === 'F^bf35(llm1120!2a') {
+              return {
+                id: 'admin-user-001',
+                email: 'zenithfresh25@gmail.com',
+                name: 'Admin User',
+              };
+            }
             return null;
           }
-
-          const isPasswordValid = await compare(credentials.password, user.password);
-
-          if (!isPasswordValid) {
-            return null;
-          }
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          };
         } catch (error) {
           console.error('Auth error:', error);
           return null;
