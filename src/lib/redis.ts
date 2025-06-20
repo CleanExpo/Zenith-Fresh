@@ -1,13 +1,21 @@
 import { createClient } from 'redis';
 import { captureException } from './sentry';
 
-const redisClient = createClient({
+// Create Redis client only if REDIS_URL is configured
+const redisClient = process.env.REDIS_URL ? createClient({
   url: process.env.REDIS_URL,
-});
+  socket: {
+    connectTimeout: 5000, // 5 second timeout
+    reconnectStrategy: (retries) => Math.min(retries * 100, 3000)
+  }
+}) : null;
 
-redisClient.on('error', (error) => {
-  captureException(error, { context: 'redis-client' });
-});
+if (redisClient) {
+  redisClient.on('error', (error) => {
+    console.warn('Redis connection error:', error.message);
+    captureException(error, { context: 'redis-client' });
+  });
+}
 
 // Cache configuration
 const DEFAULT_TTL = 3600; // 1 hour in seconds
@@ -15,9 +23,12 @@ const DEFAULT_TTL = 3600; // 1 hour in seconds
 export class Cache {
   private static instance: Cache;
   private client = redisClient;
+  private connected = false;
 
   private constructor() {
-    this.connect();
+    if (this.client) {
+      this.connect();
+    }
   }
 
   public static getInstance(): Cache {
@@ -28,14 +39,22 @@ export class Cache {
   }
 
   private async connect() {
+    if (!this.client) return;
+    
     try {
       await this.client.connect();
+      this.connected = true;
     } catch (error) {
+      console.warn('Redis connection failed, operating without cache:', (error as Error).message);
       captureException(error as Error, { context: 'redis-connect' });
     }
   }
 
   async get<T>(key: string): Promise<T | null> {
+    if (!this.client || !this.connected) {
+      return null;
+    }
+    
     try {
       const data = await this.client.get(key);
       return data ? JSON.parse(data) : null;
@@ -46,6 +65,10 @@ export class Cache {
   }
 
   async set(key: string, value: any, ttl: number = DEFAULT_TTL): Promise<void> {
+    if (!this.client || !this.connected) {
+      return;
+    }
+    
     try {
       await this.client.set(key, JSON.stringify(value), {
         EX: ttl,
@@ -56,6 +79,10 @@ export class Cache {
   }
 
   async del(key: string): Promise<void> {
+    if (!this.client || !this.connected) {
+      return;
+    }
+    
     try {
       await this.client.del(key);
     } catch (error) {
@@ -64,6 +91,10 @@ export class Cache {
   }
 
   async flush(): Promise<void> {
+    if (!this.client || !this.connected) {
+      return;
+    }
+    
     try {
       await this.client.flushAll();
     } catch (error) {

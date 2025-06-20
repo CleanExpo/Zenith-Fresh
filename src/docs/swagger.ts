@@ -10,6 +10,10 @@ const options = {
     },
     servers: [
       {
+        url: process.env.NEXT_PUBLIC_APP_URL || 'https://zenith.engineer',
+        description: 'Production server',
+      },
+      {
         url: 'http://localhost:3000',
         description: 'Development server',
       },
