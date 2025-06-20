@@ -155,22 +155,14 @@ Response: {
 ```prisma
 // Keyword tracking and rankings
 model KeywordRanking {
-  id          String    @id @default(cuid())
-  keyword     String
-  domain      String
-  position    Int
-  volume      Int
-  difficulty  Int
-  trend       String    // 'up', 'down', 'stable'
-  change      Int       // Position change from last check
-  location    String?   // For local rankings
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  clientId    String
-  client      User      @relation(fields: [clientId], references: [id])
-  
-  @@index([clientId, keyword, createdAt])
-  @@index([domain, createdAt])
+  id         String    @id @default(cuid())
+  keyword    String
+  position   Int
+  volume     Int
+  difficulty Int
+  createdAt  DateTime  @default(now())
+  clientId   String    // Foreign key to your User/Client model
+  client     User      @relation(fields: [clientId], references: [id])
 }
 
 // Local SEO grid data
@@ -178,71 +170,23 @@ model LocalRankReport {
   id        String    @id @default(cuid())
   keyword   String
   location  String
-  domain    String
-  gridData  Json      // Array of position/ranking objects
-  avgPosition Float
-  visibility  Float
+  gridData  Json      // Storing the grid array as JSON
   createdAt DateTime  @default(now())
   clientId  String
   client    User      @relation(fields: [clientId], references: [id])
-  
-  @@index([clientId, keyword, location])
 }
 
-// Google Business Profile data
-model GmbProfile {
-  id          String    @id @default(cuid())
-  gmbId       String    @unique
-  name        String
-  address     String
-  phone       String
-  website     String?
-  categories  String[]
-  verified    Boolean
-  rating      Float?
-  reviewCount Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  clientId    String    @unique
-  client      User      @relation(fields: [clientId], references: [id])
-  reviews     GmbReview[]
-  posts       GmbPost[]
-}
-
+// Google Business Profile reviews
 model GmbReview {
-  id          String    @id @default(cuid())
-  gmbId       String    // Google's review ID
-  gmbProfileId String
-  gmbProfile  GmbProfile @relation(fields: [gmbProfileId], references: [id])
-  author      String
-  rating      Float
-  text        String
-  replied     Boolean   @default(false)
-  replyText   String?
-  createdAt   DateTime
-  updatedAt   DateTime  @updatedAt
-  clientId    String
-  client      User      @relation(fields: [clientId], references: [id])
-  
-  @@index([gmbProfileId, createdAt])
-  @@index([clientId, replied])
-}
-
-model GmbPost {
-  id           String     @id @default(cuid())
-  gmbProfileId String
-  gmbProfile   GmbProfile @relation(fields: [gmbProfileId], references: [id])
-  content      String
-  mediaUrl     String?
-  callToAction String?
-  link         String?
-  published    Boolean    @default(false)
-  publishedAt  DateTime?
-  createdAt    DateTime   @default(now())
-  clientId     String
-  client       User       @relation(fields: [clientId], references: [id])
-  
-  @@index([gmbProfileId, publishedAt])
+  id         String    @id @default(cuid())
+  gmbId      String    @unique // The ID from Google
+  author     String
+  rating     Float
+  text       String
+  replied    Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  clientId   String
+  client     User      @relation(fields: [clientId], references: [id])
 }
 
 // Social media integration
