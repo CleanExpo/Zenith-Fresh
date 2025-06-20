@@ -16,8 +16,10 @@ import {
   CheckCircle2,
   ArrowRight,
   Play,
-  Star
+  Star,
+  Terminal
 } from 'lucide-react';
+import VisionSandbox from '../components/VisionSandbox';
 
 // Glassmorphic Components
 const GlassCard = ({ children, className = '', delay = 0 }: any) => (
@@ -60,6 +62,7 @@ export default function LandingPage() {
   const { scrollYProgress } = useScroll();
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
   const [activeDemo, setActiveDemo] = useState<string | null>(null);
+  const [showSandbox, setShowSandbox] = useState(false);
 
   // Metrics that demonstrate backend power
   const liveMetrics = {
@@ -276,6 +279,49 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Interactive Sandbox Section */}
+      <section className="relative z-10 py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-center"
+          >
+            <GlassCard className="max-w-4xl mx-auto">
+              <div className="flex items-center justify-center mb-6">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-400 p-0.5">
+                  <div className="w-full h-full bg-black rounded-2xl flex items-center justify-center">
+                    <Terminal className="w-10 h-10 text-cyan-400" />
+                  </div>
+                </div>
+              </div>
+              <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                Try the Zenith Command Center
+              </h2>
+              <p className="text-xl text-gray-300 mb-8">
+                Experience our AI-powered website analysis and optimization sandbox. 
+                Analyze any website and get real-time recommendations with competitive insights.
+              </p>
+              <button
+                onClick={() => setShowSandbox(true)}
+                className="group relative px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full font-semibold text-lg transition-all hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/25"
+              >
+                <span className="flex items-center gap-2">
+                  <Terminal className="w-5 h-5" />
+                  Launch Command Center
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </span>
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
+              </button>
+              <p className="text-sm text-gray-400 mt-4">
+                No signup required • Analyze any website • Real competitive insights
+              </p>
+            </GlassCard>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Social Proof Section */}
       <section className="relative z-10 py-20 px-4">
         <div className="max-w-7xl mx-auto">
@@ -363,6 +409,9 @@ export default function LandingPage() {
           </GlassCard>
         </div>
       </section>
+
+      {/* VisionSandbox Component */}
+      <VisionSandbox isOpen={showSandbox} onClose={() => setShowSandbox(false)} />
 
       <style jsx>{`
         @keyframes float {
