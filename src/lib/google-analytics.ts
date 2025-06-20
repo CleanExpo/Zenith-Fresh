@@ -1,7 +1,7 @@
 import { BetaAnalyticsDataClient } from '@google-analytics/data';
 import { AnalyticsAdminServiceClient } from '@google-analytics/admin';
 import { google } from 'googleapis';
-import { captureException } from './sentry';
+import * as Sentry from '@sentry/nextjs';
 
 // Google Analytics Configuration
 interface GAConfig {
@@ -24,11 +24,28 @@ class GoogleAnalyticsService {
     this.config = {
       propertyId: process.env.GA_PROPERTY_ID || '',
       measurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '',
-      serviceAccount: process.env.GOOGLE_SERVICE_ACCOUNT_KEY ? 
-        JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY) : undefined,
+      serviceAccount: this.parseServiceAccountKey(),
     };
 
     this.initializeClients();
+  }
+
+  private parseServiceAccountKey() {
+    try {
+      if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+        return undefined;
+      }
+      
+      // Skip parsing if it's a placeholder value
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY.includes('placeholder')) {
+        return undefined;
+      }
+      
+      return JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+    } catch (error) {
+      console.warn('Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY:', error);
+      return undefined;
+    }
   }
 
   private initializeClients() {
@@ -64,7 +81,7 @@ class GoogleAnalyticsService {
       }
     } catch (error) {
       console.error('Failed to initialize Google Analytics clients:', error);
-      captureException(error as Error, { context: 'google-analytics-init' });
+      Sentry.captureException(error as Error);
     }
   }
 
@@ -95,7 +112,7 @@ class GoogleAnalyticsService {
       };
     } catch (error) {
       console.error('Failed to get realtime data:', error);
-      captureException(error as Error, { context: 'ga-realtime-data' });
+      Sentry.captureException(error as Error);
       return { success: false, error: (error as Error).message };
     }
   }
@@ -141,7 +158,7 @@ class GoogleAnalyticsService {
       };
     } catch (error) {
       console.error('Failed to get analytics data:', error);
-      captureException(error as Error, { context: 'ga-analytics-data' });
+      Sentry.captureException(error as Error);
       return { success: false, error: (error as Error).message };
     }
   }
@@ -175,7 +192,7 @@ class GoogleAnalyticsService {
       };
     } catch (error) {
       console.error('Failed to get user acquisition data:', error);
-      captureException(error as Error, { context: 'ga-acquisition-data' });
+      Sentry.captureException(error as Error);
       return { success: false, error: (error as Error).message };
     }
   }
@@ -209,7 +226,7 @@ class GoogleAnalyticsService {
       };
     } catch (error) {
       console.error('Failed to get top pages data:', error);
-      captureException(error as Error, { context: 'ga-pages-data' });
+      Sentry.captureException(error as Error);
       return { success: false, error: (error as Error).message };
     }
   }
@@ -238,7 +255,7 @@ class GoogleAnalyticsService {
       };
     } catch (error) {
       console.error('Failed to create property:', error);
-      captureException(error as Error, { context: 'ga-create-property' });
+      Sentry.captureException(error as Error);
       return { success: false, error: (error as Error).message };
     }
   }
@@ -260,7 +277,7 @@ class GoogleAnalyticsService {
       };
     } catch (error) {
       console.error('Failed to list properties:', error);
-      captureException(error as Error, { context: 'ga-list-properties' });
+      Sentry.captureException(error as Error);
       return { success: false, error: (error as Error).message };
     }
   }
@@ -290,7 +307,7 @@ class GoogleAnalyticsService {
       };
     } catch (error) {
       console.error('Failed to create web data stream:', error);
-      captureException(error as Error, { context: 'ga-create-stream' });
+      Sentry.captureException(error as Error);
       return { success: false, error: (error as Error).message };
     }
   }
@@ -310,7 +327,7 @@ class GoogleAnalyticsService {
       };
     } catch (error) {
       console.error('Failed to get account summaries:', error);
-      captureException(error as Error, { context: 'ga-account-summaries' });
+      Sentry.captureException(error as Error);
       return { success: false, error: (error as Error).message };
     }
   }

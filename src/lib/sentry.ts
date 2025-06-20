@@ -36,3 +36,9 @@ export function setUser(user: { id: string; email?: string; username?: string })
 export function addBreadcrumb(breadcrumb: { message: string; category?: string; level?: Sentry.SeverityLevel }) {
   Sentry.addBreadcrumb(breadcrumb);
 }
+
+// Export Sentry logger for structured logging
+export const { logger } = Sentry;
+
+// Export Sentry for span instrumentation
+export { Sentry };

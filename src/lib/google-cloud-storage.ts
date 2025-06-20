@@ -1,5 +1,5 @@
 import { Storage } from '@google-cloud/storage';
-import { captureException } from './sentry';
+import * as Sentry from '@sentry/nextjs';
 
 interface UploadConfig {
   bucketName: string;
@@ -55,7 +55,7 @@ class GoogleCloudStorageService {
       return new Promise((resolve) => {
         stream.on('error', (error) => {
           console.error('Upload error:', error);
-          captureException(error, { context: 'gcs-upload' });
+          Sentry.captureException(error, { extra: { context: 'gcs-upload' } });
           resolve({
             success: false,
             error: error.message,
@@ -88,7 +88,7 @@ class GoogleCloudStorageService {
             });
           } catch (error) {
             console.error('Post-upload error:', error);
-            captureException(error as Error, { context: 'gcs-post-upload' });
+            Sentry.captureException(error as Error, { extra: { context: 'gcs-post-upload' } });
             resolve({
               success: false,
               error: (error as Error).message,
@@ -101,7 +101,7 @@ class GoogleCloudStorageService {
       });
     } catch (error) {
       console.error('GCS upload failed:', error);
-      captureException(error as Error, { context: 'gcs-upload-init' });
+      Sentry.captureException(error as Error, { extra: { context: 'gcs-upload-init' } });
       return {
         success: false,
         error: (error as Error).message,
@@ -122,7 +122,7 @@ class GoogleCloudStorageService {
       return { success: true };
     } catch (error) {
       console.error('GCS delete failed:', error);
-      captureException(error as Error, { context: 'gcs-delete' });
+      Sentry.captureException(error as Error, { extra: { context: 'gcs-delete' } });
       return {
         success: false,
         error: (error as Error).message,
@@ -146,7 +146,7 @@ class GoogleCloudStorageService {
       };
     } catch (error) {
       console.error('GCS metadata failed:', error);
-      captureException(error as Error, { context: 'gcs-metadata' });
+      Sentry.captureException(error as Error, { extra: { context: 'gcs-metadata' } });
       return {
         success: false,
         error: (error as Error).message,
@@ -178,7 +178,7 @@ class GoogleCloudStorageService {
       };
     } catch (error) {
       console.error('GCS signed URL failed:', error);
-      captureException(error as Error, { context: 'gcs-signed-url' });
+      Sentry.captureException(error as Error, { extra: { context: 'gcs-signed-url' } });
       return {
         success: false,
         error: (error as Error).message,
@@ -212,7 +212,7 @@ class GoogleCloudStorageService {
       };
     } catch (error) {
       console.error('GCS list files failed:', error);
-      captureException(error as Error, { context: 'gcs-list-files' });
+      Sentry.captureException(error as Error, { extra: { context: 'gcs-list-files' } });
       return {
         success: false,
         error: (error as Error).message,
@@ -247,7 +247,7 @@ class GoogleCloudStorageService {
       };
     } catch (error) {
       console.error('GCS create bucket failed:', error);
-      captureException(error as Error, { context: 'gcs-create-bucket' });
+      Sentry.captureException(error as Error, { extra: { context: 'gcs-create-bucket' } });
       return {
         success: false,
         error: (error as Error).message,
@@ -271,7 +271,7 @@ class GoogleCloudStorageService {
       };
     } catch (error) {
       console.error('GCS file exists check failed:', error);
-      captureException(error as Error, { context: 'gcs-file-exists' });
+      Sentry.captureException(error as Error, { extra: { context: 'gcs-file-exists' } });
       return {
         success: false,
         error: (error as Error).message,

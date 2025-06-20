@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { googleAnalytics } from '@/lib/google-analytics';
-import { captureException } from '@/lib/sentry';
+import * as Sentry from '@sentry/nextjs';
 
 export async function GET(request: NextRequest) {
   try {
@@ -64,9 +64,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Google Analytics API error:', error);
-    captureException(error as Error, {
-      context: 'google-analytics-api',
+    Sentry.captureException(error as Error, {
       extra: {
+        context: 'google-analytics-api',
         userEmail: (await getServerSession(authOptions))?.user?.email,
       }
     });
@@ -128,9 +128,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Google Analytics Admin API error:', error);
-    captureException(error as Error, {
-      context: 'google-analytics-admin',
+    Sentry.captureException(error as Error, {
       extra: {
+        context: 'google-analytics-admin',
         userEmail: (await getServerSession(authOptions))?.user?.email,
       }
     });

@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import { captureException } from './sentry';
+import * as Sentry from '@sentry/nextjs';
 
 // Initialize Resend with API key from environment
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -87,9 +87,9 @@ export async function sendEmail(params: EmailParams): Promise<EmailResponse> {
     });
 
     // Capture error in Sentry
-    captureException(error as Error, {
-      context: 'email-service',
+    Sentry.captureException(error as Error, {
       extra: {
+        context: 'email-service',
         to: params.to,
         subject: params.subject,
         hasHtml: !!params.html,
@@ -335,7 +335,7 @@ export async function createResendApiKey(name: string) {
     };
   } catch (error) {
     console.error('Failed to create Resend API key:', error);
-    captureException(error as Error, { context: 'resend-api-key-creation' });
+    Sentry.captureException(error as Error, { extra: { context: 'resend-api-key-creation' } });
     
     return {
       success: false,
@@ -362,7 +362,7 @@ export async function listResendApiKeys() {
     };
   } catch (error) {
     console.error('Failed to list Resend API keys:', error);
-    captureException(error as Error, { context: 'resend-api-key-listing' });
+    Sentry.captureException(error as Error, { extra: { context: 'resend-api-key-listing' } });
     
     return {
       success: false,

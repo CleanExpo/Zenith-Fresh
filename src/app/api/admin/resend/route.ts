@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { createResendApiKey, listResendApiKeys } from '@/lib/email';
-import { captureException } from '@/lib/sentry';
+import * as Sentry from '@sentry/nextjs';
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,9 +29,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('List Resend API keys error:', error);
-    captureException(error as Error, {
-      context: 'resend-api-keys-list',
+    Sentry.captureException(error as Error, {
       extra: {
+        context: 'resend-api-keys-list',
         userEmail: (await getServerSession(authOptions))?.user?.email,
       }
     });
@@ -75,9 +75,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Create Resend API key error:', error);
-    captureException(error as Error, {
-      context: 'resend-api-key-creation',
+    Sentry.captureException(error as Error, {
       extra: {
+        context: 'resend-api-key-creation',
         userEmail: (await getServerSession(authOptions))?.user?.email,
       }
     });
