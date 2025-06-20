@@ -6,9 +6,7 @@ Sentry.init({
   // Set tracesSampleRate to 1.0 to capture 100%
   // of the transactions for performance monitoring.
   // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-  
-  // ...
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
   
   // Note: if you want to override the automatic release value, do not set a
   // `release` value here - use the environment variable `SENTRY_RELEASE`, so
@@ -16,18 +14,25 @@ Sentry.init({
   
   debug: process.env.NODE_ENV === 'development',
   
+  // Enable structured logging
+  _experiments: {
+    enableLogs: true,
+  },
+  
   replaysOnErrorSampleRate: 1.0,
   
   // This sets the sample rate to be 10%. You may want this to be 100% while
   // in development and sample at a lower rate in production
-  replaysSessionSampleRate: 0.1,
+  replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
   
-  // You can remove this option if you're not planning to use the Sentry Session Replay feature:
+  // Enhanced integrations with console logging
   integrations: [
     Sentry.replayIntegration({
       // Additional Replay configuration goes in here, for example:
       maskAllText: true,
       blockAllMedia: true,
     }),
+    // Send console.log, console.error, and console.warn calls as logs to Sentry
+    Sentry.consoleLoggingIntegration({ levels: ['log', 'error', 'warn'] }),
   ],
 });

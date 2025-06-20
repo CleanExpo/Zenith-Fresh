@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { sendEmail, sendWelcomeEmail, EmailTemplates } from '@/lib/email';
-import { captureException } from '@/lib/sentry';
+import * as Sentry from '@sentry/nextjs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -101,9 +101,9 @@ This email was sent using Resend API integration.`,
     });
   } catch (error) {
     console.error('Test email error:', error);
-    captureException(error as Error, {
-      context: 'test-email',
+    Sentry.captureException(error as Error, {
       extra: {
+        context: 'test-email',
         userEmail: (await getServerSession(authOptions))?.user?.email,
       }
     });

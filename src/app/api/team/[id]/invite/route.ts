@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { sendTeamInvitationEmail } from '@/lib/email';
-import { captureException } from '@/lib/sentry';
+import * as Sentry from '@sentry/nextjs';
 
 function generateInviteToken(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -115,9 +115,9 @@ export async function POST(
     });
   } catch (error) {
     console.error('Team invitation error:', error);
-    captureException(error as Error, {
-      context: 'team-invitation',
+    Sentry.captureException(error as Error, {
       extra: {
+        context: 'team-invitation',
         teamId: params.id,
         userEmail: (await getServerSession(authOptions))?.user?.email,
       }

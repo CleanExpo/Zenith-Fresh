@@ -1,5 +1,5 @@
 import { Gauge, Histogram, Registry } from 'prom-client';
-import { captureException } from './sentry';
+import * as Sentry from '@sentry/nextjs';
 
 // Create a registry to register metrics
 export const registry = new Registry();
@@ -32,7 +32,7 @@ export function observeRequestDuration(duration: number) {
 }
 
 export function reportError(error: Error) {
-  captureException(error);
+  Sentry.captureException(error);
 }
 
 const httpRequestsTotal = new Histogram({

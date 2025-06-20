@@ -1,5 +1,5 @@
 import { createClient } from 'redis';
-import { captureException } from './sentry';
+import * as Sentry from '@sentry/nextjs';
 
 // Create Redis client only if REDIS_URL is configured
 const redisClient = process.env.REDIS_URL ? createClient({
@@ -13,7 +13,7 @@ const redisClient = process.env.REDIS_URL ? createClient({
 if (redisClient) {
   redisClient.on('error', (error) => {
     console.warn('Redis connection error:', error.message);
-    captureException(error, { context: 'redis-client' });
+    Sentry.captureException(error, { extra: { context: 'redis-client' } });
   });
 }
 
@@ -46,7 +46,7 @@ export class Cache {
       this.connected = true;
     } catch (error) {
       console.warn('Redis connection failed, operating without cache:', (error as Error).message);
-      captureException(error as Error, { context: 'redis-connect' });
+      Sentry.captureException(error as Error, { extra: { context: 'redis-connect' } });
     }
   }
 
@@ -59,7 +59,7 @@ export class Cache {
       const data = await this.client.get(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
-      captureException(error as Error, { context: 'redis-get', key });
+      Sentry.captureException(error as Error, { extra: { context: 'redis-get', key } });
       return null;
     }
   }
@@ -74,7 +74,7 @@ export class Cache {
         EX: ttl,
       });
     } catch (error) {
-      captureException(error as Error, { context: 'redis-set', key });
+      Sentry.captureException(error as Error, { extra: { context: 'redis-set', key } });
     }
   }
 
@@ -86,7 +86,7 @@ export class Cache {
     try {
       await this.client.del(key);
     } catch (error) {
-      captureException(error as Error, { context: 'redis-del', key });
+      Sentry.captureException(error as Error, { extra: { context: 'redis-del', key } });
     }
   }
 
@@ -98,7 +98,7 @@ export class Cache {
     try {
       await this.client.flushAll();
     } catch (error) {
-      captureException(error as Error, { context: 'redis-flush' });
+      Sentry.captureException(error as Error, { extra: { context: 'redis-flush' } });
     }
   }
 }

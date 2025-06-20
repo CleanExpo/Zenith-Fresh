@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { googleCloudStorage, generateFileName, validateFileSize, validateFileType } from '@/lib/google-cloud-storage';
-import { captureException } from '@/lib/sentry';
+import * as Sentry from '@sentry/nextjs';
 
 const ALLOWED_FILE_TYPES = [
   'image/jpeg',
@@ -96,9 +96,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('File upload error:', error);
-    captureException(error as Error, {
-      context: 'file-upload',
+    Sentry.captureException(error as Error, {
       extra: {
+        context: 'file-upload',
         userEmail: (await getServerSession(authOptions))?.user?.email,
       }
     });
@@ -136,9 +136,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('File list error:', error);
-    captureException(error as Error, {
-      context: 'file-list',
+    Sentry.captureException(error as Error, {
       extra: {
+        context: 'file-list',
         userEmail: (await getServerSession(authOptions))?.user?.email,
       }
     });
@@ -180,9 +180,9 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error) {
     console.error('File delete error:', error);
-    captureException(error as Error, {
-      context: 'file-delete',
+    Sentry.captureException(error as Error, {
       extra: {
+        context: 'file-delete',
         userEmail: (await getServerSession(authOptions))?.user?.email,
       }
     });
