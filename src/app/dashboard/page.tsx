@@ -1,61 +1,19 @@
-import { getServerSession } from 'next-auth';
-import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { DashboardStats } from '@/components/dashboard/DashboardStats';
-import { RecentProjects } from '@/components/dashboard/RecentProjects';
-import { TeamAnalytics } from '@/components/dashboard/TeamAnalytics';
+'use client';
 
-interface ExtendedSession {
-  user?: {
-    id?: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  };
-}
+import { useEffect } from 'react';
 
-export default async function DashboardPage() {
-  const session = await getServerSession(authOptions) as ExtendedSession;
-
-  if (!session || !session.user || !session.user.id) {
-    redirect('/login');
-  }
-
-  const [projects, stats] = await Promise.all([
-    prisma.project.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-      take: 5,
-    }),
-    prisma.project.aggregate({
-      where: {
-        userId: session.user.id,
-      },
-      _count: {
-        _all: true,
-      },
-    }),
-  ]);
+export default function DashboardPage() {
+  useEffect(() => {
+    // Redirect to static dashboard
+    window.location.href = '/dashboard.html';
+  }, []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          Dashboard
-        </h1>
-      </div>
-
-      <DashboardStats totalProjects={stats._count._all} />
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <RecentProjects projects={projects} />
-        <TeamAnalytics teamId={session.user.id} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto"></div>
+        <p className="mt-4 text-lg text-gray-600">Loading Dashboard...</p>
       </div>
     </div>
   );
-} 
+}
