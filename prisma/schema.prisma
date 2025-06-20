@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -22,7 +22,7 @@ model User {
   projects      Project[]
   accounts      Account[]
   sessions      Session[]
-  role          Role      @default(USER)
+  role          String    @default("USER")
   tasks         Task[]
   files         File[]
   analytics     Analytics[]
@@ -44,12 +44,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -96,7 +96,7 @@ model Project {
 model Content {
   id          String   @id @default(cuid())
   title       String
-  body        String   @db.Text
+  body        String
   type        String
   status      String   @default("draft")
   createdAt   DateTime @default(now())
@@ -109,8 +109,8 @@ model Task {
   id          String    @id @default(cuid())
   title       String
   description String?
-  status      Status    @default(TODO)
-  priority    Priority  @default(MEDIUM)
+  status      String    @default("TODO")
+  priority    String    @default("MEDIUM")
   dueDate     DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -142,7 +142,7 @@ model Analytics {
   id          String    @id @default(cuid())
   type        String    // e.g., 'page_view', 'api_call', 'error'
   action      String    // e.g., 'view_dashboard', 'create_project'
-  metadata    Json?     // Additional data about the event
+  metadata    String?   // Additional data about the event (JSON string)
   createdAt   DateTime  @default(now())
   userId      String?
   user        User?     @relation(fields: [userId], references: [id])
@@ -155,7 +155,7 @@ model SystemMetrics {
   type        String    // e.g., 'cpu_usage', 'memory_usage', 'api_latency'
   value       Float
   timestamp   DateTime  @default(now())
-  metadata    Json?     // Additional metrics data
+  metadata    String?   // Additional metrics data (JSON string)
 }
 
 model Notification {
@@ -192,7 +192,7 @@ model UserPreferences {
 model ActivityLog {
   id          String    @id @default(cuid())
   action      String    // e.g., 'login', 'create_project', 'update_task'
-  details     Json?     // Additional activity details
+  details     String?   // Additional activity details (JSON string)
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime  @default(now())
@@ -211,9 +211,9 @@ model AuditLog {
   action      String    // e.g., 'create', 'update', 'delete', 'login', 'logout'
   entityType  String    // e.g., 'user', 'project', 'task', 'file'
   entityId    String?
-  oldValue    Json?     // Previous state
-  newValue    Json?     // New state
-  metadata    Json?     // Additional audit data
+  oldValue    String?   // Previous state (JSON string)
+  newValue    String?   // New state (JSON string)
+  metadata    String?   // Additional audit data (JSON string)
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime  @default(now())
@@ -232,12 +232,12 @@ model DataExport {
   completedAt DateTime?
   userId      String
   user        User      @relation(fields: [userId], references: [id])
-  metadata    Json?     // Export configuration
+  metadata    String?   // Export configuration (JSON string)
 }
 
 model ProjectMember {
   id          String    @id @default(cuid())
-  role        Role      @default(VIEWER)
+  role        String    @default("VIEWER")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   userId      String
@@ -265,7 +265,7 @@ model Team {
 
 model TeamMember {
   id          String    @id @default(cuid())
-  role        Role      @default(VIEWER)
+  role        String    @default("VIEWER")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   userId      String
@@ -279,7 +279,7 @@ model TeamMember {
 model TeamInvitation {
   id          String    @id @default(cuid())
   email       String
-  role        Role      @default(VIEWER)
+  role        String    @default("VIEWER")
   status      String    @default("pending") // pending, accepted, rejected
   token       String    @unique
   expiresAt   DateTime
@@ -296,7 +296,7 @@ model ApiKey {
   id          String    @id @default(cuid())
   name        String
   key         String    @unique
-  scopes      String[]  // Array of permission scopes
+  scopes      String    // Permission scopes (comma-separated)
   lastUsed    DateTime?
   expiresAt   DateTime?
   createdAt   DateTime  @default(now())
@@ -402,31 +402,8 @@ model TeamIntegration {
   teamId      String
   team        Team      @relation(fields: [teamId], references: [id])
   type        String    // e.g., 'slack', 'github', 'jira'
-  config      Json      // Store integration configuration
+  config      String    // Store integration configuration (JSON string)
   status      String    @default("active")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
-
-enum Role {
-  USER
-  ADMIN
-  MANAGER
-  VIEWER
-  EDITOR
-}
-
-enum Status {
-  TODO
-  IN_PROGRESS
-  DONE
-  ARCHIVED
-  ACTIVE
-}
-
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-} 
