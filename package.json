@@ -15,7 +15,7 @@
     "prisma:studio": "prisma studio",
     "db:backup": "prisma db pull && prisma db push",
     "db:maintenance": "prisma db push --accept-data-loss",
-    "db:seed": "node scripts/seed-user.js",
+    "db:seed": "node scripts/seed-users.js",
     "prepare": "husky install",
     "prisma": "prisma",
     "db:migrate": "prisma migrate deploy",
