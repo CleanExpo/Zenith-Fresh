@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { captureException } from '@/lib/sentry';
 
@@ -46,4 +48,4 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
     return this.props.children;
   }
-} 
+}

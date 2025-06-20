@@ -1,8 +1,5 @@
 import { NextAuthOptions } from 'next-auth';
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { prisma } from '@/lib/prisma';
-import { compare } from 'bcryptjs';
 import { Session } from 'next-auth';
 
 // Extend the session user type to include id
@@ -18,7 +15,6 @@ declare module 'next-auth' {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   session: {
     strategy: 'jwt',
   },
@@ -37,27 +33,21 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        });
-
-        if (!user) {
-          return null;
+        // Direct hardcoded authentication - no database required
+        if (
+          credentials.email.toLowerCase() === 'zenithfresh25@gmail.com' && 
+          credentials.password === 'F^bf35(llm1120!2a'
+        ) {
+          // Return a hardcoded user object - no database needed
+          return {
+            id: 'admin-user-001',
+            email: 'Zenithfresh25@gmail.com',
+            name: 'Admin User',
+          };
         }
 
-        const isPasswordValid = await compare(credentials.password, user.password);
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-        };
+        // Reject all other credentials
+        return null;
       },
     }),
   ],
@@ -72,24 +62,12 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async jwt({ token, user }) {
-      const dbUser = await prisma.user.findFirst({
-        where: {
-          email: token.email!,
-        },
-      });
-
-      if (!dbUser) {
-        if (user) {
-          token.id = user?.id;
-        }
-        return token;
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
       }
-
-      return {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-      };
+      return token;
     },
   },
-}; 
+};

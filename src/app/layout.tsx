@@ -3,8 +3,6 @@ import { Inter } from 'next/font/google';
 import { Providers } from './providers';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { Sidebar } from '@/components/Sidebar';
-import { Header } from '@/components/Header';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -31,4 +29,4 @@ export default function RootLayout({
       </body>
     </html>
   );
-} 
+}
