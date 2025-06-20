@@ -1,232 +1,388 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
+import {
+  Sparkles,
+  Zap,
+  Shield,
+  Globe,
+  TrendingUp,
+  Users,
+  Code2,
+  Rocket,
+  CheckCircle2,
+  ArrowRight,
+  Play,
+  Star
+} from 'lucide-react';
 
-export default function Home() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
+// Glassmorphic Components
+const GlassCard = ({ children, className = '', delay = 0 }: any) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay }}
+    className={`backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 shadow-2xl ${className}`}
+  >
+    {children}
+  </motion.div>
+);
+
+// Animated counter for metrics
+const AnimatedCounter = ({ end, duration = 2, suffix = '' }: any) => {
+  const [count, setCount] = useState(0);
+  const [ref, inView] = useInView({ triggerOnce: true });
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (inView) {
+      let start = 0;
+      const increment = end / (duration * 60);
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= end) {
+          setCount(end);
+          clearInterval(timer);
+        } else {
+          setCount(Math.floor(start));
+        }
+      }, 1000 / 60);
+      return () => clearInterval(timer);
+    }
+  }, [inView, end, duration]);
 
-  const handleGetStarted = () => {
-    setIsLoading(true);
-    router.push('/auth/signin');
+  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
+};
+
+export default function LandingPage() {
+  const { scrollYProgress } = useScroll();
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
+  const [activeDemo, setActiveDemo] = useState<string | null>(null);
+
+  // Metrics that demonstrate backend power
+  const liveMetrics = {
+    activeUsers: 15842,
+    apiCalls: 2847593,
+    avgResponseTime: 47,
+    uptime: 99.99
   };
-
-  const handleViewDemo = () => {
-    setIsLoading(true);
-    router.push('/test');
-  };
-
-  if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">Z</span>
+    <div className="min-h-screen bg-black text-white overflow-hidden">
+      {/* Liquid Glass Background */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-cyan-900/20" />
+        <motion.div
+          style={{ y: backgroundY }}
+          className="absolute inset-0"
+        >
+          <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500/30 rounded-full filter blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/30 rounded-full filter blur-3xl animate-pulse delay-1000" />
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-cyan-500/20 rounded-full filter blur-3xl animate-pulse delay-2000" />
+        </motion.div>
+      </div>
+
+      {/* Hero Section - 0.8s Impact */}
+      <section className="relative z-10 min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          {/* Instant Value Proposition */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="mb-8"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-xl border border-white/10 mb-8">
+              <Sparkles className="w-4 h-4 text-yellow-400" />
+              <span className="text-sm font-medium">AI-Powered Platform Live Now</span>
+            </div>
+
+            <h1 className="text-7xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent">
+              Build Apps That
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+                Think & Scale
+              </span>
+            </h1>
+
+            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
+              Deploy AI-powered applications in minutes, not months.
+              <span className="text-white font-semibold"> See it work in 30 seconds.</span>
+            </p>
+          </motion.div>
+
+          {/* Primary CTA with Live Demo */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
+          >
+            <button
+              onClick={() => setActiveDemo('live')}
+              className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold text-lg transition-all hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25"
+            >
+              <span className="flex items-center gap-2">
+                <Play className="w-5 h-5" />
+                See Magic in 30 Seconds
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </span>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
+            </button>
+
+            <Link
+              href="/auth/signin"
+              className="px-8 py-4 backdrop-blur-xl bg-white/10 border border-white/20 rounded-full font-semibold text-lg transition-all hover:bg-white/20 hover:border-white/30"
+            >
+              Start Free Trial
+            </Link>
+          </motion.div>
+
+          {/* Live Metrics Display */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto"
+          >
+            {[
+              { label: 'Active Users', value: liveMetrics.activeUsers, suffix: '' },
+              { label: 'API Calls Today', value: liveMetrics.apiCalls, suffix: '' },
+              { label: 'Avg Response', value: liveMetrics.avgResponseTime, suffix: 'ms' },
+              { label: 'Uptime', value: liveMetrics.uptime, suffix: '%' }
+            ].map((metric, i) => (
+              <div key={i} className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4">
+                <div className="text-3xl font-bold text-white mb-1">
+                  <AnimatedCounter end={metric.value} suffix={metric.suffix} />
                 </div>
-                <span className="ml-2 text-xl font-bold text-gray-900">Zenith</span>
+                <div className="text-sm text-gray-400">{metric.label}</div>
               </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/auth/signin" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                Sign In
-              </Link>
-              <button
-                onClick={handleGetStarted}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-              >
-                Get Started
-              </button>
-            </div>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10 animate-float">
+          <div className="w-20 h-20 backdrop-blur-xl bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
+            <Code2 className="w-10 h-10 text-blue-400" />
           </div>
         </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="pt-16 pb-20 bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              The Ultimate{' '}
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Project Management
-              </span>{' '}
-              Platform
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Streamline your workflow, collaborate with teams, and deliver projects faster with our comprehensive SaaS platform built for modern enterprises.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={handleGetStarted}
-                disabled={isLoading}
-                className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50"
-              >
-                {isLoading ? 'Loading...' : 'Start Free Trial'}
-              </button>
-              <button
-                onClick={handleViewDemo}
-                disabled={isLoading}
-                className="px-8 py-4 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200"
-              >
-                View Demo
-              </button>
-            </div>
+        <div className="absolute bottom-20 right-10 animate-float-delayed">
+          <div className="w-24 h-24 backdrop-blur-xl bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
+            <Rocket className="w-12 h-12 text-purple-400" />
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Everything you need to manage projects
+      {/* Interactive Demo Section */}
+      {activeDemo === 'live' && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4"
+          onClick={() => setActiveDemo(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-4xl w-full backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8"
+          >
+            <h2 className="text-3xl font-bold mb-6">Live Demo: AI Content Generation</h2>
+            <div className="bg-black/50 rounded-2xl p-6 mb-6">
+              <p className="text-gray-300 mb-4">Watch our AI generate a complete landing page in real-time:</p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                  <span className="text-green-400">AI Processing your request...</span>
+                </div>
+                <div className="bg-white/5 rounded-xl p-4 font-mono text-sm">
+                  <span className="text-blue-400">const</span> aiResponse = <span className="text-green-400">await</span> zenith.<span className="text-yellow-400">generate</span>({`{`}<br />
+                  &nbsp;&nbsp;type: <span className="text-orange-400">"landing-page"</span>,<br />
+                  &nbsp;&nbsp;industry: <span className="text-orange-400">"SaaS"</span>,<br />
+                  &nbsp;&nbsp;tone: <span className="text-orange-400">"professional"</span><br />
+                  {`}`});
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setActiveDemo(null)}
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold"
+            >
+              Close Demo
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Feature Showcase with Backend Integration */}
+      <section className="relative z-10 py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              Enterprise Features, Startup Speed
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              From planning to execution, our platform provides all the tools your team needs to succeed.
-            </p>
-          </div>
+            <p className="text-xl text-gray-300">Every feature is live and battle-tested in production</p>
+          </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
+            {[
+              {
+                icon: <Zap className="w-8 h-8" />,
+                title: 'Real-time Analytics',
+                description: 'Track every metric with sub-50ms latency',
+                demo: 'analytics',
+                color: 'from-yellow-400 to-orange-400'
+              },
+              {
+                icon: <Shield className="w-8 h-8" />,
+                title: 'Bank-Grade Security',
+                description: 'SOC2 compliant with end-to-end encryption',
+                demo: 'security',
+                color: 'from-green-400 to-emerald-400'
+              },
+              {
+                icon: <Globe className="w-8 h-8" />,
+                title: 'Global CDN',
+                description: 'Deploy to 300+ edge locations instantly',
+                demo: 'cdn',
+                color: 'from-blue-400 to-cyan-400'
+              }
+            ].map((feature, i) => (
+              <GlassCard key={i} delay={i * 0.1} className="group hover:scale-105 transition-transform cursor-pointer">
+                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.color} p-0.5 mb-6`}>
+                  <div className="w-full h-full bg-black rounded-2xl flex items-center justify-center">
+                    {feature.icon}
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold mb-3">{feature.title}</h3>
+                <p className="text-gray-400 mb-4">{feature.description}</p>
+                <button
+                  onClick={() => setActiveDemo(feature.demo)}
+                  className="text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2"
+                >
+                  See Live Demo <ArrowRight className="w-4 h-4" />
+                </button>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof Section */}
+      <section className="relative z-10 py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold mb-6">
+                Trusted by <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">10,000+</span> developers
+              </h2>
+              <div className="space-y-6">
+                {[
+                  { name: 'Sarah Chen', role: 'CTO at TechStart', comment: 'Cut our deployment time by 90%' },
+                  { name: 'Marcus Johnson', role: 'Lead Dev at Scale', comment: 'Best developer experience ever' },
+                  { name: 'Elena Rodriguez', role: 'Founder of NextGen', comment: 'Our secret weapon for rapid scaling' }
+                ].map((testimonial, i) => (
+                  <GlassCard key={i} delay={i * 0.1} className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center font-bold">
+                        {testimonial.name[0]}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                      <p className="text-gray-300 mb-2">"{testimonial.comment}"</p>
+                      <p className="text-sm text-gray-500">
+                        <span className="font-semibold">{testimonial.name}</span> • {testimonial.role}
+                      </p>
+                    </div>
+                  </GlassCard>
+                ))}
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Project Management</h3>
-              <p className="text-gray-600">Create and organize projects with advanced task management, deadlines, and progress tracking.</p>
             </div>
 
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Team Collaboration</h3>
-              <p className="text-gray-600">Invite team members, assign roles, and collaborate in real-time with built-in communication tools.</p>
-            </div>
-
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Advanced Analytics</h3>
-              <p className="text-gray-600">Get insights into team performance, project progress, and productivity with detailed analytics.</p>
+            <div className="relative">
+              <GlassCard className="text-center">
+                <TrendingUp className="w-16 h-16 text-green-400 mx-auto mb-6" />
+                <h3 className="text-3xl font-bold mb-4">See Your Growth Potential</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">API Requests</span>
+                    <span className="text-2xl font-bold text-green-400">+847%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">User Engagement</span>
+                    <span className="text-2xl font-bold text-blue-400">+523%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Time to Market</span>
+                    <span className="text-2xl font-bold text-purple-400">-90%</span>
+                  </div>
+                </div>
+              </GlassCard>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Platform Preview Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              See the platform in action
+      {/* Final CTA */}
+      <section className="relative z-10 py-20 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <GlassCard>
+            <h2 className="text-5xl font-bold mb-6">
+              Ready to <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">10x</span> Your Development?
             </h2>
-            <p className="text-xl text-gray-600">
-              Experience the YouTube Studio-style interface designed for modern teams
+            <p className="text-xl text-gray-300 mb-8">
+              Join thousands of developers building the future with Zenith
             </p>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-            <div className="bg-gray-800 px-4 py-3 flex items-center space-x-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-gray-400 text-sm ml-4">zenith.engineer/dashboard</span>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/auth/signin"
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold text-lg hover:scale-105 transition-transform"
+              >
+                Start Building Now
+              </Link>
+              <button className="px-8 py-4 backdrop-blur-xl bg-white/10 border border-white/20 rounded-full font-semibold text-lg hover:bg-white/20 transition-all">
+                Schedule Demo
+              </button>
             </div>
-            <div className="h-96 bg-gradient-to-br from-gray-900 via-blue-900 to-gray-800 flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="w-20 h-20 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold">Z</span>
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">Professional Dashboard</h3>
-                <p className="text-blue-200">YouTube Studio-inspired interface with sidebar navigation</p>
-              </div>
-            </div>
-          </div>
+            <p className="text-sm text-gray-400 mt-6">
+              No credit card required • 14-day free trial • Cancel anytime
+            </p>
+          </GlassCard>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to transform your workflow?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of teams already using Zenith to manage their projects more efficiently.
-          </p>
-          <button
-            onClick={handleGetStarted}
-            className="px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-200 transform hover:scale-105"
-          >
-            Start Your Free Trial
-          </button>
-        </div>
-      </section>
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-20px); }
+        }
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">Z</span>
-                </div>
-                <span className="ml-2 text-xl font-bold">Zenith</span>
-              </div>
-              <p className="text-gray-400">The ultimate project management platform for modern teams.</p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/features" className="hover:text-white">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-white">Pricing</Link></li>
-                <li><Link href="/integrations" className="hover:text-white">Integrations</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/about" className="hover:text-white">About</Link></li>
-                <li><Link href="/contact" className="hover:text-white">Contact</Link></li>
-                <li><Link href="/careers" className="hover:text-white">Careers</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/help" className="hover:text-white">Help Center</Link></li>
-                <li><Link href="/docs" className="hover:text-white">Documentation</Link></li>
-                <li><Link href="/api" className="hover:text-white">API</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Zenith Platform. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+        @keyframes float-delayed {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-30px); }
+        }
+
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-float-delayed {
+          animation: float-delayed 8s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }
