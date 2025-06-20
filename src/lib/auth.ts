@@ -1,6 +1,10 @@
 import { NextAuthOptions } from 'next-auth';
+import { PrismaAdapter } from '@auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { prisma } from '@/lib/prisma';
+import { compare, hash } from 'bcryptjs';
 import { Session } from 'next-auth';
+import { Role } from '@prisma/client';
 
 // Extend the session user type to include id
 declare module 'next-auth' {
@@ -33,21 +37,69 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // Direct hardcoded authentication - no database required
-        if (
-          credentials.email.toLowerCase() === 'zenithfresh25@gmail.com' && 
-          credentials.password === 'F^bf35(llm1120!2a'
-        ) {
-          // Return a hardcoded user object - no database needed
-          return {
-            id: 'admin-user-001',
-            email: 'Zenithfresh25@gmail.com',
-            name: 'Admin User',
-          };
-        }
+        try {
+          // Check for the specific admin credentials first
+          if (credentials.email.toLowerCase() === 'zenithfresh25@gmail.com' && credentials.password === 'F^bf35(llm1120!2a') {
+            // Try to find existing admin user
+            let user = await prisma.user.findUnique({
+              where: {
+                email: 'zenithfresh25@gmail.com',
+              },
+            });
 
-        // Reject all other credentials
-        return null;
+            // If user doesn't exist, create them
+            if (!user) {
+              const hashedPassword = await hash(credentials.password, 12);
+              user = await prisma.user.create({
+                data: {
+                  email: 'zenithfresh25@gmail.com',
+                  password: hashedPassword,
+                  name: 'Admin User',
+                  role: 'ADMIN',
+                },
+              });
+
+              // Create user preferences
+              await prisma.userPreferences.create({
+                data: {
+                  userId: user.id,
+                },
+              });
+            }
+
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+            };
+          }
+
+          // For any other credentials, check normally
+          const user = await prisma.user.findUnique({
+            where: {
+              email: credentials.email.toLowerCase(),
+            },
+          });
+
+          if (!user) {
+            return null;
+          }
+
+          const isPasswordValid = await compare(credentials.password, user.password);
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
       },
     }),
   ],
