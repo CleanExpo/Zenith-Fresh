@@ -73,21 +73,40 @@ export default function Home() {
             </span>
           </div>
 
-          {/* Professional CTA Section */}
-          <div className="max-w-2xl mx-auto mb-12 text-center">
+          {/* Application Features Section */}
+          <div className="max-w-4xl mx-auto mb-12 text-center">
             <p className="text-xl text-blue-100/90 mb-8 leading-relaxed">
-              Transform your business with our cutting-edge SaaS platform. 
-              Built for modern enterprises who demand excellence.
+              Complete project management and team collaboration platform. 
+              Manage projects, track progress, collaborate with teams, and scale your business.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <div className="px-6 py-3 rounded-xl bg-blue-500/20 backdrop-blur-sm border border-blue-400/30">
-                <span className="text-blue-200 text-sm">✨ Enterprise Ready</span>
+            
+            {/* Feature Grid */}
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-cyan-600/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                <div className="relative bg-white/5 backdrop-blur-xl rounded-2xl border border-blue-400/30 p-6 transform transition-all duration-500 hover:scale-[1.02]">
+                  <div className="text-3xl mb-3">📊</div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Project Management</h3>
+                  <p className="text-blue-100/70 text-sm">Create projects, manage tasks, track deadlines, and monitor progress with real-time analytics.</p>
+                </div>
               </div>
-              <div className="px-6 py-3 rounded-xl bg-green-500/20 backdrop-blur-sm border border-green-400/30">
-                <span className="text-green-200 text-sm">🚀 Production Deployed</span>
+              
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                <div className="relative bg-white/5 backdrop-blur-xl rounded-2xl border border-green-400/30 p-6 transform transition-all duration-500 hover:scale-[1.02]">
+                  <div className="text-3xl mb-3">👥</div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Team Collaboration</h3>
+                  <p className="text-green-100/70 text-sm">Invite team members, assign roles, manage permissions, and collaborate in real-time.</p>
+                </div>
               </div>
-              <div className="px-6 py-3 rounded-xl bg-purple-500/20 backdrop-blur-sm border border-purple-400/30">
-                <span className="text-purple-200 text-sm">🔒 Secure & Scalable</span>
+              
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-600/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                <div className="relative bg-white/5 backdrop-blur-xl rounded-2xl border border-purple-400/30 p-6 transform transition-all duration-500 hover:scale-[1.02]">
+                  <div className="text-3xl mb-3">💼</div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Enterprise Features</h3>
+                  <p className="text-purple-100/70 text-sm">Advanced analytics, billing management, API access, and enterprise integrations.</p>
+                </div>
               </div>
             </div>
           </div>
