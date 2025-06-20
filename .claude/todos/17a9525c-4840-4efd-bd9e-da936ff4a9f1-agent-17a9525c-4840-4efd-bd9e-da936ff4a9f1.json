@@ -1,44 +1,26 @@
 [
   {
-    "content": "Update Sentry configuration with real DSN",
-    "status": "completed",
-    "priority": "high",
-    "id": "update-sentry-dsn"
-  },
-  {
-    "content": "Update all Sentry config files with proper initialization",
-    "status": "completed",
-    "priority": "high",
-    "id": "fix-sentry-config-files"
-  },
-  {
-    "content": "Enable Sentry logging and console integration",
-    "status": "completed",
-    "priority": "high",
-    "id": "add-sentry-logging"
-  },
-  {
-    "content": "Update existing Sentry imports to use proper pattern",
-    "status": "completed",
-    "priority": "high",
-    "id": "update-sentry-imports"
-  },
-  {
-    "content": "Fix Google Analytics JSON parsing issue causing build failures",
-    "status": "completed",
-    "priority": "high",
-    "id": "fix-google-analytics-json"
-  },
-  {
-    "content": "Test production build to ensure all issues are resolved",
-    "status": "completed",
-    "priority": "high",
-    "id": "test-production-build"
-  },
-  {
-    "content": "Commit all fixes and prepare for deployment",
+    "content": "Fix module resolution errors preventing build",
     "status": "in_progress",
     "priority": "high",
-    "id": "commit-final-fixes"
+    "id": "fix-module-resolution-errors"
+  },
+  {
+    "content": "Debug specific Vercel build environment issue",
+    "status": "in_progress",
+    "priority": "high",
+    "id": "debug-vercel-build-issue"
+  },
+  {
+    "content": "Create test to isolate the build issue",
+    "status": "pending",
+    "priority": "medium",
+    "id": "create-build-test"
+  },
+  {
+    "content": "Commit debug changes and test deployment",
+    "status": "pending",
+    "priority": "high",
+    "id": "commit-debug-changes"
   }
 ]
