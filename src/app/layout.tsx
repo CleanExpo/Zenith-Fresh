@@ -8,7 +8,17 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'Zenith Platform',
-  description: 'AI-Powered Content Management Platform',
+  description: 'Enterprise SaaS Platform for Modern Businesses',
+  keywords: ['SaaS', 'Enterprise', 'Platform', 'Business', 'Zenith'],
+  metadataBase: new URL('https://zenith.engineer'),
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
+  themeColor: '#3b82f6',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
 };
 
 export default function RootLayout({
