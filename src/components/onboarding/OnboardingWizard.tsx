@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { signIn } from 'next-auth/react';
 import { 
   Building2, 
   Globe, 
@@ -130,13 +131,14 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
           </div>
           <Button 
             onClick={() => {
-              handleOAuthConnect('Google My Business');
+              signIn('google');
+              // Note: In production, we'd handle the callback to mark this step complete
               handleGMBConnect();
             }}
             className="w-full"
           >
             <Globe className="w-4 h-4 mr-2" />
-            Connect Google My Business
+            Connect with Google
           </Button>
           <Button variant="outline" onClick={handleGMBConnect} className="w-full">
             Skip for now
