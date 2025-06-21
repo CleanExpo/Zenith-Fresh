@@ -36,6 +36,12 @@ model User {
   sentInvitations TeamInvitation[] @relation("Inviter")
   apiKeys       ApiKey[]
   projectMembers ProjectMember[]
+  
+  // GMB Integration
+  gmbAccountId  String?
+  gmbLocationId String?
+  gmbAccountName String?
+  gmbLocationName String?
 }
 
 model Account {

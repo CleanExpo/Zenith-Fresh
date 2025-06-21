@@ -24,23 +24,37 @@ async function getGmbAuth() {
         throw new Error("Google account not connected for this user.");
     }
 
-    return { accessToken: account.access_token, accountId: account.providerAccountId };
+    // Get the user's GMB configuration
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+            gmbAccountId: true,
+            gmbLocationId: true,
+            gmbAccountName: true,
+            gmbLocationName: true
+        }
+    }) as any;
+
+    if (!user?.gmbAccountId || !user?.gmbLocationId) {
+        throw new Error("GMB account not configured. Please complete the setup process.");
+    }
+
+    return { 
+        accessToken: account.access_token, 
+        accountId: account.providerAccountId,
+        gmbAccountId: user.gmbAccountId,
+        gmbLocationId: user.gmbLocationId
+    };
 }
 
 /**
  * Fetches a list of reviews for the client's GMB account.
- * In a real app, you would fetch the account ID dynamically.
  */
 export async function getGmbReviews() {
     try {
-        const { accessToken } = await getGmbAuth();
+        const { accessToken, gmbAccountId, gmbLocationId } = await getGmbAuth();
 
-        // NOTE: You need to get the GMB Account ID for the user first.
-        // For now, we'll use a placeholder.
-        const gmbAccountId = "accounts/YOUR_GMB_ACCOUNT_ID_PLACEHOLDER";
-        const locationId = "locations/YOUR_LOCATION_ID_PLACEHOLDER";
-
-        const response = await fetch(`https://mybusiness.googleapis.com/v4/${gmbAccountId}/${locationId}/reviews`, {
+        const response = await fetch(`https://mybusiness.googleapis.com/v4/accounts/${gmbAccountId}/locations/${gmbLocationId}/reviews`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
@@ -67,13 +81,9 @@ export async function getGmbReviews() {
  */
 export async function getGmbBusinessInfo() {
     try {
-        const { accessToken } = await getGmbAuth();
+        const { accessToken, gmbAccountId, gmbLocationId } = await getGmbAuth();
 
-        // NOTE: In production, you would get these IDs from the user's account
-        const gmbAccountId = "accounts/YOUR_GMB_ACCOUNT_ID_PLACEHOLDER";
-        const locationId = "locations/YOUR_LOCATION_ID_PLACEHOLDER";
-
-        const response = await fetch(`https://mybusiness.googleapis.com/v4/${gmbAccountId}/${locationId}`, {
+        const response = await fetch(`https://mybusiness.googleapis.com/v4/accounts/${gmbAccountId}/locations/${gmbLocationId}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
@@ -99,14 +109,10 @@ export async function getGmbBusinessInfo() {
  */
 export async function replyToReview(reviewId: string, comment: string) {
     try {
-        const { accessToken } = await getGmbAuth();
-
-        // NOTE: In production, you would get these IDs from the user's account
-        const gmbAccountId = "accounts/YOUR_GMB_ACCOUNT_ID_PLACEHOLDER";
-        const locationId = "locations/YOUR_LOCATION_ID_PLACEHOLDER";
+        const { accessToken, gmbAccountId, gmbLocationId } = await getGmbAuth();
 
         const response = await fetch(
-            `https://mybusiness.googleapis.com/v4/${gmbAccountId}/${locationId}/reviews/${reviewId}/reply`,
+            `https://mybusiness.googleapis.com/v4/accounts/${gmbAccountId}/locations/${gmbLocationId}/reviews/${reviewId}/reply`,
             {
                 method: 'PUT',
                 headers: {
