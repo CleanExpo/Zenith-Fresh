@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Globe, 
   Star, 
@@ -15,12 +15,66 @@ import {
   AlertCircle,
   ArrowUpRight,
   ArrowDownRight,
-  Loader2
+  Loader2,
+  RefreshCw,
+  Settings,
+  ExternalLink,
+  AlertTriangle,
+  Clock
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+// Enhanced interfaces
+interface ApiError {
+  message: string;
+  code?: string;
+  retryable?: boolean;
+}
+
+interface GmbData {
+  reviews: any[];
+  summary: {
+    averageRating: number;
+    totalReviews: number;
+    unreplied: number;
+    recentRating: number;
+  };
+  businessInfo: any;
+  health: {
+    score: number;
+    issues: Array<{
+      type: 'error' | 'warning' | 'success';
+      message: string;
+      actionable?: boolean;
+    }>;
+  };
+}
+
+interface SocialData {
+  facebook: { followers: number; engagement: number; locked: boolean; lastUpdated?: string };
+  instagram: { followers: number; engagement: number; locked: boolean; lastUpdated?: string };
+  x: { followers: number; engagement: number; locked: boolean; lastUpdated?: string };
+  linkedin: { followers: number; engagement: number; locked: boolean; lastUpdated?: string };
+}
+
+interface KeywordData {
+  keyword: string;
+  position: number;
+  volume: number;
+  difficulty: 'Low' | 'Medium' | 'High';
+  change: number;
+  url?: string;
+}
+
+interface DataState<T> {
+  data: T | null;
+  loading: boolean;
+  error: ApiError | null;
+  lastUpdated: Date | null;
+}
 
 interface MetricCardProps {
   title: string;
@@ -53,56 +107,226 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon, loc
 
 export default function PresenceCommandCenter() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [reviewSummary, setReviewSummary] = useState<any>(null);
-  const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  useEffect(() => {
-    async function fetchReviews() {
+  // Enhanced state management with proper typing
+  const [gmbState, setGmbState] = useState<DataState<GmbData>>({
+    data: null,
+    loading: true,
+    error: null,
+    lastUpdated: null
+  });
+
+  const [socialState, setSocialState] = useState<DataState<SocialData>>({
+    data: null,
+    loading: true,
+    error: null,
+    lastUpdated: null
+  });
+
+  const [keywordState, setKeywordState] = useState<DataState<KeywordData[]>>({
+    data: null,
+    loading: true,
+    error: null,
+    lastUpdated: null
+  });
+
+  // Enhanced API call with retry logic
+  const makeApiCall = useCallback(async <T>(
+    url: string,
+    options?: RequestInit
+  ): Promise<T> => {
+    const maxRetries = 3;
+    let lastError: Error;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const response = await fetch('/api/presence/gmb/reviews');
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            ...options?.headers,
+          },
+        });
+
         if (!response.ok) {
-          throw new Error('Failed to fetch reviews');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
         }
-        const data = await response.json();
-        setReviews(data.reviews || []);
-        setReviewSummary(data.summary || {});
+
+        return await response.json();
       } catch (error) {
-        console.error(error);
-        // Fall back to mock data if API fails
-        setReviews([
-          { id: 1, author: 'Sarah M.', rating: 5, text: 'Excellent service! Highly recommend.', replied: false, createdAt: new Date() },
-          { id: 2, author: 'John D.', rating: 4, text: 'Good experience overall.', replied: true, createdAt: new Date() }
-        ]);
-      } finally {
-        setIsLoadingReviews(false);
+        lastError = error as Error;
+        
+        // Don't retry on authentication errors
+        if (lastError.message.includes('401') || lastError.message.includes('403')) {
+          throw lastError;
+        }
+        
+        // Don't retry on the last attempt
+        if (attempt === maxRetries) {
+          break;
+        }
+        
+        // Wait before retrying with exponential backoff
+        await new Promise(resolve => 
+          setTimeout(resolve, Math.pow(2, attempt - 1) * 1000)
+        );
       }
     }
-
-    fetchReviews();
+    
+    throw lastError!;
   }, []);
 
-  // Mock data - replace with real API calls
-  const gmbHealth = {
-    score: 87,
-    issues: [
-      { type: 'warning', message: 'Business hours not set for holidays' },
-      { type: 'success', message: 'All NAP fields complete and verified' }
-    ]
-  };
+  // Fetch GMB data with enhanced error handling
+  const fetchGmbData = useCallback(async () => {
+    setGmbState(prev => ({ ...prev, loading: true, error: null }));
+    
+    try {
+      const [reviewsData, businessData, healthData] = await Promise.allSettled([
+        makeApiCall<any>('/api/presence/gmb/reviews'),
+        makeApiCall<any>('/api/presence/gmb/business'),
+        makeApiCall<any>('/api/presence/gmb/health')
+      ]);
 
-  const socialStats = {
-    facebook: { followers: 1234, engagement: 5.2, locked: false },
-    instagram: { followers: 892, engagement: 7.8, locked: false },
-    x: { followers: 567, engagement: 3.4, locked: false },
-    linkedin: { followers: 0, engagement: 0, locked: true }
-  };
+      // Process results and handle partial failures
+      const gmbData: GmbData = {
+        reviews: reviewsData.status === 'fulfilled' ? reviewsData.value.reviews || [] : [],
+        summary: reviewsData.status === 'fulfilled' ? reviewsData.value.summary || {
+          averageRating: 0,
+          totalReviews: 0,
+          unreplied: 0,
+          recentRating: 0
+        } : {
+          averageRating: 0,
+          totalReviews: 0,
+          unreplied: 0,
+          recentRating: 0
+        },
+        businessInfo: businessData.status === 'fulfilled' ? businessData.value : null,
+        health: healthData.status === 'fulfilled' ? healthData.value : {
+          score: 0,
+          issues: [{
+            type: 'error' as const,
+            message: 'Unable to check GMB health. Please verify your connection.',
+            actionable: true
+          }]
+        }
+      };
 
-  const keywordRankings = [
-    { keyword: 'best plumber ipswich', position: 3, volume: 480, difficulty: 'Medium', change: 2 },
-    { keyword: 'emergency plumber near me', position: 5, volume: 1200, difficulty: 'High', change: -1 },
-    { keyword: 'plumbing services', position: 8, volume: 3600, difficulty: 'High', change: 0 }
-  ];
+      setGmbState({
+        data: gmbData,
+        loading: false,
+        error: null,
+        lastUpdated: new Date()
+      });
+
+    } catch (error) {
+      console.error('GMB Data Fetch Error:', error);
+      setGmbState({
+        data: null,
+        loading: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to fetch GMB data',
+          retryable: true
+        },
+        lastUpdated: null
+      });
+    }
+  }, [makeApiCall]);
+
+  // Fetch social media data
+  const fetchSocialData = useCallback(async () => {
+    setSocialState(prev => ({ ...prev, loading: true, error: null }));
+    
+    try {
+      const socialData = await makeApiCall<SocialData>('/api/presence/social/stats');
+      setSocialState({
+        data: socialData,
+        loading: false,
+        error: null,
+        lastUpdated: new Date()
+      });
+    } catch (error) {
+      console.error('Social Data Fetch Error:', error);
+      // Fallback to partial data
+      setSocialState({
+        data: {
+          facebook: { followers: 0, engagement: 0, locked: true },
+          instagram: { followers: 0, engagement: 0, locked: true },
+          x: { followers: 0, engagement: 0, locked: true },
+          linkedin: { followers: 0, engagement: 0, locked: true }
+        },
+        loading: false,
+        error: {
+          message: 'Social media connections not configured',
+          retryable: false
+        },
+        lastUpdated: null
+      });
+    }
+  }, [makeApiCall]);
+
+  // Fetch keyword ranking data
+  const fetchKeywordData = useCallback(async () => {
+    setKeywordState(prev => ({ ...prev, loading: true, error: null }));
+    
+    try {
+      const keywordData = await makeApiCall<KeywordData[]>('/api/presence/keywords/rankings');
+      setKeywordState({
+        data: keywordData,
+        loading: false,
+        error: null,
+        lastUpdated: new Date()
+      });
+    } catch (error) {
+      console.error('Keyword Data Fetch Error:', error);
+      // Fallback to mock data for demo
+      setKeywordState({
+        data: [
+          { keyword: 'best plumber ipswich', position: 3, volume: 480, difficulty: 'Medium', change: 2 },
+          { keyword: 'emergency plumber near me', position: 5, volume: 1200, difficulty: 'High', change: -1 },
+          { keyword: 'plumbing services', position: 8, volume: 3600, difficulty: 'High', change: 0 }
+        ],
+        loading: false,
+        error: {
+          message: 'Using demo keyword data. Connect DataForSEO for live rankings.',
+          retryable: false
+        },
+        lastUpdated: new Date()
+      });
+    }
+  }, [makeApiCall]);
+
+  // Refresh all data
+  const refreshAllData = useCallback(async () => {
+    setIsRefreshing(true);
+    await Promise.all([
+      fetchGmbData(),
+      fetchSocialData(),
+      fetchKeywordData()
+    ]);
+    setLastRefresh(new Date());
+    setIsRefreshing(false);
+  }, [fetchGmbData, fetchSocialData, fetchKeywordData]);
+
+  // Initial data load
+  useEffect(() => {
+    refreshAllData();
+  }, [refreshAllData]);
+
+  // Auto-refresh every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(refreshAllData, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [refreshAllData]);
+
+  // Extract data for display
+  const gmbData = gmbState.data;
+  const socialData = socialState.data;
+  const keywordData = keywordState.data || [];
+  const isLoading = gmbState.loading || socialState.loading || keywordState.loading;
 
   return (
     <div className="space-y-6">
@@ -121,20 +345,23 @@ export default function PresenceCommandCenter() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard
           title="GMB Health Score"
-          value={`${gmbHealth.score}%`}
+          value={gmbData?.health?.score ? `${gmbData.health.score}%` : "---"}
           change={5}
           icon={<Globe className="w-5 h-5 text-blue-600" />}
+          locked={!gmbData?.health}
         />
         <MetricCard
           title="Average Rating"
-          value={reviewSummary?.averageRating?.toFixed(1) || "---"}
+          value={gmbData?.summary?.averageRating?.toFixed(1) || "---"}
           change={2}
           icon={<Star className="w-5 h-5 text-yellow-600" />}
+          locked={!gmbData?.summary}
         />
         <MetricCard
           title="Unread Reviews"
-          value={reviewSummary?.unreplied || 0}
+          value={gmbData?.summary?.unreplied || 0}
           icon={<MessageSquare className="w-5 h-5 text-purple-600" />}
+          locked={!gmbData?.summary}
         />
         <MetricCard
           title="Social Reach"
@@ -172,22 +399,28 @@ export default function PresenceCommandCenter() {
                         strokeWidth="8" 
                         fill="none"
                         strokeDasharray={`${2 * Math.PI * 36}`}
-                        strokeDashoffset={`${2 * Math.PI * 36 * (1 - gmbHealth.score / 100)}`}
+                        strokeDashoffset={`${2 * Math.PI * 36 * (1 - (gmbData?.health?.score || 0) / 100)}`}
                         className="transition-all duration-1000"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-2xl font-bold">{gmbHealth.score}%</span>
+                      <span className="text-2xl font-bold">{gmbData?.health?.score || 0}%</span>
                     </div>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Overall Health</p>
-                    <p className="text-2xl font-bold text-green-600">Excellent</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {gmbData?.health?.score ? 
+                        gmbData.health.score >= 80 ? 'Excellent' :
+                        gmbData.health.score >= 60 ? 'Good' : 'Needs Attention'
+                        : 'Loading...'
+                      }
+                    </p>
                   </div>
                 </div>
               </div>
               <div className="space-y-2">
-                {gmbHealth.issues.map((issue, idx) => (
+                {(gmbData?.health?.issues || []).map((issue, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     {issue.type === 'warning' ? (
                       <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5" />
@@ -230,16 +463,16 @@ export default function PresenceCommandCenter() {
           <Card className="p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Recent Reviews</h3>
-              <Badge variant="secondary">{reviewSummary?.unreplied || 0} need reply</Badge>
+              <Badge variant="secondary">{gmbData?.summary?.unreplied || 0} need reply</Badge>
             </div>
-            {isLoadingReviews ? (
+            {gmbState.loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                 <span className="ml-2 text-gray-500">Loading reviews...</span>
               </div>
-            ) : reviews.length > 0 ? (
+            ) : (gmbData?.reviews || []).length > 0 ? (
               <div className="space-y-4">
-                {reviews.map((review) => (
+                {(gmbData?.reviews || []).map((review) => (
                   <div key={review.id} className="border-b pb-4 last:border-0">
                     <div className="flex justify-between items-start mb-2">
                       <div>
@@ -277,19 +510,19 @@ export default function PresenceCommandCenter() {
         {/* Social Media Tab */}
         <TabsContent value="social" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Object.entries(socialStats).map(([platform, stats]) => (
-              <Card key={platform} className={`p-6 ${stats.locked ? 'opacity-60' : ''}`}>
+            {Object.entries(socialData || {}).map(([platform, stats]) => (
+              <Card key={platform} className={`p-6 ${(stats as any)?.locked ? 'opacity-60' : ''}`}>
                 <div className="flex justify-between items-start mb-4">
                   <h4 className="text-sm font-medium capitalize">{platform}</h4>
-                  {stats.locked && <Lock className="w-4 h-4 text-gray-400" />}
+                  {(stats as any)?.locked && <Lock className="w-4 h-4 text-gray-400" />}
                 </div>
                 <p className="text-2xl font-bold mb-1">
-                  {stats.locked ? '---' : stats.followers.toLocaleString()}
+                  {(stats as any)?.locked ? '---' : ((stats as any)?.followers || 0).toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-600">followers</p>
-                {!stats.locked && (
+                {!(stats as any)?.locked && (
                   <p className="text-sm text-green-600 mt-2">
-                    {stats.engagement}% engagement
+                    {(stats as any)?.engagement || 0}% engagement
                   </p>
                 )}
               </Card>
@@ -325,7 +558,7 @@ export default function PresenceCommandCenter() {
                   </tr>
                 </thead>
                 <tbody className="text-sm">
-                  {keywordRankings.map((kw, idx) => (
+                  {(keywordData || []).map((kw, idx) => (
                     <tr key={idx} className="border-b">
                       <td className="py-3">{kw.keyword}</td>
                       <td className="py-3">
