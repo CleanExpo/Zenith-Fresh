@@ -17,7 +17,14 @@ interface ApiError extends Error {
 }
 
 /**
- * Enhanced retry mechanism with exponential backoff
+ * Executes an asynchronous operation with retries using exponential backoff and jitter.
+ *
+ * Retries the operation up to the specified number of attempts, increasing the delay between attempts exponentially. Does not retry if the error status is 401 or 403. Throws the last encountered error if all attempts fail.
+ *
+ * @param operation - The asynchronous operation to execute
+ * @param maxAttempts - Maximum number of retry attempts (default: MAX_RETRY_ATTEMPTS)
+ * @param delay - Initial delay in milliseconds before retrying (default: RETRY_DELAY_MS)
+ * @returns The result of the successful operation
  */
 async function retryWithBackoff<T>(
     operation: () => Promise<T>,
@@ -52,7 +59,11 @@ async function retryWithBackoff<T>(
 }
 
 /**
- * Enhanced token refresh mechanism
+ * Returns a valid access token for the given Google account, refreshing it if it is expiring within 5 minutes.
+ *
+ * If the token is near expiration, requests a new access token from Google's OAuth endpoint and updates the account in the database. Throws an error if the refresh fails.
+ *
+ * @returns The valid access token for the account
  */
 async function refreshTokenIfNeeded(account: any): Promise<string> {
     const now = Date.now();
@@ -98,7 +109,10 @@ async function refreshTokenIfNeeded(account: any): Promise<string> {
 }
 
 /**
- * Enhanced GMB authentication with token refresh and error handling
+ * Retrieves the authenticated user's Google My Business credentials, ensuring the access token is valid and refreshed if necessary.
+ *
+ * Throws an error if the user is not authenticated, has not connected a Google account, or has not configured GMB account and location.
+ * Returns an object containing the access token, account IDs, and GMB account and location names.
  */
 async function getGmbAuth() {
     const session = await auth();
@@ -146,7 +160,13 @@ async function getGmbAuth() {
 }
 
 /**
- * Enhanced API request with error handling and caching
+ * Sends an authenticated request to the Google My Business API and returns the parsed JSON response.
+ *
+ * Throws an error with status and code if the API response is not successful.
+ *
+ * @param url - The GMB API endpoint URL
+ * @param options - Optional fetch request options
+ * @returns The parsed JSON response from the API
  */
 async function makeGmbRequest(url: string, options: RequestInit = {}) {
     const { accessToken } = await getGmbAuth();
@@ -172,7 +192,9 @@ async function makeGmbRequest(url: string, options: RequestInit = {}) {
 }
 
 /**
- * Enhanced reviews fetching with caching and retry logic
+ * Retrieves Google My Business reviews with caching and automatic retry on transient errors.
+ *
+ * Attempts to return cached reviews if available; otherwise, fetches reviews from the GMB API with retry logic and caches the result for 5 minutes. Returns an array of reviews or an error object with an empty array if the operation fails.
  */
 export async function getGmbReviews() {
     const cacheKey = 'gmb:reviews';
@@ -206,7 +228,9 @@ export async function getGmbReviews() {
 }
 
 /**
- * Enhanced business info fetching with caching
+ * Retrieves Google My Business location information, using cache when available.
+ *
+ * Attempts to fetch business info from cache; if not present, fetches from the GMB API with retry logic and caches the result for 10 minutes. Returns an error object with `businessInfo: null` if the operation fails.
  */
 export async function getGmbBusinessInfo() {
     const cacheKey = 'gmb:business_info';
@@ -240,7 +264,13 @@ export async function getGmbBusinessInfo() {
 }
 
 /**
- * Enhanced review reply with proper error handling
+ * Sends a reply to a specific Google My Business review.
+ *
+ * Attempts to post a comment as a reply to the given review ID using the GMB API, with retry logic and error handling. Invalidates the cached reviews after a successful reply.
+ *
+ * @param reviewId - The unique identifier of the review to reply to
+ * @param comment - The reply comment to post
+ * @returns The API response on success, or an error object with `success: false` on failure
  */
 export async function replyToReview(reviewId: string, comment: string) {
     try {
@@ -271,7 +301,13 @@ export async function replyToReview(reviewId: string, comment: string) {
 }
 
 /**
- * Get GMB insights and analytics
+ * Retrieves Google My Business insights and analytics for the specified date range.
+ *
+ * Attempts to return cached insights if available; otherwise, fetches insights from the GMB API with retry logic and caches the result for one hour.
+ *
+ * @param startDate - Optional start date for the insights data (YYYY-MM-DD)
+ * @param endDate - Optional end date for the insights data (YYYY-MM-DD)
+ * @returns Insights data from GMB, or an error object with `insights: null` if the request fails
  */
 export async function getGmbInsights(startDate?: string, endDate?: string) {
     const cacheKey = `gmb:insights:${startDate}:${endDate}`;
@@ -311,7 +347,10 @@ export async function getGmbInsights(startDate?: string, endDate?: string) {
 }
 
 /**
- * Get location photos
+ * Retrieves Google My Business location photos, using cache when available.
+ *
+ * Attempts to fetch photos from cache; if not present, fetches from the GMB API with retry logic and caches the result for 30 minutes.
+ * Returns an array of media items, or an error object with an empty array if the operation fails.
  */
 export async function getGmbPhotos() {
     const cacheKey = 'gmb:photos';
@@ -345,7 +384,11 @@ export async function getGmbPhotos() {
 }
 
 /**
- * Health check for GMB service
+ * Performs a health check on the Google My Business service.
+ *
+ * Attempts authentication and a basic API request to verify connectivity and token validity. Returns a status object indicating whether the service is healthy, including account and location names on success or an error message on failure.
+ *
+ * @returns An object with service status, account and location information if healthy, or error details if unhealthy.
  */
 export async function checkGmbHealth() {
     try {
