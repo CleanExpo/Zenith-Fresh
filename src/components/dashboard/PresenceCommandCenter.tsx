@@ -399,22 +399,28 @@ export default function PresenceCommandCenter() {
                         strokeWidth="8" 
                         fill="none"
                         strokeDasharray={`${2 * Math.PI * 36}`}
-                        strokeDashoffset={`${2 * Math.PI * 36 * (1 - gmbHealth.score / 100)}`}
+                        strokeDashoffset={`${2 * Math.PI * 36 * (1 - (gmbData?.health?.score || 0) / 100)}`}
                         className="transition-all duration-1000"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-2xl font-bold">{gmbHealth.score}%</span>
+                      <span className="text-2xl font-bold">{gmbData?.health?.score || 0}%</span>
                     </div>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Overall Health</p>
-                    <p className="text-2xl font-bold text-green-600">Excellent</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {gmbData?.health?.score ? 
+                        gmbData.health.score >= 80 ? 'Excellent' :
+                        gmbData.health.score >= 60 ? 'Good' : 'Needs Attention'
+                        : 'Loading...'
+                      }
+                    </p>
                   </div>
                 </div>
               </div>
               <div className="space-y-2">
-                {gmbHealth.issues.map((issue, idx) => (
+                {(gmbData?.health?.issues || []).map((issue, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     {issue.type === 'warning' ? (
                       <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5" />
@@ -457,16 +463,16 @@ export default function PresenceCommandCenter() {
           <Card className="p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Recent Reviews</h3>
-              <Badge variant="secondary">{reviewSummary?.unreplied || 0} need reply</Badge>
+              <Badge variant="secondary">{gmbData?.summary?.unreplied || 0} need reply</Badge>
             </div>
-            {isLoadingReviews ? (
+            {gmbState.loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                 <span className="ml-2 text-gray-500">Loading reviews...</span>
               </div>
-            ) : reviews.length > 0 ? (
+            ) : (gmbData?.reviews || []).length > 0 ? (
               <div className="space-y-4">
-                {reviews.map((review) => (
+                {(gmbData?.reviews || []).map((review) => (
                   <div key={review.id} className="border-b pb-4 last:border-0">
                     <div className="flex justify-between items-start mb-2">
                       <div>
@@ -504,19 +510,19 @@ export default function PresenceCommandCenter() {
         {/* Social Media Tab */}
         <TabsContent value="social" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Object.entries(socialStats).map(([platform, stats]) => (
-              <Card key={platform} className={`p-6 ${stats.locked ? 'opacity-60' : ''}`}>
+            {Object.entries(socialData || {}).map(([platform, stats]) => (
+              <Card key={platform} className={`p-6 ${(stats as any)?.locked ? 'opacity-60' : ''}`}>
                 <div className="flex justify-between items-start mb-4">
                   <h4 className="text-sm font-medium capitalize">{platform}</h4>
-                  {stats.locked && <Lock className="w-4 h-4 text-gray-400" />}
+                  {(stats as any)?.locked && <Lock className="w-4 h-4 text-gray-400" />}
                 </div>
                 <p className="text-2xl font-bold mb-1">
-                  {stats.locked ? '---' : stats.followers.toLocaleString()}
+                  {(stats as any)?.locked ? '---' : ((stats as any)?.followers || 0).toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-600">followers</p>
-                {!stats.locked && (
+                {!(stats as any)?.locked && (
                   <p className="text-sm text-green-600 mt-2">
-                    {stats.engagement}% engagement
+                    {(stats as any)?.engagement || 0}% engagement
                   </p>
                 )}
               </Card>
@@ -552,7 +558,7 @@ export default function PresenceCommandCenter() {
                   </tr>
                 </thead>
                 <tbody className="text-sm">
-                  {keywordRankings.map((kw, idx) => (
+                  {(keywordData || []).map((kw, idx) => (
                     <tr key={idx} className="border-b">
                       <td className="py-3">{kw.keyword}</td>
                       <td className="py-3">
