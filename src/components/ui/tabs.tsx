@@ -8,15 +8,15 @@ interface TabsContextValue {
   onValueChange: (value: string) => void
 }
 
-// Create context with default value to prevent SSR issues
+// Simple, SSR-safe context with proper default
 const TabsContext = React.createContext<TabsContextValue>({
   value: '',
   onValueChange: () => {}
 })
 
-function useTabsContext() {
+function useTabsContext(): TabsContextValue {
   const context = React.useContext(TabsContext)
-  return context
+  return context || { value: '', onValueChange: () => {} }
 }
 
 interface TabsProps {
