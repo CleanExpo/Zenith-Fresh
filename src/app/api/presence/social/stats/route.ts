@@ -3,6 +3,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redis } from '@/lib/redis';
 
+/**
+ * Handles GET requests to retrieve social media statistics for the authenticated user.
+ *
+ * Attempts to return cached statistics from Redis if available; otherwise, assembles mock social data, computes summary metrics, caches the result, and returns it as JSON. Returns a 401 error if the user is not authenticated, or a 500 error if an unexpected failure occurs.
+ */
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);

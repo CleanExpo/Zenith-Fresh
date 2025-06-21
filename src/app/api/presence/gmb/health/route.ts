@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkGmbHealth } from '@/lib/services/gmb';
 
+/**
+ * Handles GET requests to check the health status of the Google My Business (GMB) integration.
+ *
+ * Performs a health check on the GMB connection and returns a JSON response with a health score, issues, account and location details, and a timestamp. If the connection is unhealthy or an error occurs, responds with a score of 0 and relevant error information.
+ */
 export async function GET(request: NextRequest) {
   try {
     const healthCheck = await checkGmbHealth();
@@ -41,6 +46,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * Calculates a health score and generates issues based on the status and configuration of a Google My Business connection.
+ *
+ * Evaluates connectivity, account and location configuration, and additional business profile checks to determine the overall health score and provide actionable feedback.
+ *
+ * @param healthData - The health status and configuration data for the GMB connection.
+ * @returns An object containing the computed health score and an array of issues describing the connection status.
+ */
 function calculateHealthScore(healthData: any) {
   let score = 100;
   const issues: Array<{
