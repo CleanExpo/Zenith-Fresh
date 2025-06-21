@@ -45,6 +45,8 @@ model User {
   
   // Agent Orchestrator
   missions      Mission[]
+  approvalRequests ApprovalRequest[]
+  autoApprovalRules AutoApprovalRule[]
 }
 
 model Account {
@@ -429,6 +431,7 @@ model Mission {
   clientId        String
   client          User              @relation(fields: [clientId], references: [id])
   tasks           MissionTask[]
+  approvalRequests ApprovalRequest[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   completedAt     DateTime?
@@ -474,4 +477,52 @@ enum Priority {
   NORMAL
   HIGH
   URGENT
+}
+
+// Approval Center Models
+model ApprovalRequest {
+  id              String            @id @default(cuid())
+  missionId       String
+  mission         Mission           @relation(fields: [missionId], references: [id])
+  agentType       String
+  taskType        String
+  contentType     String            // 'social_post', 'blog_article', 'review_reply'
+  originalContent Json
+  editedContent   Json?
+  status          ApprovalStatus    @default(PENDING)
+  priority        Priority          @default(NORMAL)
+  clientId        String
+  client          User              @relation(fields: [clientId], references: [id])
+  reviewedAt      DateTime?
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  autoApprovalRule String?          // Reference to rule that auto-approved
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("approval_requests")
+}
+
+model AutoApprovalRule {
+  id              String            @id @default(cuid())
+  name            String
+  clientId        String
+  client          User              @relation(fields: [clientId], references: [id])
+  agentType       String
+  conditions      Json              // Conditions for auto-approval
+  actions         Json              // Actions to take when conditions met
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("auto_approval_rules")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EDITING
+  AUTO_APPROVED
 }
