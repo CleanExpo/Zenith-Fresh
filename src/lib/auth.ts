@@ -103,22 +103,38 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async session({ token, session }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.name = token.name;
-        session.user.email = token.email;
+    async jwt({ token, user, account }) {
+      // Persist the OAuth access_token and other details to the token right after sign-in
+      if (account && user) {
+        return {
+          ...token,
+          accessToken: account.access_token,
+          accessTokenExpires: Date.now() + (account.expires_at ?? 0) * 1000,
+          refreshToken: account.refresh_token,
+          user,
+        };
       }
 
-      return session;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.name = user.name;
-        token.email = user.email;
+      // If the access token has not expired, return the previous token
+      if (Date.now() < (token.accessTokenExpires as number)) {
+        return token;
       }
+
+      // If the access token has expired, try to refresh it
+      // (We will implement the refresh logic in a later step)
+      console.log("Access token has expired, need to refresh.");
+      // For now, just return the expired token
       return token;
+    },
+    async session({ session, token }) {
+      // Send properties to the client, like an access_token and user id from a provider.
+      if (token) {
+        session.user = token.user as any;
+        (session as any).accessToken = token.accessToken;
+        (session as any).error = token.error;
+      }
+      
+      return session;
     },
   },
 };
