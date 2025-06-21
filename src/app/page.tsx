@@ -65,6 +65,7 @@ export default function LandingPage() {
   const [activeDemo, setActiveDemo] = useState<string | null>(null);
   const [showSandbox, setShowSandbox] = useState(false);
   const [showHealthAnalyzer, setShowHealthAnalyzer] = useState(false);
+  const [selectedUrl, setSelectedUrl] = useState('');
 
   // Metrics that demonstrate backend power
   const liveMetrics = {
@@ -131,7 +132,7 @@ export default function LandingPage() {
                 <div className="flex-1">
                   <input
                     type="url"
-                    placeholder="Enter your website URL (e.g., https://yoursite.com)"
+                    placeholder="https://sample.com"
                     className="w-full px-6 py-4 bg-black/20 border border-white/20 rounded-2xl text-white placeholder-gray-400 focus:border-blue-400 focus:outline-none text-lg"
                     id="website-url-input"
                   />
@@ -142,6 +143,7 @@ export default function LandingPage() {
                       const input = document.getElementById('website-url-input') as HTMLInputElement;
                       const url = input?.value;
                       if (url) {
+                        setSelectedUrl(url);
                         setShowHealthAnalyzer(true);
                       }
                     }
@@ -460,7 +462,7 @@ export default function LandingPage() {
       <WebsiteHealthAnalyzer 
         isOpen={showHealthAnalyzer} 
         onClose={() => setShowHealthAnalyzer(false)}
-        initialUrl=""
+        initialUrl={selectedUrl}
       />
 
       {/* Footer with Privacy Links */}

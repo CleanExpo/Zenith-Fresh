@@ -33,8 +33,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = scanRequestSchema.parse(body);
     
-    // Perform website health analysis
-    const healthScore = await analyzeWebsiteHealth(validatedData.url);
+    // Add timeout wrapper for website health analysis (30 second max)
+    const healthScore = await Promise.race([
+      analyzeWebsiteHealth(validatedData.url),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Analysis timeout - please try again')), 30000)
+      )
+    ]) as any;
     
     // Apply freemium gating as per Strategic Roadmap A2.1
     const responseData: any = {
