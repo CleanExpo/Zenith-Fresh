@@ -105,6 +105,13 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon, loc
   );
 };
 
+/**
+ * Displays a dashboard for monitoring and optimizing online presence, integrating Google Business Profile, social media, and SEO keyword ranking data.
+ *
+ * Presents real-time metrics, reviews, health checks, and actionable insights in a tabbed interface, with robust error handling and periodic auto-refresh of data.
+ *
+ * @returns The rendered Presence Command Center dashboard component.
+ */
 export default function PresenceCommandCenter() {
   const [activeTab, setActiveTab] = useState('overview');
   const [isRefreshing, setIsRefreshing] = useState(false);

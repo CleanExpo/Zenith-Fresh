@@ -3,6 +3,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redis } from '@/lib/redis';
 
+/**
+ * Handles GET requests to retrieve demo keyword ranking data for the authenticated user's dashboard.
+ *
+ * Returns cached ranking data from Redis if available; otherwise, returns a fixed set of demo keyword rankings and caches them for 10 minutes. Responds with 401 if the user is not authenticated, or 500 if an unexpected error occurs.
+ */
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -51,6 +56,13 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * Handles POST requests to generate and return mock keyword ranking data for a given domain and keyword list.
+ *
+ * Validates the authenticated user session and input parameters, checks Redis cache for existing results, and returns cached data if available. If not cached, generates randomized demo ranking data for each keyword, caches the result for 1 hour, and returns it with a message indicating demo status.
+ *
+ * Returns a 401 error if the user is not authenticated, a 400 error for missing or invalid input, and a 503 error if an unexpected failure occurs.
+ */
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

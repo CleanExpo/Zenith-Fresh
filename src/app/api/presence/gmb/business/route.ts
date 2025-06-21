@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGmbBusinessInfo } from '@/lib/services/gmb';
 
+/**
+ * Handles GET requests to retrieve Google My Business information.
+ *
+ * Responds with business information, a cached flag, and a timestamp on success. Returns an error message and appropriate HTTP status code if retrieval fails or an exception occurs.
+ */
 export async function GET(request: NextRequest) {
   try {
     const businessInfo = await getGmbBusinessInfo();
