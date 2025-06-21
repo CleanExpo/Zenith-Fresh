@@ -961,3 +961,280 @@ model ClientProfile {
   
   @@map("client_profiles")
 }
+
+// Zenith Communications & CRM Engine Models
+model CrmContact {
+  id              String            @id @default(cuid())
+  type            ContactType
+  firstName       String
+  lastName        String
+  email           String            @unique
+  phone           String?
+  company         String?
+  title           String?
+  avatar          String?
+  status          ContactStatus     @default(ACTIVE)
+  leadScore       Int               @default(0) // 0-100 lead scoring
+  source          String?           // How they found us
+  notes           String?
+  tags            String[]          // Flexible tagging system
+  customFields    Json?             // Additional flexible data
+  assignedTo      String?           // User ID of assigned team member
+  lastContactDate DateTime?
+  nextFollowUp    DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  interactions    CrmInteraction[]
+  tasks           CrmTask[]
+  campaigns       EmailCampaign[]   @relation("CampaignContacts")
+  snapshots       SandboxSnapshot[]
+  
+  @@map("crm_contacts")
+}
+
+model CrmInteraction {
+  id              String            @id @default(cuid())
+  contactId       String
+  contact         CrmContact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  type            InteractionType
+  direction       InteractionDirection
+  subject         String?
+  content         String?
+  metadata        Json?             // Email IDs, meeting links, etc.
+  performedBy     String?           // User ID or Agent name
+  scheduledAt     DateTime?
+  completedAt     DateTime?
+  status          InteractionStatus @default(COMPLETED)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("crm_interactions")
+}
+
+model CrmTask {
+  id              String            @id @default(cuid())
+  title           String
+  description     String?
+  type            TaskType
+  priority        TaskPriority      @default(NORMAL)
+  status          CrmTaskStatus     @default(PENDING)
+  dueDate         DateTime?
+  completedAt     DateTime?
+  assignedTo      String?           // User ID
+  createdBy       String?           // User ID or Agent name
+  contactId       String?
+  contact         CrmContact?       @relation(fields: [contactId], references: [id])
+  metadata        Json?             // Additional task context
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("crm_tasks")
+}
+
+model EmailCampaign {
+  id              String            @id @default(cuid())
+  name            String
+  description     String?
+  type            EmailCampaignType
+  status          EmailCampaignStatus    @default(DRAFT)
+  templateId      String?
+  subject         String
+  content         String
+  fromName        String
+  fromEmail       String
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  createdBy       String            // User ID
+  metadata        Json?             // Campaign settings
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  contacts        CrmContact[]      @relation("CampaignContacts")
+  sequences       EmailSequence[]
+  analytics       EmailAnalytics[]
+  
+  @@map("email_campaigns")
+}
+
+model EmailSequence {
+  id              String            @id @default(cuid())
+  campaignId      String
+  campaign        EmailCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  stepNumber      Int
+  delayDays       Int               @default(0)
+  delayHours      Int               @default(0)
+  subject         String
+  content         String
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  sends           EmailSend[]
+  
+  @@unique([campaignId, stepNumber])
+  @@map("email_sequences")
+}
+
+model EmailSend {
+  id              String            @id @default(cuid())
+  sequenceId      String
+  sequence        EmailSequence     @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  contactId       String
+  emailAddress    String
+  status          EmailSendStatus   @default(QUEUED)
+  scheduledAt     DateTime
+  sentAt          DateTime?
+  openedAt        DateTime?
+  clickedAt       DateTime?
+  repliedAt       DateTime?
+  bouncedAt       DateTime?
+  errorMessage    String?
+  metadata        Json?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("email_sends")
+}
+
+model EmailAnalytics {
+  id              String            @id @default(cuid())
+  campaignId      String
+  campaign        EmailCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  date            DateTime
+  sent            Int               @default(0)
+  delivered       Int               @default(0)
+  opened          Int               @default(0)
+  clicked         Int               @default(0)
+  replied         Int               @default(0)
+  bounced         Int               @default(0)
+  unsubscribed    Int               @default(0)
+  createdAt       DateTime          @default(now())
+  
+  @@unique([campaignId, date])
+  @@map("email_analytics")
+}
+
+model SandboxSnapshot {
+  id              String            @id @default(cuid())
+  contactId       String
+  contact         CrmContact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  version         String            @default("1.0")
+  snapshotData    Json              // Complete sandbox state
+  isActive        Boolean           @default(false)
+  createdBy       String?           // User ID
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("sandbox_snapshots")
+}
+
+// Enums for CRM System
+enum ContactType {
+  CLIENT
+  PROSPECT
+  AFFILIATE
+  PARTNER
+  STAFF
+  AGENT
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+  QUALIFIED
+  UNQUALIFIED
+  CONVERTED
+  CHURNED
+}
+
+enum InteractionType {
+  EMAIL
+  PHONE_CALL
+  MEETING
+  DEMO
+  SUPPORT_TICKET
+  SOCIAL_MEDIA
+  WEBSITE_VISIT
+  FORM_SUBMISSION
+  PURCHASE
+  REFUND
+  NOTE
+}
+
+enum InteractionDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum InteractionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum TaskType {
+  FOLLOW_UP
+  DEMO
+  PROPOSAL
+  SUPPORT
+  ONBOARDING
+  RENEWAL
+  UPSELL
+  RESEARCH
+  OUTREACH
+}
+
+enum TaskPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum CrmTaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  OVERDUE
+}
+
+enum EmailCampaignType {
+  WELCOME_SERIES
+  NURTURE_SEQUENCE
+  PROMOTION
+  NEWSLETTER
+  PRODUCT_UPDATE
+  RE_ENGAGEMENT
+  ONBOARDING
+}
+
+enum EmailCampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum EmailSendStatus {
+  QUEUED
+  SENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  REPLIED
+  BOUNCED
+  FAILED
+  UNSUBSCRIBED
+}
