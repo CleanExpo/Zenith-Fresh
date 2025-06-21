@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { 
   Mail, 
   MessageSquare, 
@@ -77,12 +76,7 @@ const ContactPage = () => {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center px-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-md w-full text-center"
-        >
+        <div className="max-w-md w-full text-center">
           <Card className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8">
             <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-6" />
             <h2 className="text-2xl font-bold text-white mb-4">Message Sent!</h2>
@@ -106,7 +100,7 @@ const ContactPage = () => {
               Send Another Message
             </Button>
           </Card>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -116,18 +110,14 @@ const ContactPage = () => {
       {/* Hero Section */}
       <div className="relative pt-20 pb-16 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent">
               Get in Touch
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
               Have questions? Need help? Our team is here to support you every step of the way.
             </p>
-          </motion.div>
+          </div>
         </div>
       </div>
 
@@ -136,12 +126,7 @@ const ContactPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-20">
             {contactOptions.map((option, index) => (
-              <motion.div
-                key={option.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
+              <div key={option.title}>
                 <Card className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 text-center hover:bg-white/10 transition-all">
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${option.color} p-0.5 mx-auto mb-6`}>
                     <div className="w-full h-full bg-black rounded-2xl flex items-center justify-center text-white">
@@ -158,18 +143,14 @@ const ContactPage = () => {
                     {option.action}
                   </Button>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
 
           {/* Contact Form */}
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Form */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
+            <div>
               <Card className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8">
                 <h2 className="text-3xl font-bold text-white mb-6">Send us a Message</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -285,15 +266,10 @@ const ContactPage = () => {
                   </Button>
                 </form>
               </Card>
-            </motion.div>
+            </div>
 
             {/* Contact Info */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="space-y-8"
-            >
+            <div className="space-y-8">
               <Card className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8">
                 <h3 className="text-2xl font-bold text-white mb-6">Contact Information</h3>
                 <div className="space-y-6">
@@ -347,7 +323,7 @@ const ContactPage = () => {
                   </p>
                 </div>
               </Card>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

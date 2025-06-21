@@ -302,12 +302,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
       </div>
 
       {/* Current Step Content */}
-      <Card 
-        variant="glass-elevated" 
-        padding="lg"
-        rounded="xl"
-        className="backdrop-blur-xl"
-      >
+      <Card className="backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl hover:shadow-3xl hover:bg-white/15 hover:border-white/25 p-8 rounded-3xl">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-xl border border-white/20">
             <div className="text-blue-600">
