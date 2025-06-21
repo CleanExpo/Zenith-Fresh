@@ -3,23 +3,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-interface TabsContextValue {
-  value: string
-  onValueChange: (value: string) => void
-}
-
-// SSR-safe context creation with fallback
-const TabsContext = React.createContext<TabsContextValue | null>(null)
-
-function useTabsContext(): TabsContextValue {
-  const context = React.useContext(TabsContext)
-  if (!context) {
-    // Fallback for SSR or missing provider
-    return { value: '', onValueChange: () => {} }
-  }
-  return context
-}
-
 interface TabsProps {
   value: string
   onValueChange: (value: string) => void
@@ -28,27 +11,51 @@ interface TabsProps {
 }
 
 function Tabs({ value, onValueChange, children, className }: TabsProps) {
+  // Clone children and inject props - SSR-safe like Button component
+  const enhancedChildren = React.Children.map(children, (child) => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, {
+        ...child.props,
+        selectedValue: value,
+        onValueChange: onValueChange,
+      } as any);
+    }
+    return child;
+  });
+
   return (
-    <TabsContext.Provider value={{ value, onValueChange }}>
-      <div className={cn("w-full", className)}>
-        {children}
-      </div>
-    </TabsContext.Provider>
+    <div className={cn("w-full", className)}>
+      {enhancedChildren}
+    </div>
   )
 }
 
 interface TabsListProps {
   children: React.ReactNode
   className?: string
+  selectedValue?: string
+  onValueChange?: (value: string) => void
 }
 
-function TabsList({ children, className }: TabsListProps) {
+function TabsList({ children, className, selectedValue, onValueChange }: TabsListProps) {
+  // Clone children and pass down props
+  const enhancedChildren = React.Children.map(children, (child) => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, {
+        ...child.props,
+        selectedValue,
+        onValueChange,
+      } as any);
+    }
+    return child;
+  });
+
   return (
     <div className={cn(
       "inline-flex h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500",
       className
     )}>
-      {children}
+      {enhancedChildren}
     </div>
   )
 }
@@ -57,10 +64,11 @@ interface TabsTriggerProps {
   value: string
   children: React.ReactNode
   className?: string
+  selectedValue?: string
+  onValueChange?: (value: string) => void
 }
 
-function TabsTrigger({ value, children, className }: TabsTriggerProps) {
-  const { value: selectedValue, onValueChange } = useTabsContext()
+function TabsTrigger({ value, children, className, selectedValue, onValueChange }: TabsTriggerProps) {
   const isActive = selectedValue === value
 
   return (
@@ -72,7 +80,7 @@ function TabsTrigger({ value, children, className }: TabsTriggerProps) {
           : "text-gray-600 hover:text-gray-900",
         className
       )}
-      onClick={() => onValueChange(value)}
+      onClick={() => onValueChange?.(value)}
     >
       {children}
     </button>
@@ -83,11 +91,10 @@ interface TabsContentProps {
   value: string
   children: React.ReactNode
   className?: string
+  selectedValue?: string
 }
 
-function TabsContent({ value, children, className }: TabsContentProps) {
-  const { value: selectedValue } = useTabsContext()
-  
+function TabsContent({ value, children, className, selectedValue }: TabsContentProps) {
   if (selectedValue !== value) {
     return null
   }
