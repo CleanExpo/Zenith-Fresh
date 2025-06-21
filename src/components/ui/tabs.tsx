@@ -8,13 +8,14 @@ interface TabsContextValue {
   onValueChange: (value: string) => void
 }
 
-const TabsContext = React.createContext<TabsContextValue | undefined>(undefined)
+// Create context with default value to prevent SSR issues
+const TabsContext = React.createContext<TabsContextValue>({
+  value: '',
+  onValueChange: () => {}
+})
 
 function useTabsContext() {
   const context = React.useContext(TabsContext)
-  if (!context) {
-    throw new Error("Tabs components must be used within Tabs")
-  }
   return context
 }
 
