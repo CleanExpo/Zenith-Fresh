@@ -36,6 +36,11 @@ model User {
   sentInvitations TeamInvitation[] @relation("Inviter")
   apiKeys       ApiKey[]
   projectMembers ProjectMember[]
+  keywordRankings KeywordRanking[]
+  localRankReports LocalRankReport[]
+  apiConnections ApiClientConnection[]
+  platformReviews PlatformReview[]
+  socialPosts SocialPost[]
 }
 
 model Account {
@@ -406,4 +411,97 @@ model TeamIntegration {
   status      String    @default("active")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+// --- CORE DATA MODELS FOR CLIENT PORTAL ---
+
+model KeywordRanking {
+  id         String    @id @default(cuid())
+  keyword    String
+  position   Int
+  volume     Int
+  difficulty Int
+  createdAt  DateTime  @default(now())
+  clientId   String    // Foreign key to your User/Client model
+  client     User      @relation(fields: [clientId], references: [id])
+}
+
+model LocalRankReport {
+  id        String    @id @default(cuid())
+  keyword   String
+  location  String
+  gridData  Json      // Storing the grid array as JSON
+  createdAt DateTime  @default(now())
+  clientId  String
+  client    User      @relation(fields: [clientId], references: [id])
+}
+
+// --- PRESENCE COMMAND CENTER MODELS ---
+
+enum Service {
+  GOOGLE
+  FACEBOOK
+  INSTAGRAM
+  X
+  LINKEDIN
+}
+
+// Securely stores encrypted OAuth tokens for third-party services
+model ApiClientConnection {
+  id            String   @id @default(cuid())
+  service       Service  // e.g., GOOGLE, FACEBOOK
+  accessToken   String   // Encrypted access token
+  refreshToken  String?  // Encrypted refresh token
+  expiresAt     DateTime?
+  scopes        String[] // Scopes granted by the user
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  clientId String
+  client   User   @relation(fields: [clientId], references: [id])
+
+  @@unique([clientId, service])
+}
+
+enum ReviewPlatform {
+  GMB
+  YELP
+  TRUSTPILOT
+  FACEBOOK
+}
+
+// Generic model for reviews from any platform
+model PlatformReview {
+  id          String         @id @default(cuid())
+  platform    ReviewPlatform // e.g., GMB, YELP
+  platformId  String         @unique // The ID from the original platform
+  author      String
+  rating      Float
+  text        String
+  replied     Boolean        @default(false)
+  reviewUrl   String         // Direct URL to the review
+  createdAt   DateTime       @default(now())
+  clientId    String
+  client      User           @relation(fields: [clientId], references: [id])
+}
+
+enum SocialPlatform {
+  FACEBOOK
+  INSTAGRAM
+  X
+  LINKEDIN
+}
+
+// For the Unified Social Publisher
+model SocialPost {
+  id           String           @id @default(cuid())
+  content      String
+  platforms    SocialPlatform[]
+  status       String           // e.g., DRAFT, SCHEDULED, PUBLISHED, FAILED
+  scheduledAt  DateTime?        // The time the post is scheduled for
+  publishedAt  DateTime?        // The time the post was actually published
+  postResult   Json?            // Stores the result from the API (e.g., post URLs)
+  createdAt    DateTime         @default(now())
+  clientId     String
+  client       User             @relation(fields: [clientId], references: [id])
 }
