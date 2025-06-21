@@ -89,65 +89,66 @@ export default function GmbAccountSelector() {
 
   if (isLoading) {
     return (
-      <Card className="p-6">
+      <Card className="p-6 bg-white/10 backdrop-blur-xl border border-white/20">
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400 mr-2" />
-          <span className="text-gray-500">Loading GMB accounts...</span>
+          <Loader2 className="w-6 h-6 animate-spin text-white/60 mr-2" />
+          <span className="text-white/80">Loading GMB accounts...</span>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 bg-white/10 backdrop-blur-xl border border-white/20">
       <div className="space-y-6">
         <div>
-          <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <Building2 className="w-5 h-5" />
+          <h3 className="text-lg font-semibold mb-2 flex items-center gap-2 text-white">
+            <Building2 className="w-5 h-5 text-blue-400" />
             Google My Business Setup
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-white/80">
             Select your Google My Business account and location to enable live data features.
           </p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="bg-red-500/20 backdrop-blur-sm border border-red-400/30 rounded-lg p-4 flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-200">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-2">
-            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-green-800">GMB configuration saved successfully!</p>
+          <div className="bg-green-500/20 backdrop-blur-sm border border-green-400/30 rounded-lg p-4 flex items-start gap-2">
+            <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-green-200">GMB configuration saved successfully!</p>
           </div>
         )}
 
         {accounts.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Building2 className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+          <div className="text-center py-8 text-white/60">
+            <Building2 className="w-12 h-12 mx-auto mb-2 text-white/40" />
             <p>No Google My Business accounts found.</p>
             <p className="text-sm mt-1">Please ensure you have access to at least one GMB account.</p>
           </div>
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white/90 mb-2">
                 Select Account
               </label>
               <select
+                title="Select Google My Business Account"
                 value={selectedAccount}
                 onChange={(e) => {
                   setSelectedAccount(e.target.value);
                   setSelectedLocation(''); // Reset location when account changes
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-blue-400"
               >
-                <option value="">Choose an account...</option>
+                <option value="" className="bg-gray-800 text-white">Choose an account...</option>
                 {accounts.map((account) => (
-                  <option key={account.name} value={account.name}>
+                  <option key={account.name} value={account.name} className="bg-gray-800 text-white">
                     {account.accountName}
                   </option>
                 ))}
@@ -156,23 +157,24 @@ export default function GmbAccountSelector() {
 
             {selectedAccount && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <MapPin className="w-4 h-4 inline mr-1" />
+                <label className="block text-sm font-medium text-white/90 mb-2">
+                  <MapPin className="w-4 h-4 inline mr-1 text-green-400" />
                   Select Location
                 </label>
                 <select
+                  title="Select Business Location"
                   value={selectedLocation}
                   onChange={(e) => setSelectedLocation(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-blue-400"
                 >
-                  <option value="">Choose a location...</option>
+                  <option value="" className="bg-gray-800 text-white">Choose a location...</option>
                   {accounts
                     .find(a => a.name === selectedAccount)
                     ?.locations.map((location) => (
-                      <option key={location.name} value={location.name}>
+                      <option key={location.name} value={location.name} className="bg-gray-800 text-white">
                         {location.locationName}
                         {location.address && (
-                          <span className="text-gray-500 ml-2">
+                          <span className="text-gray-400 ml-2">
                             - {location.address.locality}, {location.address.administrativeArea}
                           </span>
                         )}
@@ -184,16 +186,16 @@ export default function GmbAccountSelector() {
 
             <div className="flex justify-end gap-3 pt-4">
               <Button
-                variant="outline"
                 onClick={fetchAccounts}
                 disabled={isLoading}
+                className="border border-white/20 bg-white/10 hover:bg-white/20 text-white"
               >
                 Refresh
               </Button>
               <Button
                 onClick={handleSave}
                 disabled={!selectedAccount || !selectedLocation || isSaving}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
               >
                 {isSaving ? (
                   <>
