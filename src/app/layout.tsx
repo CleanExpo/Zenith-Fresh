@@ -1,47 +1,34 @@
-import { Suspense } from 'react';
-import { Inter } from 'next/font/google';
-import { Providers } from './providers';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import './globals.css';
+// src/app/layout.tsx
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
 
-const inter = Inter({ subsets: ['latin'] });
+// This sets up the primary font for the application.
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
-export const metadata = {
-  title: 'Zenith Platform',
-  description: 'Enterprise SaaS Platform for Modern Businesses',
-  keywords: ['SaaS', 'Enterprise', 'Platform', 'Business', 'Zenith'],
-  metadataBase: new URL('https://zenith.engineer'),
-  manifest: '/manifest.json',
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
-  },
+// This sets up the site's metadata for SEO and browser tabs.
+export const metadata: Metadata = {
+  title: "Zenith - Build Apps That Think & Scale",
+  description: "Deploy AI-powered applications in minutes, not months.",
 };
 
-export const viewport = {
-  themeColor: '#3b82f6',
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-};
-
+/**
+ * This is the root layout for the entire application.
+ * It wraps every page with the <html> and <body> tags.
+ * Most importantly, it imports the global CSS file which enables Tailwind CSS.
+ * @param {object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components to be rendered.
+ * @returns {JSX.Element} The root layout component.
+ */
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ErrorBoundary>
-          <Providers>
-            <Suspense fallback={<LoadingSpinner />}>
-              {children}
-            </Suspense>
-          </Providers>
-        </ErrorBoundary>
+        {children}
       </body>
     </html>
   );
