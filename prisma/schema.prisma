@@ -47,6 +47,9 @@ model User {
   missions      Mission[]
   approvalRequests ApprovalRequest[]
   autoApprovalRules AutoApprovalRule[]
+  
+  // Review Campaign Engine
+  reviewCampaigns ReviewCampaign[]
 }
 
 model Account {
@@ -525,4 +528,321 @@ enum ApprovalStatus {
   REJECTED
   EDITING
   AUTO_APPROVED
+}
+
+// Review Campaign & Marketing Engine Models
+model ReviewCampaign {
+  id              String            @id @default(cuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id])
+  userEmail       String
+  userName        String
+  triggerType     ReviewTriggerType
+  status          ReviewCampaignStatus @default(PENDING)
+  contextData     Json?
+  emailSent       Boolean           @default(false)
+  emailOpenedAt   DateTime?
+  emailClickedAt  DateTime?
+  responseAt      DateTime?
+  reviewSubmitted Boolean           @default(false)
+  reviewId        String?
+  reviewRating    Int?
+  reviewText      String?
+  testimonialCreated Boolean        @default(false)
+  socialCampaignId String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  testimonials    TestimonialAsset[]
+  socialCampaigns SocialProofCampaign[]
+  
+  @@map("review_campaigns")
+}
+
+model TestimonialAsset {
+  id              String            @id @default(cuid())
+  campaignId      String
+  campaign        ReviewCampaign    @relation(fields: [campaignId], references: [id])
+  quote           String
+  authorName      String
+  authorTitle     String?
+  authorCompany   String?
+  imageUrl        String?
+  designStyle     String
+  brandColors     Json
+  status          AssetStatus       @default(PENDING)
+  mediaAgentTaskId String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("testimonial_assets")
+}
+
+model SocialProofCampaign {
+  id              String            @id @default(cuid())
+  reviewCampaignId String
+  reviewCampaign  ReviewCampaign    @relation(fields: [reviewCampaignId], references: [id])
+  testimonialAssetId String?
+  platforms       Json              // Array of platform names
+  content         Json              // Platform-specific content
+  imageUrl        String?
+  status          CampaignStatus    @default(PENDING)
+  scheduledAt     DateTime?
+  publishedAt     DateTime?
+  engagementStats Json?
+  approvalRequestId String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("social_proof_campaigns")
+}
+
+model WebsiteEnhancement {
+  id              String            @id @default(cuid())
+  type            EnhancementType   
+  sourceReviewId  String?
+  content         Json
+  status          EnhancementStatus @default(PENDING)
+  implementedAt   DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("website_enhancements")
+}
+
+model ReviewAnalytics {
+  id              String            @id @default(cuid())
+  timeframe       String            // e.g., 'daily', 'weekly', 'monthly'
+  date            DateTime
+  campaignsSent   Int               @default(0)
+  emailsOpened    Int               @default(0)
+  emailsClicked   Int               @default(0)
+  reviewsReceived Int               @default(0)
+  averageRating   Float?
+  testimonialsCreated Int           @default(0)
+  socialPostsPublished Int          @default(0)
+  websiteUpdates  Int               @default(0)
+  conversionRate  Float?
+  createdAt       DateTime          @default(now())
+  
+  @@unique([timeframe, date])
+  @@map("review_analytics")
+}
+
+enum ReviewTriggerType {
+  FREE_USER
+  PAID_CLIENT
+}
+
+enum ReviewCampaignStatus {
+  PENDING
+  SENT
+  OPENED
+  CLICKED
+  RESPONDED
+  COMPLETED
+  FAILED
+}
+
+enum AssetStatus {
+  PENDING
+  GENERATING
+  COMPLETED
+  FAILED
+  APPROVED
+  PUBLISHED
+}
+
+enum CampaignStatus {
+  PENDING
+  SCHEDULED
+  PUBLISHED
+  FAILED
+  COMPLETED
+}
+
+enum EnhancementType {
+  FAQ_UPDATE
+  TESTIMONIAL_WIDGET
+  LANDING_PAGE_UPDATE
+  CASE_STUDY
+  SOCIAL_PROOF_ELEMENT
+}
+
+enum EnhancementStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+// Partner Ecosystem Models
+enum PartnerTier {
+  STANDARD
+  INTEGRATION
+  CERTIFIED_EXPERT
+}
+
+enum PartnerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum PartnershipType {
+  AFFILIATE
+  INTEGRATION
+  EXPERT_DIRECTORY
+}
+
+enum CommissionStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model Partner {
+  id              String            @id @default(cuid())
+  companyName     String
+  website         String
+  contactEmail    String
+  contactName     String
+  description     String
+  tier            PartnerTier       @default(STANDARD)
+  status          PartnerStatus     @default(PENDING)
+  partnershipType PartnershipType
+  commissionRate  Float             @default(10.0)
+  totalReferrals  Int               @default(0)
+  totalEarnings   Float             @default(0.0)
+  featuredUntil   DateTime?
+  apiKey          String?           @unique
+  webhookUrl      String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  referrals       PartnerReferral[]
+  assets          PartnerAsset[]
+  performance     PartnerPerformance[]
+  campaigns       CoMarketingCampaign[]
+  expert          ZenithExpert?
+
+  @@map("partners")
+}
+
+model PartnerApplication {
+  id                  String            @id @default(cuid())
+  companyName         String
+  website             String
+  contactEmail        String
+  contactName         String
+  description         String
+  serviceOffered      String
+  partnershipType     PartnershipType
+  whyPartner          String
+  previousExperience  String?
+  expectedVolume      String?
+  status              PartnerStatus     @default(PENDING)
+  reviewNotes         String?
+  reviewedBy          String?
+  reviewedAt          DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@map("partner_applications")
+}
+
+model PartnerReferral {
+  id               String            @id @default(cuid())
+  partnerId        String
+  partner          Partner           @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  referralCode     String            @unique
+  customerEmail    String
+  customerName     String?
+  conversionValue  Float             @default(0.0)
+  commissionAmount Float             @default(0.0)
+  commissionStatus CommissionStatus  @default(PENDING)
+  conversionDate   DateTime?
+  paidAt           DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([partnerId])
+  @@map("partner_referrals")
+}
+
+model PartnerAsset {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  name        String
+  type        String
+  url         String
+  description String?
+  clickCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([partnerId])
+  @@map("partner_assets")
+}
+
+model PartnerPerformance {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  month       DateTime
+  clicks      Int      @default(0)
+  conversions Int      @default(0)
+  revenue     Float    @default(0.0)
+  commission  Float    @default(0.0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([partnerId])
+  @@map("partner_performance")
+}
+
+model CoMarketingCampaign {
+  id             String   @id @default(cuid())
+  partnerId      String
+  partner        Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  name           String
+  description    String
+  type           String
+  status         String   @default("DRAFT")
+  targetAudience String?
+  budget         Float?
+  startDate      DateTime?
+  endDate        DateTime?
+  results        Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([partnerId])
+  @@map("co_marketing_campaigns")
+}
+
+model ZenithExpert {
+  id                String   @id @default(cuid())
+  partnerId         String   @unique
+  partner           Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  expertName        String
+  title             String
+  bio               String
+  specialties       String[]
+  hourlyRate        Float?
+  availability      String   @default("AVAILABLE")
+  rating            Float?   @default(0.0)
+  reviewCount       Int      @default(0)
+  portfolioUrl      String?
+  linkedinUrl       String?
+  certificationsPath String?
+  featured          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("zenith_experts")
 }
