@@ -42,6 +42,9 @@ model User {
   gmbLocationId String?
   gmbAccountName String?
   gmbLocationName String?
+  
+  // Agent Orchestrator
+  missions      Mission[]
 }
 
 model Account {
@@ -412,4 +415,63 @@ model TeamIntegration {
   status      String    @default("active")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+// Agent Orchestrator Models
+model Mission {
+  id              String            @id @default(cuid())
+  goal            String
+  status          MissionStatus     @default(PENDING)
+  priority        Priority          @default(NORMAL)
+  results         Json?
+  estimatedHours  Float?
+  actualHours     Float?
+  clientId        String
+  client          User              @relation(fields: [clientId], references: [id])
+  tasks           MissionTask[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  completedAt     DateTime?
+  
+  @@map("missions")
+}
+
+model MissionTask {
+  id          String      @id @default(cuid())
+  missionId   String
+  mission     Mission     @relation(fields: [missionId], references: [id])
+  agentType   String      // 'ContentAgent', 'MediaAgent', etc.
+  taskType    String      // 'write_copy', 'generate_image', etc.
+  status      TaskStatus  @default(QUEUED)
+  inputs      Json
+  outputs     Json?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+  dependsOn   String[]    // Task IDs this task depends on
+  
+  @@map("mission_tasks")
+}
+
+enum MissionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETE
+  FAILED
+  CANCELLED
+}
+
+enum TaskStatus {
+  QUEUED
+  IN_PROGRESS
+  COMPLETE
+  FAILED
+  RETRYING
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
 }
