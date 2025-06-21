@@ -24,14 +24,10 @@ const scanRequestSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
+    // Check authentication (optional for freemium)
     const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    const isAuthenticated = !!session?.user?.id;
+    const userTier = isAuthenticated ? 'premium' : 'freemium';
 
     // Parse and validate request body
     const body = await request.json();
@@ -40,23 +36,40 @@ export async function POST(request: NextRequest) {
     // Perform website health analysis
     const healthScore = await analyzeWebsiteHealth(validatedData.url);
     
-    // Return scan results with scan ID for tracking
+    // Apply freemium gating as per Strategic Roadmap A2.1
+    const responseData: any = {
+      scanId: healthScore.crawlId,
+      url: healthScore.url,
+      overall: healthScore.overall, // Full access for freemium
+      pillars: {
+        performance: healthScore.pillars.performance.score,
+        technicalSEO: healthScore.pillars.technicalSEO.score,
+        onPageSEO: healthScore.pillars.onPageSEO.score,
+        security: healthScore.pillars.security.score,
+        accessibility: healthScore.pillars.accessibility.score
+      },
+      lastUpdated: healthScore.lastUpdated,
+      status: 'completed',
+      tier: userTier,
+      upgradeRequired: !isAuthenticated
+    };
+
+    // For freemium users, add conversion touchpoints
+    if (!isAuthenticated) {
+      responseData.freemiumLimits = {
+        healthScore: 'full_access',
+        issueCount: 'show_totals_only', 
+        issueDetails: 'show_one_per_category',
+        recommendations: 'basic_only',
+        historicalData: 'premium_only',
+        competitorData: 'premium_only'
+      };
+    }
+    
+    // Return scan results with freemium gating
     return NextResponse.json({
       success: true,
-      data: {
-        scanId: healthScore.crawlId,
-        url: healthScore.url,
-        overall: healthScore.overall,
-        pillars: {
-          performance: healthScore.pillars.performance.score,
-          technicalSEO: healthScore.pillars.technicalSEO.score,
-          onPageSEO: healthScore.pillars.onPageSEO.score,
-          security: healthScore.pillars.security.score,
-          accessibility: healthScore.pillars.accessibility.score
-        },
-        lastUpdated: healthScore.lastUpdated,
-        status: 'completed'
-      }
+      data: responseData
     });
 
   } catch (error) {
