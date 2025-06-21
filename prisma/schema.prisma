@@ -846,3 +846,118 @@ model ZenithExpert {
 
   @@map("zenith_experts")
 }
+
+// SearchMasteryAgent Models
+model BacklinkOpportunity {
+  id              String   @id @default(cuid())
+  clientId        String
+  domain          String
+  domainAuthority Int
+  pageUrl         String
+  contactEmail    String
+  relevanceScore  Float
+  linkingToDomain String
+  anchorText      String
+  linkType        String   // 'dofollow' | 'nofollow'
+  publishDate     DateTime
+  trafficEstimate Int
+  status          String   @default("potential") // potential, targeted, acquired, rejected
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("backlink_opportunities")
+}
+
+model OutreachCampaign {
+  id              String   @id @default(cuid())
+  clientId        String
+  targetDomain    String
+  targetEmail     String
+  opportunityId   String
+  articleTitle    String
+  articleContent  String
+  articleUrl      String?
+  emailSequence   Json     // Array of email objects
+  status          String   @default("draft") // draft, sent, replied, linked, rejected
+  lastContactDate DateTime?
+  responseReceived Boolean @default(false)
+  backlinkAcquired Boolean @default(false)
+  backlinkUrl     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("outreach_campaigns")
+}
+
+model AcquiredBacklink {
+  id              String   @id @default(cuid())
+  clientId        String
+  url             String   @unique
+  domain          String
+  anchorText      String
+  linkType        String   // 'dofollow' | 'nofollow'
+  domainAuthority Int
+  pageAuthority   Int
+  isVerified      Boolean  @default(false)
+  isValuable      Boolean  @default(false)
+  discoveredDate  DateTime @default(now())
+  verifiedDate    DateTime?
+  campaignId      String?  // Reference to OutreachCampaign if applicable
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("acquired_backlinks")
+}
+
+model SearchConsoleMission {
+  id              String   @id @default(cuid())
+  clientId        String
+  siteUrl         String
+  sitemapSubmitted Boolean @default(false)
+  crawlErrors     Json?    // Array of crawl error objects
+  performanceData Json?    // GSC performance insights
+  indexingRequests Json?   // URLs requested for indexing
+  status          String   @default("pending") // pending, completed, failed
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("search_console_missions")
+}
+
+model SearchMasteryMission {
+  id                    String   @id @default(cuid())
+  clientId              String
+  type                  String   // 'monthly_authority_build', 'backlink_verification', 'gsc_management'
+  status                String   @default("pending") // pending, in_progress, completed, failed
+  opportunitiesFound    Int?
+  campaignsCreated      Int?
+  backlinksVerified     Int?
+  gscTasksCompleted     Int?
+  results               Json?
+  startedAt             DateTime @default(now())
+  completedAt           DateTime?
+  estimatedCompletionAt DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@map("search_mastery_missions")
+}
+
+model ClientProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  domain          String
+  niche           String?
+  competitors     String[] // Array of competitor domains
+  targetKeywords  String[] // Array of target keywords
+  authorityScore  Float    @default(0.0)
+  gscToken        String?  // Encrypted GSC OAuth token
+  lastAnalyzed    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("client_profiles")
+}
