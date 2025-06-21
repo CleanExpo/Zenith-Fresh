@@ -317,21 +317,26 @@ export default function WebsiteHealthAnalyzer({ isOpen, onClose, initialUrl = ''
                 {/* Analysis Steps */}
                 <div className="space-y-3 max-w-md mx-auto">
                   {[
-                    { step: 'Crawling website structure', complete: analysisProgress > 20 },
-                    { step: 'Analyzing Core Web Vitals', complete: analysisProgress > 40 },
-                    { step: 'Checking SEO elements', complete: analysisProgress > 60 },
-                    { step: 'Security scan complete', complete: analysisProgress > 80 },
-                    { step: 'Generating health score', complete: analysisProgress > 95 }
+                    { step: 'Fetching website content...', complete: analysisProgress > 20, eta: '5s' },
+                    { step: 'Analyzing Core Web Vitals...', complete: analysisProgress > 40, eta: '8s' },
+                    { step: 'Checking SEO elements...', complete: analysisProgress > 60, eta: '12s' },
+                    { step: 'Running security scan...', complete: analysisProgress > 80, eta: '15s' },
+                    { step: 'Generating health score...', complete: analysisProgress > 95, eta: '18s' }
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3">
                       {item.complete ? (
                         <CheckCircle2 className="w-4 h-4 text-green-400" />
+                      ) : analysisProgress > (i * 20) ? (
+                        <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <Clock className="w-4 h-4 text-gray-400" />
                       )}
-                      <span className={`text-sm ${item.complete ? 'text-green-400' : 'text-gray-400'}`}>
+                      <span className={`text-sm flex-1 ${item.complete ? 'text-green-400' : analysisProgress > (i * 20) ? 'text-blue-400' : 'text-gray-400'}`}>
                         {item.step}
                       </span>
+                      {!item.complete && analysisProgress > (i * 20) && (
+                        <span className="text-xs text-gray-500">~{item.eta}</span>
+                      )}
                     </div>
                   ))}
                 </div>
