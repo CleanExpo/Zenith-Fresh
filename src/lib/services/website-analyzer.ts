@@ -502,12 +502,11 @@ function auditAccessibility(crawlResults: CrawlResults): AccessibilityPillar {
  * Implementation following strategic roadmap A1 requirements
  */
 export async function analyzeWebsiteHealth(url: string): Promise<WebsiteHealthScore> {
+  // Support freemium mode - authentication optional per Strategic Roadmap A2.1
   const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("Not authenticated");
-  }
+  const isAuthenticated = !!session?.user?.id;
   
-  const cacheKey = `website:health:${Buffer.from(url).toString('base64')}`;
+  const cacheKey = `website:health:${Buffer.from(url).toString('base64')}${isAuthenticated ? ':auth' : ':freemium'}`;
   
   try {
     // Check cache first (following GMB patterns)
