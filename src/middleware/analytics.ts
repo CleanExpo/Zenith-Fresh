@@ -19,12 +19,12 @@ export const trackApiUsage = async (req: Request, res: Response, next: NextFunct
         data: {
           type: 'api_call',
           action: `${req.method} ${req.path}`,
-          metadata: {
+          metadata: JSON.stringify({
             duration,
             statusCode: res.statusCode,
             userAgent: req.headers['user-agent'],
             ip: req.ip
-          },
+          }),
           userId: req.user.id
         }
       }).catch(console.error);
@@ -35,4 +35,4 @@ export const trackApiUsage = async (req: Request, res: Response, next: NextFunct
   };
 
   next();
-}; 
+};

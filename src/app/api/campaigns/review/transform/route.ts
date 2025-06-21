@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
           status: 'PENDING'
         }
       });
-      socialCampaignId = socialCampaign.id;
+      socialCampaignId = socialCampaign.id || null;
     }
 
     return NextResponse.json({

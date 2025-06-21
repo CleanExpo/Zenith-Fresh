@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         userEmail,
         userName,
         triggerType,
-        status: 'pending',
+        status: 'PENDING',
         contextData: contextData as any,
         emailSent: false
       }
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       where: { id: campaign.id },
       data: { 
         emailSent: true,
-        status: 'sent'
+        status: 'SENT'
       }
     });
 

@@ -90,9 +90,9 @@ export function TeamBilling({ teamId }: TeamBillingProps) {
             <Badge
               variant={
                 data.status === 'active'
-                  ? 'success'
+                  ? 'secondary'
                   : data.status === 'past_due'
-                  ? 'warning'
+                  ? 'outline'
                   : 'destructive'
               }
             >
@@ -156,9 +156,9 @@ export function TeamBilling({ teamId }: TeamBillingProps) {
                   <Badge
                     variant={
                       payment.status === 'paid'
-                        ? 'success'
+                        ? 'secondary'
                         : payment.status === 'pending'
-                        ? 'warning'
+                        ? 'outline'
                         : 'destructive'
                     }
                     className="mt-1"
@@ -173,4 +173,4 @@ export function TeamBilling({ teamId }: TeamBillingProps) {
       </Card>
     </div>
   );
-} 
+}
