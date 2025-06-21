@@ -1,4 +1,3 @@
-// src/app/page.tsx
 'use client';
 
 import React from 'react';
@@ -18,6 +17,7 @@ const Header = () => (
                 <Link href="/features" className="text-sm font-semibold leading-6 text-white">Features</Link>
                 <Link href="/pricing" className="text-sm font-semibold leading-6 text-white">Pricing</Link>
                 <Link href="/community" className="text-sm font-semibold leading-6 text-white">Community</Link>
+                <Link href="/academy" className="text-sm font-semibold leading-6 text-white">Academy</Link>
                 <Link href="/faq" className="text-sm font-semibold leading-6 text-white">FAQ</Link>
             </div>
             <div className="hidden lg:flex lg:flex-1 lg:justify-end">
@@ -37,7 +37,6 @@ const Footer = () => (
         </div>
     </footer>
 );
-
 
 const Icon = ({ path, className = "w-6 h-6" }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -110,10 +109,10 @@ export default function LandingPage() {
                                 <div className="relative rounded-lg bg-gray-800/70 p-8 ring-1 ring-white/10">
                                     <h3 className="text-xl font-semibold mb-4">Daily Autonomous Workflow:</h3>
                                     <ol className="space-y-4 text-gray-300">
-                                        <li className="flex gap-4"><span className="font-bold text-blue-400">1.</span><span><strong>Scrape &amp; Score:</strong> Agents find and score the best articles daily.</span></li>
-                                        <li className="flex gap-4"><span className="font-bold text-blue-400">2.</span><span><strong>Rewrite &amp; Enhance:</strong> AI re-writes content with your brand voice and generates custom images.</span></li>
-                                        <li className="flex gap-4"><span className="font-bold text-blue-400">3.</span><span><strong>Format &amp; Distribute:</strong> Posts are tailored for your blog, X, LinkedIn, and more.</span></li>
-                                        <li className="flex gap-4"><span className="font-bold text-blue-400">4.</span><span><strong>Publish &amp; Engage:</strong> Approved content is autonomously posted to build your brand while you sleep.</span></li>
+                                        <li className="flex gap-4"><span className="font-bold text-blue-400">1.</span><span>**Scrape & Score:** Agents find and score the best articles daily.</span></li>
+                                        <li className="flex gap-4"><span className="font-bold text-blue-400">2.</span><span>**Rewrite & Enhance:** AI re-writes content with your brand voice and generates custom images.</span></li>
+                                        <li className="flex gap-4"><span className="font-bold text-blue-400">3.</span><span>**Format & Distribute:** Posts are tailored for your blog, X, LinkedIn, and more.</span></li>
+                                        <li className="flex gap-4"><span className="font-bold text-blue-400">4.</span><span>**Publish & Engage:** Approved content is autonomously posted to build your brand while you sleep.</span></li>
                                     </ol>
                                     <div className="mt-8 flex justify-center">
                                         <Link href="/features/content-engine" className="text-sm font-semibold leading-6">Explore the Content Engine <span aria-hidden="true">→</span></Link>
@@ -131,7 +130,7 @@ export default function LandingPage() {
                         <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
                             {testimonials.map((testimonial) => (
                                 <figure key={testimonial.author} className="rounded-2xl bg-white/5 p-6 shadow-sm ring-1 ring-white/10">
-                                    <blockquote className="text-white"><p>"{testimonial.quote}"</p></blockquote>
+                                    <blockquote className="text-white"><p>&ldquo;{testimonial.quote}&rdquo;</p></blockquote>
                                     <figcaption className="mt-6 flex items-center gap-x-4">
                                         <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-indigo-500">{testimonial.initial}</div>
                                         <div><div className="font-semibold text-white">{testimonial.author}</div><div className="text-gray-400">{testimonial.role}</div></div>
