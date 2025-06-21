@@ -86,17 +86,22 @@ interface MetricCardProps {
 
 const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon, locked = false }) => {
   return (
-    <Card className={`p-6 ${locked ? 'opacity-60' : ''}`}>
+    <Card 
+      variant={locked ? "glass" : "glass-elevated"} 
+      padding="default"
+      rounded="lg"
+      className={locked ? 'opacity-60' : ''}
+    >
       <div className="flex items-center justify-between mb-4">
-        <div className="p-2 bg-blue-50 rounded-lg">
+        <div className="p-2 bg-blue-50/80 backdrop-blur-sm rounded-lg">
           {icon}
         </div>
-        {locked && <Lock className="w-4 h-4 text-gray-400" />}
+        {locked && <Lock className="w-4 h-4 text-white/60" />}
       </div>
-      <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-      <p className="text-2xl font-bold mt-2">{locked ? '---' : value}</p>
+      <h3 className="text-sm font-medium text-white/80">{title}</h3>
+      <p className="text-2xl font-bold mt-2 text-white">{locked ? '---' : value}</p>
       {change !== undefined && !locked && (
-        <div className={`flex items-center mt-2 text-sm ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+        <div className={`flex items-center mt-2 text-sm ${change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
           {change >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
           <span>{Math.abs(change)}%</span>
         </div>
