@@ -73,4 +73,5 @@ export class Cache {
 }
 
 // Export a singleton instance
-export const cache = Cache.getInstance(); 
+export const cache = Cache.getInstance();
+export const redis = redisClient;
