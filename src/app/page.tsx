@@ -66,6 +66,7 @@ export default function LandingPage() {
   const [showSandbox, setShowSandbox] = useState(false);
   const [showHealthAnalyzer, setShowHealthAnalyzer] = useState(false);
   const [selectedUrl, setSelectedUrl] = useState('');
+  const [inputUrl, setInputUrl] = useState('');
 
   // Metrics that demonstrate backend power
   const liveMetrics = {
@@ -139,7 +140,7 @@ export default function LandingPage() {
                 </div>
                 <button
                   onClick={() => {
-                    if (typeof window !== 'undefined') {
+                    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                       const input = document.getElementById('website-url-input') as HTMLInputElement;
                       const url = input?.value;
                       if (url) {
@@ -393,7 +394,7 @@ export default function LandingPage() {
                           <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         ))}
                       </div>
-                      <p className="text-gray-300 mb-2">"{testimonial.comment}"</p>
+                      <p className="text-gray-300 mb-2">&ldquo;{testimonial.comment}&rdquo;</p>
                       <p className="text-sm text-gray-500">
                         <span className="font-semibold">{testimonial.name}</span> • {testimonial.role}
                       </p>
