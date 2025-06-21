@@ -12,7 +12,7 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -302,14 +302,21 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
       </div>
 
       {/* Current Step Content */}
-      <Card className="p-8">
+      <Card 
+        variant="glass-elevated" 
+        padding="lg"
+        rounded="xl"
+        className="backdrop-blur-xl"
+      >
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-blue-50 rounded-lg">
-            {steps[currentStep].icon}
+          <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-xl border border-white/20">
+            <div className="text-blue-600">
+              {steps[currentStep].icon}
+            </div>
           </div>
           <div>
-            <h2 className="text-xl font-semibold">{steps[currentStep].title}</h2>
-            <p className="text-gray-600">{steps[currentStep].description}</p>
+            <h2 className="text-xl font-semibold text-white">{steps[currentStep].title}</h2>
+            <p className="text-white/70">{steps[currentStep].description}</p>
           </div>
         </div>
         {steps[currentStep].component}
