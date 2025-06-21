@@ -50,7 +50,7 @@ export default function LandingPage() {
                         <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">Build Apps That Think & Scale</h1>
                         <p className="mt-6 text-lg leading-8 text-gray-300">Deploy AI-powered applications in minutes, not months. See it work in 30 seconds.</p>
                         <div className="mt-10 flex items-center gap-x-6">
-                            <a href="#" className="rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">See Magic in 30 Seconds</a>
+                            <a href="/dashboard/sandbox" className="rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">See Magic in 30 Seconds</a>
                             <a href="#" className="text-sm font-semibold leading-6">Start Free Trial <span aria-hidden="true">→</span></a>
                         </div>
                     </div>
@@ -105,7 +105,7 @@ export default function LandingPage() {
                             </ul>
                         </div>
                         <div className="flex-none">
-                            <a href="#" className="rounded-md bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100">Launch Command Center</a>
+                            <a href="/dashboard/sandbox" className="rounded-md bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100">Launch Command Center</a>
                         </div>
                     </div>
                 </div>
