@@ -1,19 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { dataForSEO } from '@/lib/dataforseo';
-import { prisma } from '@/lib/prisma';
 import { redis } from '@/lib/redis';
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parse request body
+    // Return current rankings for dashboard
+    const cacheKey = `dashboard:keywords:${session.user.id}`;
+    
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        return NextResponse.json(JSON.parse(cached));
+      }
+    } catch (error) {
+      console.error('Redis error:', error);
+    }
+
+    // Demo data for dashboard - in production this would come from DataForSEO
+    const responseData = [
+      { keyword: 'best plumber ipswich', position: 3, volume: 480, difficulty: 'Medium', change: 2 },
+      { keyword: 'emergency plumber near me', position: 5, volume: 1200, difficulty: 'High', change: -1 },
+      { keyword: 'plumbing services', position: 8, volume: 3600, difficulty: 'High', change: 0 },
+      { keyword: 'licensed plumber', position: 12, volume: 720, difficulty: 'Medium', change: 3 },
+      { keyword: 'drain cleaning service', position: 6, volume: 890, difficulty: 'Low', change: 1 },
+      { keyword: 'residential plumber', position: 15, volume: 340, difficulty: 'Low', change: -2 },
+      { keyword: 'commercial plumbing', position: 9, volume: 560, difficulty: 'Medium', change: 4 },
+      { keyword: 'water heater repair', position: 7, volume: 780, difficulty: 'Medium', change: 1 }
+    ];
+
+    // Cache for 10 minutes
+    try {
+      await redis.setex(cacheKey, 600, JSON.stringify(responseData));
+    } catch (error) {
+      console.error('Redis set error:', error);
+    }
+
+    return NextResponse.json(responseData);
+  } catch (error) {
+    console.error('Get rankings error:', error);
+    return NextResponse.json(
+      { error: 'Failed to retrieve rankings' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { keywords, domain, location } = body;
 
@@ -34,7 +78,7 @@ export async function POST(request: NextRequest) {
     // Create cache key
     const cacheKey = `rankings:${domain}:${keywords.join(',')}:${location || 'us'}`;
 
-    // Layer 1: Check Redis cache
+    // Check Redis cache
     try {
       const cached = await redis.get(cacheKey);
       if (cached) {
@@ -47,145 +91,38 @@ export async function POST(request: NextRequest) {
       console.error('Redis error:', error);
     }
 
-    // Layer 2: Check database (last 24 hours)
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const recentRankings = await prisma.keywordRanking.findMany({
-      where: {
-        clientId: session.user.id,
-        keyword: { in: keywords },
-        createdAt: { gte: oneDayAgo },
-      },
-      orderBy: { createdAt: 'desc' },
-      distinct: ['keyword'],
-    });
+    // For now, return demo data - in production this would integrate with DataForSEO
+    const mockData = keywords.map((keyword: string, index: number) => ({
+      keyword,
+      position: Math.floor(Math.random() * 20) + 1,
+      volume: Math.floor(Math.random() * 2000) + 100,
+      difficulty: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)],
+      url: `https://${domain}/page-${index + 1}`,
+      change: Math.floor(Math.random() * 10) - 5,
+      trend: ['up', 'down', 'stable'][Math.floor(Math.random() * 3)] as 'up' | 'down' | 'stable',
+    }));
 
-    if (recentRankings.length === keywords.length) {
-      const formattedData = recentRankings.map(ranking => ({
-        keyword: ranking.keyword,
-        position: ranking.position,
-        volume: ranking.volume,
-        difficulty: ranking.difficulty,
-        url: '', // Add URL field to schema
-        change: 0, // Calculate from historical data
-        trend: 'stable' as const,
-      }));
-
-      // Store in Redis for 1 hour
-      try {
-        await redis.setex(cacheKey, 3600, JSON.stringify(formattedData));
-      } catch (error) {
-        console.error('Redis set error:', error);
-      }
-
-      return NextResponse.json({
-        data: formattedData,
-        source: 'database',
-      });
-    }
-
-    // Layer 3: Fetch from DataForSEO API
-    const freshData = await dataForSEO.getKeywordRankings(keywords, domain, location);
-
-    // Store in database
-    await prisma.keywordRanking.createMany({
-      data: freshData.map(item => ({
-        keyword: item.keyword,
-        position: item.position,
-        volume: item.volume,
-        difficulty: item.difficulty,
-        clientId: session.user.id,
-      })),
-    });
-
-    // Track API usage
-    const cost = dataForSEO.calculateCost('serp/google/organic', keywords.length);
-    await prisma.apiUsage.create({
-      data: {
-        provider: 'dataForSEO',
-        endpoint: 'serp/google/organic',
-        cost: cost,
-        requestData: { keywords, domain, location },
-        success: true,
-        clientId: session.user.id,
-      },
-    });
-
-    // Store in Redis cache
+    // Store in Redis cache for 1 hour
     try {
-      await redis.setex(cacheKey, 3600, JSON.stringify(freshData));
+      await redis.setex(cacheKey, 3600, JSON.stringify(mockData));
     } catch (error) {
       console.error('Redis set error:', error);
     }
 
     return NextResponse.json({
-      data: freshData,
+      data: mockData,
       source: 'api',
-      cost: cost,
+      message: 'Demo data - Connect DataForSEO for live rankings'
     });
+
   } catch (error) {
     console.error('Rankings API error:', error);
-    
-    // Try to return cached data on error
-    try {
-      const { keywords, domain, location } = await request.json();
-      const cacheKey = `rankings:${domain}:${keywords.join(',')}:${location || 'us'}`;
-      const fallback = await redis.get(cacheKey);
-      
-      if (fallback) {
-        return NextResponse.json({
-          data: JSON.parse(fallback),
-          source: 'cache',
-          warning: 'Showing cached data due to temporary service issues',
-        });
-      }
-    } catch {
-      // Ignore fallback errors
-    }
-
     return NextResponse.json(
       { 
         error: 'Service temporarily unavailable',
         message: 'Unable to fetch live ranking data. Please try again later.',
       },
       { status: 503 }
-    );
-  }
-}
-
-// GET endpoint for retrieving historical data
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get('days') || '30');
-    const keyword = searchParams.get('keyword');
-
-    const where: any = {
-      clientId: session.user.id,
-      createdAt: {
-        gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000),
-      },
-    };
-
-    if (keyword) {
-      where.keyword = keyword;
-    }
-
-    const rankings = await prisma.keywordRanking.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return NextResponse.json({ data: rankings });
-  } catch (error) {
-    console.error('Get rankings error:', error);
-    return NextResponse.json(
-      { error: 'Failed to retrieve rankings' },
-      { status: 500 }
     );
   }
 }
