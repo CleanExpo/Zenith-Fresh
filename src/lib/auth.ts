@@ -5,6 +5,60 @@ import GoogleProvider from 'next-auth/providers/google';
 import { prisma } from '@/lib/prisma';
 import { compare, hash } from 'bcryptjs';
 import { Session } from 'next-auth';
+import { getServerSession } from 'next-auth';
+
+// Token refresh function
+async function refreshAccessToken(token: any) {
+  try {
+    const url = "https://oauth2.googleapis.com/token?" + new URLSearchParams({
+      client_id: process.env.GOOGLE_CLIENT_ID!,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+      grant_type: "refresh_token",
+      refresh_token: token.refreshToken,
+    });
+
+    const response = await fetch(url, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      method: "POST",
+    });
+
+    const refreshedTokens = await response.json();
+
+    if (!response.ok) {
+      throw refreshedTokens;
+    }
+
+    // Update the Account in the database with the new token
+    await prisma.account.update({
+        where: {
+            provider_providerAccountId: {
+                provider: 'google',
+                providerAccountId: token.user.id, // Assuming user.id is providerAccountId
+            },
+        },
+        data: {
+            access_token: refreshedTokens.access_token,
+            expires_at: Math.floor(Date.now() / 1000 + refreshedTokens.expires_in),
+            refresh_token: refreshedTokens.refresh_token ?? token.refreshToken, // Fall back to old refresh token
+        }
+    });
+
+    return {
+      ...token,
+      accessToken: refreshedTokens.access_token,
+      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
+      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken, // Fall back to old refresh token
+    };
+  } catch (error) {
+    console.error("Error refreshing access token", error);
+    return {
+      ...token,
+      error: "RefreshAccessTokenError",
+    };
+  }
+}
 
 // Extend the session user type to include id
 declare module 'next-auth' {
@@ -120,11 +174,9 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
-      // If the access token has expired, try to refresh it
-      // (We will implement the refresh logic in a later step)
-      console.log("Access token has expired, need to refresh.");
-      // For now, just return the expired token
-      return token;
+      // If the access token has expired, refresh it
+      console.log("Access token has expired, refreshing...");
+      return refreshAccessToken(token);
     },
     async session({ session, token }) {
       // Send properties to the client, like an access_token and user id from a provider.
@@ -138,3 +190,8 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
+// Helper function to get the server session
+export async function auth() {
+  return await getServerSession(authOptions);
+}

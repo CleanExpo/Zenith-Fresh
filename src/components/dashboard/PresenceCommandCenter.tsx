@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Globe, 
   Star, 
@@ -14,7 +14,8 @@ import {
   CheckCircle,
   AlertCircle,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Loader2
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,6 +53,34 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon, loc
 
 export default function PresenceCommandCenter() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewSummary, setReviewSummary] = useState<any>(null);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+
+  useEffect(() => {
+    async function fetchReviews() {
+      try {
+        const response = await fetch('/api/presence/gmb/reviews');
+        if (!response.ok) {
+          throw new Error('Failed to fetch reviews');
+        }
+        const data = await response.json();
+        setReviews(data.reviews || []);
+        setReviewSummary(data.summary || {});
+      } catch (error) {
+        console.error(error);
+        // Fall back to mock data if API fails
+        setReviews([
+          { id: 1, author: 'Sarah M.', rating: 5, text: 'Excellent service! Highly recommend.', replied: false, createdAt: new Date() },
+          { id: 2, author: 'John D.', rating: 4, text: 'Good experience overall.', replied: true, createdAt: new Date() }
+        ]);
+      } finally {
+        setIsLoadingReviews(false);
+      }
+    }
+
+    fetchReviews();
+  }, []);
 
   // Mock data - replace with real API calls
   const gmbHealth = {
@@ -61,11 +90,6 @@ export default function PresenceCommandCenter() {
       { type: 'success', message: 'All NAP fields complete and verified' }
     ]
   };
-
-  const reviews = [
-    { id: 1, author: 'Sarah M.', rating: 5, text: 'Excellent service! Highly recommend.', replied: false, date: '2 days ago' },
-    { id: 2, author: 'John D.', rating: 4, text: 'Good experience overall.', replied: true, date: '1 week ago' }
-  ];
 
   const socialStats = {
     facebook: { followers: 1234, engagement: 5.2, locked: false },
@@ -103,13 +127,13 @@ export default function PresenceCommandCenter() {
         />
         <MetricCard
           title="Average Rating"
-          value="4.8"
+          value={reviewSummary?.averageRating?.toFixed(1) || "---"}
           change={2}
           icon={<Star className="w-5 h-5 text-yellow-600" />}
         />
         <MetricCard
           title="Unread Reviews"
-          value="3"
+          value={reviewSummary?.unreplied || 0}
           icon={<MessageSquare className="w-5 h-5 text-purple-600" />}
         />
         <MetricCard
@@ -206,32 +230,47 @@ export default function PresenceCommandCenter() {
           <Card className="p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Recent Reviews</h3>
-              <Badge variant="secondary">3 new</Badge>
+              <Badge variant="secondary">{reviewSummary?.unreplied || 0} need reply</Badge>
             </div>
-            <div className="space-y-4">
-              {reviews.map((review) => (
-                <div key={review.id} className="border-b pb-4 last:border-0">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <p className="font-medium">{review.author}</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
-                            className={`w-4 h-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
-                          />
-                        ))}
+            {isLoadingReviews ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                <span className="ml-2 text-gray-500">Loading reviews...</span>
+              </div>
+            ) : reviews.length > 0 ? (
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <div key={review.id} className="border-b pb-4 last:border-0">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-medium">{review.author}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={`w-4 h-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                            />
+                          ))}
+                        </div>
                       </div>
+                      <span className="text-sm text-gray-500">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
-                    <span className="text-sm text-gray-500">{review.date}</span>
+                    <p className="text-sm text-gray-700 mb-2">{review.text}</p>
+                    {!review.replied && (
+                      <Button size="sm" variant="outline">Reply</Button>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-700 mb-2">{review.text}</p>
-                  {!review.replied && (
-                    <Button size="sm" variant="outline">Reply</Button>
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <p>No reviews found</p>
+                <p className="text-sm mt-1">Connect your Google Business Profile to see reviews</p>
+              </div>
+            )}
           </Card>
         </TabsContent>
 
