@@ -241,7 +241,7 @@ export default function WebsiteHealthAnalyzer({ isOpen, onClose, initialUrl = ''
                       type="url"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
-                      placeholder="https://yourwebsite.com"
+                      placeholder="https://sample.com"
                       className="flex-1 px-4 py-3 bg-black/20 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:border-blue-400 focus:outline-none"
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') {
