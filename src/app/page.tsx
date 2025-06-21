@@ -40,7 +40,7 @@ const AnimatedCounter = ({ end, duration = 2, suffix = '' }: any) => {
   const [ref, inView] = useInView({ triggerOnce: true });
 
   useEffect(() => {
-    if (inView) {
+    if (typeof window !== 'undefined' && inView) {
       let start = 0;
       const increment = end / (duration * 60);
       const timer = setInterval(() => {
@@ -138,10 +138,12 @@ export default function LandingPage() {
                 </div>
                 <button
                   onClick={() => {
-                    const input = document.getElementById('website-url-input') as HTMLInputElement;
-                    const url = input?.value;
-                    if (url) {
-                      setShowHealthAnalyzer(true);
+                    if (typeof window !== 'undefined') {
+                      const input = document.getElementById('website-url-input') as HTMLInputElement;
+                      const url = input?.value;
+                      if (url) {
+                        setShowHealthAnalyzer(true);
+                      }
                     }
                   }}
                   className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-blue-500 rounded-2xl font-semibold text-lg transition-all hover:scale-105 hover:shadow-2xl hover:shadow-green-500/25 whitespace-nowrap"
@@ -458,7 +460,7 @@ export default function LandingPage() {
       <WebsiteHealthAnalyzer 
         isOpen={showHealthAnalyzer} 
         onClose={() => setShowHealthAnalyzer(false)}
-        initialUrl={(document.getElementById('website-url-input') as HTMLInputElement)?.value || ''}
+        initialUrl=""
       />
 
       {/* Footer with Privacy Links */}
