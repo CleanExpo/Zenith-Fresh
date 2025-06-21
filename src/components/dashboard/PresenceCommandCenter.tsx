@@ -87,10 +87,7 @@ interface MetricCardProps {
 const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon, locked = false }) => {
   return (
     <Card 
-      variant={locked ? "glass" : "glass-elevated"} 
-      padding="default"
-      rounded="lg"
-      className={locked ? 'opacity-60' : ''}
+      className={`p-6 rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 ${locked ? 'opacity-60' : 'hover:bg-white/15'} transition-all duration-200`}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="p-2 bg-blue-50/80 backdrop-blur-sm rounded-lg">
@@ -138,10 +135,10 @@ export default function PresenceCommandCenter() {
   });
 
   // Enhanced API call with retry logic
-  const makeApiCall = useCallback(async <T>(
+  const makeApiCall = useCallback(async (
     url: string,
     options?: RequestInit
-  ): Promise<T> => {
+  ): Promise<any> => {
     const maxRetries = 3;
     let lastError: Error;
 
@@ -190,9 +187,9 @@ export default function PresenceCommandCenter() {
     
     try {
       const [reviewsData, businessData, healthData] = await Promise.allSettled([
-        makeApiCall<any>('/api/presence/gmb/reviews'),
-        makeApiCall<any>('/api/presence/gmb/business'),
-        makeApiCall<any>('/api/presence/gmb/health')
+        makeApiCall('/api/presence/gmb/reviews'),
+        makeApiCall('/api/presence/gmb/business'),
+        makeApiCall('/api/presence/gmb/health')
       ]);
 
       // Process results and handle partial failures
@@ -246,7 +243,7 @@ export default function PresenceCommandCenter() {
     setSocialState(prev => ({ ...prev, loading: true, error: null }));
     
     try {
-      const socialData = await makeApiCall<SocialData>('/api/presence/social/stats');
+      const socialData = await makeApiCall('/api/presence/social/stats');
       setSocialState({
         data: socialData,
         loading: false,
@@ -278,7 +275,7 @@ export default function PresenceCommandCenter() {
     setKeywordState(prev => ({ ...prev, loading: true, error: null }));
     
     try {
-      const keywordData = await makeApiCall<KeywordData[]>('/api/presence/keywords/rankings');
+      const keywordData = await makeApiCall('/api/presence/keywords/rankings');
       setKeywordState({
         data: keywordData,
         loading: false,
@@ -442,19 +439,19 @@ export default function PresenceCommandCenter() {
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
               <div className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
+                <Button className="w-full justify-start border border-white/20 bg-white/10 hover:bg-white/20 text-white">
                   <Calendar className="w-4 h-4 mr-2" />
                   Schedule Social Posts
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button className="w-full justify-start border border-white/20 bg-white/10 hover:bg-white/20 text-white">
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Respond to Reviews
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button className="w-full justify-start border border-white/20 bg-white/10 hover:bg-white/20 text-white">
                   <TrendingUp className="w-4 h-4 mr-2" />
                   Optimize Keywords
                 </Button>
-                <Button variant="outline" className="w-full justify-start" disabled>
+                <Button className="w-full justify-start border border-white/20 bg-white/10 hover:bg-white/20 text-white opacity-60" disabled>
                   <Lock className="w-4 h-4 mr-2" />
                   AI Content Generator (Pro)
                 </Button>
@@ -497,7 +494,7 @@ export default function PresenceCommandCenter() {
                     </div>
                     <p className="text-sm text-gray-700 mb-2">{review.text}</p>
                     {!review.replied && (
-                      <Button size="sm" variant="outline">Reply</Button>
+                      <Button className="h-9 px-3 border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 text-sm">Reply</Button>
                     )}
                   </div>
                 ))}
