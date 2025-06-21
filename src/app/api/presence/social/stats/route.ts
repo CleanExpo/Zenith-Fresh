@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { redis } from '@/lib/redis';
 
 export async function GET(request: Request) {
   try {
@@ -10,88 +11,76 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // TODO: Once Phase 1 is merged and OAuth is implemented, fetch real social stats
-    // For now, return mock data for Phase 2 testing
-    const socialStats = {
+    const cacheKey = `social:stats:${session.user.id}`;
+    
+    // Check cache first
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        return NextResponse.json(JSON.parse(cached));
+      }
+    } catch (error) {
+      console.error('Redis error:', error);
+    }
+
+    // Format data to match dashboard interface
+    const socialData = {
       facebook: {
-        platform: 'facebook',
         followers: 1234,
-        following: 89,
-        posts: 156,
-        engagement: {
-          rate: 5.2,
-          likes: 892,
-          comments: 234,
-          shares: 45
-        },
-        recentGrowth: 12,
-        isConnected: true
+        engagement: 5.2,
+        locked: false,
+        lastUpdated: new Date().toISOString()
       },
       instagram: {
-        platform: 'instagram',
         followers: 892,
-        following: 123,
-        posts: 78,
-        engagement: {
-          rate: 7.8,
-          likes: 1456,
-          comments: 345,
-          shares: 0
-        },
-        recentGrowth: 23,
-        isConnected: true
+        engagement: 7.8,
+        locked: false,
+        lastUpdated: new Date().toISOString()
       },
       x: {
-        platform: 'x',
         followers: 567,
-        following: 234,
-        posts: 234,
-        engagement: {
-          rate: 3.4,
-          likes: 234,
-          comments: 56,
-          shares: 12
-        },
-        recentGrowth: -2,
-        isConnected: true
+        engagement: 3.4,
+        locked: false,
+        lastUpdated: new Date().toISOString()
       },
       linkedin: {
-        platform: 'linkedin',
         followers: 0,
-        following: 0,
-        posts: 0,
-        engagement: {
-          rate: 0,
-          likes: 0,
-          comments: 0,
-          shares: 0
-        },
-        recentGrowth: 0,
-        isConnected: false
+        engagement: 0,
+        locked: true,
+        lastUpdated: null
       }
     };
 
-    // Calculate total reach
-    const totalReach = Object.values(socialStats).reduce(
+    // Calculate summary stats
+    const connectedPlatforms = Object.values(socialData).filter(p => !p.locked);
+    const totalReach = Object.values(socialData).reduce(
       (sum, platform) => sum + platform.followers,
       0
     );
-
-    // Calculate average engagement
-    const connectedPlatforms = Object.values(socialStats).filter(p => p.isConnected);
     const averageEngagement = connectedPlatforms.length > 0
-      ? connectedPlatforms.reduce((sum, p) => sum + p.engagement.rate, 0) / connectedPlatforms.length
+      ? connectedPlatforms.reduce((sum, p) => sum + p.engagement, 0) / connectedPlatforms.length
       : 0;
 
-    return NextResponse.json({
-      platforms: socialStats,
+    const responseData = {
+      ...socialData,
       summary: {
         totalReach,
         averageEngagement: Math.round(averageEngagement * 10) / 10,
         connectedPlatforms: connectedPlatforms.length,
-        totalPlatforms: Object.keys(socialStats).length
-      }
-    });
+        totalPlatforms: Object.keys(socialData).length
+      },
+      cached: false,
+      timestamp: new Date().toISOString()
+    };
+
+    // Cache for 15 minutes
+    try {
+      await redis.setex(cacheKey, 900, JSON.stringify(responseData));
+    } catch (error) {
+      console.error('Redis set error:', error);
+    }
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('Social Stats API Error:', error);
     return NextResponse.json(
