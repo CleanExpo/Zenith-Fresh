@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGmbBusinessInfo } from '@/lib/services/gmb';
 
+// Explicitly mark as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const businessInfo = await getGmbBusinessInfo();
