@@ -1,26 +1,26 @@
 [
   {
-    "content": "Investigate the /features page error with createContext",
+    "content": "Generate SSH key for GitHub authentication",
     "status": "completed",
     "priority": "high",
     "id": "1"
   },
   {
-    "content": "Fix the createContext import issue",
+    "content": "Add SSH key to SSH agent",
     "status": "completed",
     "priority": "high",
     "id": "2"
   },
   {
-    "content": "Test the build locally to ensure it passes",
+    "content": "Change git remote to SSH URL",
     "status": "completed",
     "priority": "high",
     "id": "3"
   },
   {
-    "content": "Verify all pages build successfully",
-    "status": "completed",
-    "priority": "medium",
+    "content": "Push changes to GitHub",
+    "status": "in_progress",
+    "priority": "high",
     "id": "4"
   }
 ]

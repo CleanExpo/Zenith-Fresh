@@ -22,7 +22,7 @@ model User {
   projects      Project[]
   accounts      Account[]
   sessions      Session[]
-  role          Role      @default(USER)
+  role          String    @default("USER")
   tasks         Task[]
   files         File[]
   analytics     Analytics[]
@@ -36,6 +36,20 @@ model User {
   sentInvitations TeamInvitation[] @relation("Inviter")
   apiKeys       ApiKey[]
   projectMembers ProjectMember[]
+  
+  // GMB Integration
+  gmbAccountId  String?
+  gmbLocationId String?
+  gmbAccountName String?
+  gmbLocationName String?
+  
+  // Agent Orchestrator
+  missions      Mission[]
+  approvalRequests ApprovalRequest[]
+  autoApprovalRules AutoApprovalRule[]
+  
+  // Review Campaign Engine
+  reviewCampaigns ReviewCampaign[]
 }
 
 model Account {
@@ -96,7 +110,7 @@ model Project {
 model Content {
   id          String   @id @default(cuid())
   title       String
-  body        String   @db.Text
+  body        String
   type        String
   status      String   @default("draft")
   createdAt   DateTime @default(now())
@@ -109,8 +123,8 @@ model Task {
   id          String    @id @default(cuid())
   title       String
   description String?
-  status      Status    @default(TODO)
-  priority    Priority  @default(MEDIUM)
+  status      String    @default("TODO")
+  priority    String    @default("MEDIUM")
   dueDate     DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -142,7 +156,7 @@ model Analytics {
   id          String    @id @default(cuid())
   type        String    // e.g., 'page_view', 'api_call', 'error'
   action      String    // e.g., 'view_dashboard', 'create_project'
-  metadata    Json?     // Additional data about the event
+  metadata    String?   // Additional data about the event (JSON string)
   createdAt   DateTime  @default(now())
   userId      String?
   user        User?     @relation(fields: [userId], references: [id])
@@ -155,7 +169,7 @@ model SystemMetrics {
   type        String    // e.g., 'cpu_usage', 'memory_usage', 'api_latency'
   value       Float
   timestamp   DateTime  @default(now())
-  metadata    Json?     // Additional metrics data
+  metadata    String?   // Additional metrics data (JSON string)
 }
 
 model Notification {
@@ -192,7 +206,7 @@ model UserPreferences {
 model ActivityLog {
   id          String    @id @default(cuid())
   action      String    // e.g., 'login', 'create_project', 'update_task'
-  details     Json?     // Additional activity details
+  details     String?   // Additional activity details (JSON string)
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime  @default(now())
@@ -211,9 +225,9 @@ model AuditLog {
   action      String    // e.g., 'create', 'update', 'delete', 'login', 'logout'
   entityType  String    // e.g., 'user', 'project', 'task', 'file'
   entityId    String?
-  oldValue    Json?     // Previous state
-  newValue    Json?     // New state
-  metadata    Json?     // Additional audit data
+  oldValue    String?   // Previous state (JSON string)
+  newValue    String?   // New state (JSON string)
+  metadata    String?   // Additional audit data (JSON string)
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime  @default(now())
@@ -232,12 +246,12 @@ model DataExport {
   completedAt DateTime?
   userId      String
   user        User      @relation(fields: [userId], references: [id])
-  metadata    Json?     // Export configuration
+  metadata    String?   // Export configuration (JSON string)
 }
 
 model ProjectMember {
   id          String    @id @default(cuid())
-  role        Role      @default(VIEWER)
+  role        String    @default("VIEWER")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   userId      String
@@ -265,7 +279,7 @@ model Team {
 
 model TeamMember {
   id          String    @id @default(cuid())
-  role        Role      @default(VIEWER)
+  role        String    @default("VIEWER")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   userId      String
@@ -279,7 +293,7 @@ model TeamMember {
 model TeamInvitation {
   id          String    @id @default(cuid())
   email       String
-  role        Role      @default(VIEWER)
+  role        String    @default("VIEWER")
   status      String    @default("pending") // pending, accepted, rejected
   token       String    @unique
   expiresAt   DateTime
@@ -296,7 +310,7 @@ model ApiKey {
   id          String    @id @default(cuid())
   name        String
   key         String    @unique
-  scopes      String[]  // Array of permission scopes
+  scopes      String    // Permission scopes (comma-separated)
   lastUsed    DateTime?
   expiresAt   DateTime?
   createdAt   DateTime  @default(now())
@@ -402,31 +416,825 @@ model TeamIntegration {
   teamId      String
   team        Team      @relation(fields: [teamId], references: [id])
   type        String    // e.g., 'slack', 'github', 'jira'
-  config      Json      // Store integration configuration
+  config      String    // Store integration configuration (JSON string)
   status      String    @default("active")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
 
-enum Role {
-  USER
-  ADMIN
-  MANAGER
-  VIEWER
-  EDITOR
+// Agent Orchestrator Models
+model Mission {
+  id              String            @id @default(cuid())
+  goal            String
+  status          MissionStatus     @default(PENDING)
+  priority        Priority          @default(NORMAL)
+  results         Json?
+  estimatedHours  Float?
+  actualHours     Float?
+  clientId        String
+  client          User              @relation(fields: [clientId], references: [id])
+  tasks           MissionTask[]
+  approvalRequests ApprovalRequest[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  completedAt     DateTime?
+  
+  @@map("missions")
 }
 
-enum Status {
-  TODO
+model MissionTask {
+  id          String      @id @default(cuid())
+  missionId   String
+  mission     Mission     @relation(fields: [missionId], references: [id])
+  agentType   String      // 'ContentAgent', 'MediaAgent', etc.
+  taskType    String      // 'write_copy', 'generate_image', etc.
+  status      TaskStatus  @default(QUEUED)
+  inputs      Json
+  outputs     Json?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+  dependsOn   String[]    // Task IDs this task depends on
+  
+  @@map("mission_tasks")
+}
+
+enum MissionStatus {
+  PENDING
   IN_PROGRESS
-  DONE
-  ARCHIVED
-  ACTIVE
+  COMPLETE
+  FAILED
+  CANCELLED
+}
+
+enum TaskStatus {
+  QUEUED
+  IN_PROGRESS
+  COMPLETE
+  FAILED
+  RETRYING
 }
 
 enum Priority {
   LOW
-  MEDIUM
+  NORMAL
   HIGH
   URGENT
-} 
+}
+
+// Approval Center Models
+model ApprovalRequest {
+  id              String            @id @default(cuid())
+  missionId       String
+  mission         Mission           @relation(fields: [missionId], references: [id])
+  agentType       String
+  taskType        String
+  contentType     String            // 'social_post', 'blog_article', 'review_reply'
+  originalContent Json
+  editedContent   Json?
+  status          ApprovalStatus    @default(PENDING)
+  priority        Priority          @default(NORMAL)
+  clientId        String
+  client          User              @relation(fields: [clientId], references: [id])
+  reviewedAt      DateTime?
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  autoApprovalRule String?          // Reference to rule that auto-approved
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("approval_requests")
+}
+
+model AutoApprovalRule {
+  id              String            @id @default(cuid())
+  name            String
+  clientId        String
+  client          User              @relation(fields: [clientId], references: [id])
+  agentType       String
+  conditions      Json              // Conditions for auto-approval
+  actions         Json              // Actions to take when conditions met
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("auto_approval_rules")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EDITING
+  AUTO_APPROVED
+}
+
+// Review Campaign & Marketing Engine Models
+model ReviewCampaign {
+  id              String            @id @default(cuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id])
+  userEmail       String
+  userName        String
+  triggerType     ReviewTriggerType
+  status          ReviewCampaignStatus @default(PENDING)
+  contextData     Json?
+  emailSent       Boolean           @default(false)
+  emailOpenedAt   DateTime?
+  emailClickedAt  DateTime?
+  responseAt      DateTime?
+  reviewSubmitted Boolean           @default(false)
+  reviewId        String?
+  reviewRating    Int?
+  reviewText      String?
+  testimonialCreated Boolean        @default(false)
+  socialCampaignId String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  testimonials    TestimonialAsset[]
+  socialCampaigns SocialProofCampaign[]
+  
+  @@map("review_campaigns")
+}
+
+model TestimonialAsset {
+  id              String            @id @default(cuid())
+  campaignId      String
+  campaign        ReviewCampaign    @relation(fields: [campaignId], references: [id])
+  quote           String
+  authorName      String
+  authorTitle     String?
+  authorCompany   String?
+  imageUrl        String?
+  designStyle     String
+  brandColors     Json
+  status          AssetStatus       @default(PENDING)
+  mediaAgentTaskId String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("testimonial_assets")
+}
+
+model SocialProofCampaign {
+  id              String            @id @default(cuid())
+  reviewCampaignId String
+  reviewCampaign  ReviewCampaign    @relation(fields: [reviewCampaignId], references: [id])
+  testimonialAssetId String?
+  platforms       Json              // Array of platform names
+  content         Json              // Platform-specific content
+  imageUrl        String?
+  status          CampaignStatus    @default(PENDING)
+  scheduledAt     DateTime?
+  publishedAt     DateTime?
+  engagementStats Json?
+  approvalRequestId String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("social_proof_campaigns")
+}
+
+model WebsiteEnhancement {
+  id              String            @id @default(cuid())
+  type            EnhancementType   
+  sourceReviewId  String?
+  content         Json
+  status          EnhancementStatus @default(PENDING)
+  implementedAt   DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("website_enhancements")
+}
+
+model ReviewAnalytics {
+  id              String            @id @default(cuid())
+  timeframe       String            // e.g., 'daily', 'weekly', 'monthly'
+  date            DateTime
+  campaignsSent   Int               @default(0)
+  emailsOpened    Int               @default(0)
+  emailsClicked   Int               @default(0)
+  reviewsReceived Int               @default(0)
+  averageRating   Float?
+  testimonialsCreated Int           @default(0)
+  socialPostsPublished Int          @default(0)
+  websiteUpdates  Int               @default(0)
+  conversionRate  Float?
+  createdAt       DateTime          @default(now())
+  
+  @@unique([timeframe, date])
+  @@map("review_analytics")
+}
+
+enum ReviewTriggerType {
+  FREE_USER
+  PAID_CLIENT
+}
+
+enum ReviewCampaignStatus {
+  PENDING
+  SENT
+  OPENED
+  CLICKED
+  RESPONDED
+  COMPLETED
+  FAILED
+}
+
+enum AssetStatus {
+  PENDING
+  GENERATING
+  COMPLETED
+  FAILED
+  APPROVED
+  PUBLISHED
+}
+
+enum CampaignStatus {
+  PENDING
+  SCHEDULED
+  PUBLISHED
+  FAILED
+  COMPLETED
+}
+
+enum EnhancementType {
+  FAQ_UPDATE
+  TESTIMONIAL_WIDGET
+  LANDING_PAGE_UPDATE
+  CASE_STUDY
+  SOCIAL_PROOF_ELEMENT
+}
+
+enum EnhancementStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+// Partner Ecosystem Models
+enum PartnerTier {
+  STANDARD
+  INTEGRATION
+  CERTIFIED_EXPERT
+}
+
+enum PartnerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum PartnershipType {
+  AFFILIATE
+  INTEGRATION
+  EXPERT_DIRECTORY
+}
+
+enum CommissionStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model Partner {
+  id              String            @id @default(cuid())
+  companyName     String
+  website         String
+  contactEmail    String
+  contactName     String
+  description     String
+  tier            PartnerTier       @default(STANDARD)
+  status          PartnerStatus     @default(PENDING)
+  partnershipType PartnershipType
+  commissionRate  Float             @default(10.0)
+  totalReferrals  Int               @default(0)
+  totalEarnings   Float             @default(0.0)
+  featuredUntil   DateTime?
+  apiKey          String?           @unique
+  webhookUrl      String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  referrals       PartnerReferral[]
+  assets          PartnerAsset[]
+  performance     PartnerPerformance[]
+  campaigns       CoMarketingCampaign[]
+  expert          ZenithExpert?
+
+  @@map("partners")
+}
+
+model PartnerApplication {
+  id                  String            @id @default(cuid())
+  companyName         String
+  website             String
+  contactEmail        String
+  contactName         String
+  description         String
+  serviceOffered      String
+  partnershipType     PartnershipType
+  whyPartner          String
+  previousExperience  String?
+  expectedVolume      String?
+  status              PartnerStatus     @default(PENDING)
+  reviewNotes         String?
+  reviewedBy          String?
+  reviewedAt          DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@map("partner_applications")
+}
+
+model PartnerReferral {
+  id               String            @id @default(cuid())
+  partnerId        String
+  partner          Partner           @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  referralCode     String            @unique
+  customerEmail    String
+  customerName     String?
+  conversionValue  Float             @default(0.0)
+  commissionAmount Float             @default(0.0)
+  commissionStatus CommissionStatus  @default(PENDING)
+  conversionDate   DateTime?
+  paidAt           DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([partnerId])
+  @@map("partner_referrals")
+}
+
+model PartnerAsset {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  name        String
+  type        String
+  url         String
+  description String?
+  clickCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([partnerId])
+  @@map("partner_assets")
+}
+
+model PartnerPerformance {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  month       DateTime
+  clicks      Int      @default(0)
+  conversions Int      @default(0)
+  revenue     Float    @default(0.0)
+  commission  Float    @default(0.0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([partnerId])
+  @@map("partner_performance")
+}
+
+model CoMarketingCampaign {
+  id             String   @id @default(cuid())
+  partnerId      String
+  partner        Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  name           String
+  description    String
+  type           String
+  status         String   @default("DRAFT")
+  targetAudience String?
+  budget         Float?
+  startDate      DateTime?
+  endDate        DateTime?
+  results        Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([partnerId])
+  @@map("co_marketing_campaigns")
+}
+
+model ZenithExpert {
+  id                String   @id @default(cuid())
+  partnerId         String   @unique
+  partner           Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  expertName        String
+  title             String
+  bio               String
+  specialties       String[]
+  hourlyRate        Float?
+  availability      String   @default("AVAILABLE")
+  rating            Float?   @default(0.0)
+  reviewCount       Int      @default(0)
+  portfolioUrl      String?
+  linkedinUrl       String?
+  certificationsPath String?
+  featured          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("zenith_experts")
+}
+
+// SearchMasteryAgent Models
+model BacklinkOpportunity {
+  id              String   @id @default(cuid())
+  clientId        String
+  domain          String
+  domainAuthority Int
+  pageUrl         String
+  contactEmail    String
+  relevanceScore  Float
+  linkingToDomain String
+  anchorText      String
+  linkType        String   // 'dofollow' | 'nofollow'
+  publishDate     DateTime
+  trafficEstimate Int
+  status          String   @default("potential") // potential, targeted, acquired, rejected
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("backlink_opportunities")
+}
+
+model OutreachCampaign {
+  id              String   @id @default(cuid())
+  clientId        String
+  targetDomain    String
+  targetEmail     String
+  opportunityId   String
+  articleTitle    String
+  articleContent  String
+  articleUrl      String?
+  emailSequence   Json     // Array of email objects
+  status          String   @default("draft") // draft, sent, replied, linked, rejected
+  lastContactDate DateTime?
+  responseReceived Boolean @default(false)
+  backlinkAcquired Boolean @default(false)
+  backlinkUrl     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("outreach_campaigns")
+}
+
+model AcquiredBacklink {
+  id              String   @id @default(cuid())
+  clientId        String
+  url             String   @unique
+  domain          String
+  anchorText      String
+  linkType        String   // 'dofollow' | 'nofollow'
+  domainAuthority Int
+  pageAuthority   Int
+  isVerified      Boolean  @default(false)
+  isValuable      Boolean  @default(false)
+  discoveredDate  DateTime @default(now())
+  verifiedDate    DateTime?
+  campaignId      String?  // Reference to OutreachCampaign if applicable
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("acquired_backlinks")
+}
+
+model SearchConsoleMission {
+  id              String   @id @default(cuid())
+  clientId        String
+  siteUrl         String
+  sitemapSubmitted Boolean @default(false)
+  crawlErrors     Json?    // Array of crawl error objects
+  performanceData Json?    // GSC performance insights
+  indexingRequests Json?   // URLs requested for indexing
+  status          String   @default("pending") // pending, completed, failed
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("search_console_missions")
+}
+
+model SearchMasteryMission {
+  id                    String   @id @default(cuid())
+  clientId              String
+  type                  String   // 'monthly_authority_build', 'backlink_verification', 'gsc_management'
+  status                String   @default("pending") // pending, in_progress, completed, failed
+  opportunitiesFound    Int?
+  campaignsCreated      Int?
+  backlinksVerified     Int?
+  gscTasksCompleted     Int?
+  results               Json?
+  startedAt             DateTime @default(now())
+  completedAt           DateTime?
+  estimatedCompletionAt DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@map("search_mastery_missions")
+}
+
+model ClientProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  domain          String
+  niche           String?
+  competitors     String[] // Array of competitor domains
+  targetKeywords  String[] // Array of target keywords
+  authorityScore  Float    @default(0.0)
+  gscToken        String?  // Encrypted GSC OAuth token
+  lastAnalyzed    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("client_profiles")
+}
+
+// Zenith Communications & CRM Engine Models
+model CrmContact {
+  id              String            @id @default(cuid())
+  type            ContactType
+  firstName       String
+  lastName        String
+  email           String            @unique
+  phone           String?
+  company         String?
+  title           String?
+  avatar          String?
+  status          ContactStatus     @default(ACTIVE)
+  leadScore       Int               @default(0) // 0-100 lead scoring
+  source          String?           // How they found us
+  notes           String?
+  tags            String[]          // Flexible tagging system
+  customFields    Json?             // Additional flexible data
+  assignedTo      String?           // User ID of assigned team member
+  lastContactDate DateTime?
+  nextFollowUp    DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  interactions    CrmInteraction[]
+  tasks           CrmTask[]
+  campaigns       EmailCampaign[]   @relation("CampaignContacts")
+  snapshots       SandboxSnapshot[]
+  
+  @@map("crm_contacts")
+}
+
+model CrmInteraction {
+  id              String            @id @default(cuid())
+  contactId       String
+  contact         CrmContact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  type            InteractionType
+  direction       InteractionDirection
+  subject         String?
+  content         String?
+  metadata        Json?             // Email IDs, meeting links, etc.
+  performedBy     String?           // User ID or Agent name
+  scheduledAt     DateTime?
+  completedAt     DateTime?
+  status          InteractionStatus @default(COMPLETED)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("crm_interactions")
+}
+
+model CrmTask {
+  id              String            @id @default(cuid())
+  title           String
+  description     String?
+  type            TaskType
+  priority        TaskPriority      @default(NORMAL)
+  status          CrmTaskStatus     @default(PENDING)
+  dueDate         DateTime?
+  completedAt     DateTime?
+  assignedTo      String?           // User ID
+  createdBy       String?           // User ID or Agent name
+  contactId       String?
+  contact         CrmContact?       @relation(fields: [contactId], references: [id])
+  metadata        Json?             // Additional task context
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("crm_tasks")
+}
+
+model EmailCampaign {
+  id              String            @id @default(cuid())
+  name            String
+  description     String?
+  type            EmailCampaignType
+  status          EmailCampaignStatus    @default(DRAFT)
+  templateId      String?
+  subject         String
+  content         String
+  fromName        String
+  fromEmail       String
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  createdBy       String            // User ID
+  metadata        Json?             // Campaign settings
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  contacts        CrmContact[]      @relation("CampaignContacts")
+  sequences       EmailSequence[]
+  analytics       EmailAnalytics[]
+  
+  @@map("email_campaigns")
+}
+
+model EmailSequence {
+  id              String            @id @default(cuid())
+  campaignId      String
+  campaign        EmailCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  stepNumber      Int
+  delayDays       Int               @default(0)
+  delayHours      Int               @default(0)
+  subject         String
+  content         String
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  sends           EmailSend[]
+  
+  @@unique([campaignId, stepNumber])
+  @@map("email_sequences")
+}
+
+model EmailSend {
+  id              String            @id @default(cuid())
+  sequenceId      String
+  sequence        EmailSequence     @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  contactId       String
+  emailAddress    String
+  status          EmailSendStatus   @default(QUEUED)
+  scheduledAt     DateTime
+  sentAt          DateTime?
+  openedAt        DateTime?
+  clickedAt       DateTime?
+  repliedAt       DateTime?
+  bouncedAt       DateTime?
+  errorMessage    String?
+  metadata        Json?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("email_sends")
+}
+
+model EmailAnalytics {
+  id              String            @id @default(cuid())
+  campaignId      String
+  campaign        EmailCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  date            DateTime
+  sent            Int               @default(0)
+  delivered       Int               @default(0)
+  opened          Int               @default(0)
+  clicked         Int               @default(0)
+  replied         Int               @default(0)
+  bounced         Int               @default(0)
+  unsubscribed    Int               @default(0)
+  createdAt       DateTime          @default(now())
+  
+  @@unique([campaignId, date])
+  @@map("email_analytics")
+}
+
+model SandboxSnapshot {
+  id              String            @id @default(cuid())
+  contactId       String
+  contact         CrmContact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  version         String            @default("1.0")
+  snapshotData    Json              // Complete sandbox state
+  isActive        Boolean           @default(false)
+  createdBy       String?           // User ID
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("sandbox_snapshots")
+}
+
+// Enums for CRM System
+enum ContactType {
+  CLIENT
+  PROSPECT
+  AFFILIATE
+  PARTNER
+  STAFF
+  AGENT
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+  QUALIFIED
+  UNQUALIFIED
+  CONVERTED
+  CHURNED
+}
+
+enum InteractionType {
+  EMAIL
+  PHONE_CALL
+  MEETING
+  DEMO
+  SUPPORT_TICKET
+  SOCIAL_MEDIA
+  WEBSITE_VISIT
+  FORM_SUBMISSION
+  PURCHASE
+  REFUND
+  NOTE
+}
+
+enum InteractionDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum InteractionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum TaskType {
+  FOLLOW_UP
+  DEMO
+  PROPOSAL
+  SUPPORT
+  ONBOARDING
+  RENEWAL
+  UPSELL
+  RESEARCH
+  OUTREACH
+}
+
+enum TaskPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum CrmTaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  OVERDUE
+}
+
+enum EmailCampaignType {
+  WELCOME_SERIES
+  NURTURE_SEQUENCE
+  PROMOTION
+  NEWSLETTER
+  PRODUCT_UPDATE
+  RE_ENGAGEMENT
+  ONBOARDING
+}
+
+enum EmailCampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum EmailSendStatus {
+  QUEUED
+  SENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  REPLIED
+  BOUNCED
+  FAILED
+  UNSUBSCRIBED
+}

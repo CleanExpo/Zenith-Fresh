@@ -84,7 +84,7 @@ export function TeamAnalytics({ teamId }: TeamAnalyticsProps) {
               {data.totalRequests.toLocaleString()}
             </div>
             <Badge
-              variant={data.growthRate >= 0 ? 'success' : 'destructive'}
+              variant={data.growthRate >= 0 ? 'default' : 'destructive'}
               className="mt-2"
             >
               {data.growthRate >= 0 ? '+' : ''}
@@ -101,7 +101,7 @@ export function TeamAnalytics({ teamId }: TeamAnalyticsProps) {
               {data.totalTokens.toLocaleString()}
             </div>
             <Badge
-              variant={data.growthRate >= 0 ? 'success' : 'destructive'}
+              variant={data.growthRate >= 0 ? 'secondary' : 'destructive'}
               className="mt-2"
             >
               {data.growthRate >= 0 ? '+' : ''}
@@ -160,4 +160,4 @@ export function TeamAnalytics({ teamId }: TeamAnalyticsProps) {
       </Card>
     </div>
   );
-} 
+}
