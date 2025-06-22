@@ -41,6 +41,8 @@ next-env.d.ts
 # IDE
 .vscode/
 .idea/
+.cursor-server/
+.claude/
 
 # misc
 *.swp
@@ -72,4 +74,7 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
-*.sw? 
+*.sw?
+
+# SSH keys
+.ssh/ 
