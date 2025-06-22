@@ -1,20 +1,24 @@
 {
-  "name": "zenith-fresh-clean-deploy",
-  "version": "3.0.0-vercel-fix",
+  "name": "zenith-platform",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint --fix",
     "type-check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "analyze": "cross-env ANALYZE=true next build"
+    "analyze": "cross-env ANALYZE=true next build",
+    "prepare": "echo 'Prepare script executed'",
+    "postinstall": "prisma generate || echo 'Prisma generate skipped'"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@vercel/edge": "^1.2.2",
+    "@prisma/client": "^5.22.0",
     "next": "14.2.30",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -26,7 +30,8 @@
     "@types/react": "^18.2.39",
     "@types/react-dom": "^18.2.17",
     "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32"
+    "postcss": "^8.4.32",
+    "prisma": "^5.22.0"
   },
   "engines": {
     "node": ">=18.0.0",

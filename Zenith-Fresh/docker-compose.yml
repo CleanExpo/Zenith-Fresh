@@ -1,0 +1,102 @@
+# Zenith Fresh SaaS Platform - Complete Stack
+version: '3.8'
+
+services:
+  # Main Next.js Application
+  zenith-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zenith-fresh-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - MASTER_USERNAME=zenith_master
+      - MASTER_PASSWORD=ZenithMaster2024!
+      - DATABASE_URL=postgresql://zenith_user:zenith_password@postgres:5432/zenith_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - zenith-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: zenith-postgres
+    environment:
+      - POSTGRES_DB=zenith_db
+      - POSTGRES_USER=zenith_user
+      - POSTGRES_PASSWORD=zenith_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - zenith-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: zenith-redis
+    command: redis-server --appendonly yes --requirepass zenith_redis_password
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - zenith-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: zenith-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - zenith-app
+    restart: unless-stopped
+    networks:
+      - zenith-network
+
+  # Health Monitoring
+  health-monitor:
+    image: alpine:latest
+    container_name: zenith-health-monitor
+    command: >
+      sh -c "
+        apk add --no-cache curl &&
+        while true; do
+          curl -f http://zenith-app:3000/api/health || echo 'Health check failed';
+          sleep 30;
+        done
+      "
+    depends_on:
+      - zenith-app
+    restart: unless-stopped
+    networks:
+      - zenith-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  zenith-network:
+    driver: bridge
