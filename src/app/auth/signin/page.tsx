@@ -193,7 +193,7 @@ export default function SignInPage() {
           {/* Footer Links */}
           <div className="mt-6 text-center space-y-2">
             <p className="text-gray-300 text-sm">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link 
                 href="/auth/register" 
                 className="text-blue-400 hover:text-blue-300 font-medium transition-colors"

@@ -108,7 +108,7 @@ export default function RegisterPage() {
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Account Created!</h2>
             <p className="text-gray-300 mb-4">
-              Welcome to Zenith Platform. You're being redirected to your dashboard...
+              Welcome to Zenith Platform. You&apos;re being redirected to your dashboard...
             </p>
             <div className="flex items-center justify-center gap-2 text-blue-400">
               <Loader2 className="w-4 h-4 animate-spin" />
