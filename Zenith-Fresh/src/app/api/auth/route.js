@@ -81,7 +81,13 @@ class AuthSystem {
       role: 'master_admin'
     };
     
+    // TODO: SERVERLESS ISSUE - staffUsers Map will be empty on each execution
+    // Staff users will need to be re-initialized every time
+    // Recommended: Move staff users to database with lazy loading
     this.staffUsers = new Map();
+    // TODO: SERVERLESS ISSUE - Permission levels should be in database or config
+    // This static configuration should be externalized for easier management
+    // Recommended: Store in database or environment variables
     this.permissionLevels = {
       master_admin: {
         name: 'Master Administrator',
@@ -116,6 +122,9 @@ class AuthSystem {
     this.initializeStaffUsers();
   }
 
+  // TODO: SERVERLESS ISSUE - Staff initialization happens on every execution
+  // This causes unnecessary processing and doesn't scale
+  // Recommended: Load staff users from database on-demand
   initializeStaffUsers() {
     const staffList = [
       { username: 'staff_1', password: 'StaffTest2024!', name: 'Staff Tester 1', role: 'staff_tester' },

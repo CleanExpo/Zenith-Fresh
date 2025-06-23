@@ -108,6 +108,10 @@ const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const MAX_REQUESTS_PER_MINUTE = 100;
 const RETRY_AFTER_SECONDS = 30;
 
+// TODO: SERVERLESS ISSUE - Replace with Redis for rate limiting
+// requestCounts Map will be empty on each serverless execution
+// systemMetrics object will reset, breaking load tracking
+// Recommended: Use Redis with TTL for rate limits, atomic operations for metrics
 // In-memory store for edge (use external DB in production)
 const requestCounts = new Map();
 const systemMetrics = {
@@ -191,6 +195,9 @@ function checkRateLimit(clientId) {
     );
     requestCounts.set(clientId, validRequests);
     
+    // TODO: SERVERLESS ISSUE - Memory cleanup logic won't work in serverless
+    // The Map will be empty on each execution, making this cleanup unnecessary
+    // Recommended: Use Redis TTL for automatic cleanup
     // Clean up old entries periodically to prevent memory leaks
     if (requestCounts.size > 10000) {
       // Remove entries that haven't been accessed recently

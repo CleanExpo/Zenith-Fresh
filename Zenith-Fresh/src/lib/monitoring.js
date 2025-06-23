@@ -6,6 +6,9 @@ import { logger } from './logger.js';
 
 class Monitor {
   constructor() {
+    // TODO: SERVERLESS ISSUE - All monitoring data will be lost between executions
+    // this.metrics Map and this.alerts array will reset on each serverless execution
+    // Recommended: Use Redis for real-time metrics, database for persistent alerts
     this.startTime = Date.now();
     this.metrics = new Map();
     this.alerts = [];
@@ -21,6 +24,9 @@ class Monitor {
       timestamp
     };
 
+    // TODO: SERVERLESS ISSUE - Metric history will be lost between executions
+    // Each serverless execution starts with empty Map, losing all historical data
+    // Recommended: Store metrics in Redis with time-based keys or time-series DB
     // Store recent metrics (last 100 per metric)
     if (!this.metrics.has(name)) {
       this.metrics.set(name, []);
@@ -124,6 +130,9 @@ class Monitor {
       acknowledged: false
     };
 
+    // TODO: SERVERLESS ISSUE - Alerts array will be empty on each execution
+    // Critical alerts may be lost if not persisted to external storage
+    // Recommended: Store alerts in database for persistence
     this.alerts.push(alert);
     
     // Keep only last 50 alerts

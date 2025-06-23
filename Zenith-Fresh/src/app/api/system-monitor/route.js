@@ -135,6 +135,9 @@ const withTimeout = async (operation, timeoutMs = 5000, operationName = 'Operati
   ]);
 };
 
+// TODO: SERVERLESS ISSUE - Replace with Redis/Database storage
+// This in-memory storage will be lost between serverless executions
+// Recommended: Use Redis for real-time metrics, database for persistence
 // System metrics storage (use external DB in production)
 let systemMetrics = {
   timestamp: Date.now(),
@@ -161,6 +164,9 @@ let systemMetrics = {
   }
 };
 
+// TODO: SERVERLESS ISSUE - Replace with time-series database
+// This array will be empty on each serverless execution
+// Recommended: Use InfluxDB, TimescaleDB, or Redis with time-based keys
 // Historical data (last 24 hours)
 const metricsHistory = [];
 const MAX_HISTORY_ENTRIES = 1440; // 24 hours * 60 minutes
@@ -273,6 +279,9 @@ async function updateMetrics() {
 /**
  * Calculate request rate (requests per minute)
  */
+// TODO: SERVERLESS ISSUE - Request rate calculation depends on persistent history
+// This will always return 0 in serverless due to empty metricsHistory
+// Recommended: Calculate rate from database/Redis time-series data
 function calculateRequestRate() {
   const recentHistory = metricsHistory.slice(-10); // Last 10 minutes
   if (recentHistory.length < 2) return 0;

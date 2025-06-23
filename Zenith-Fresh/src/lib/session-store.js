@@ -5,6 +5,10 @@
 
 class SessionStore {
   constructor() {
+    // TODO: SERVERLESS CRITICAL ISSUE - Replace with Redis/Database immediately
+    // In-memory Map will be empty on each serverless execution
+    // Users will be logged out after every function execution
+    // Recommended: Redis with TTL or database session storage
     // For now, use in-memory storage with proper cleanup
     // TODO: Replace with Redis in production
     this.sessions = new Map();
@@ -109,6 +113,9 @@ class SessionStore {
       }
     }
 
+    // TODO: SERVERLESS ISSUE - setTimeout won't work in serverless
+    // Scheduled cleanup will not persist between executions
+    // Recommended: Use Redis TTL for automatic expiration
     // Schedule next cleanup in 5 minutes
     setTimeout(() => this.cleanup(), 5 * 60 * 1000);
   }
@@ -129,6 +136,9 @@ class SessionStore {
   }
 }
 
+// TODO: SERVERLESS ISSUE - Singleton pattern won't work in serverless
+// Instance will be recreated on each execution, losing all session data
+// Recommended: Replace singleton with Redis connection or database queries
 // Singleton instance
 let sessionStoreInstance = null;
 

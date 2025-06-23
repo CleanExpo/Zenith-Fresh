@@ -3,9 +3,10 @@
  * Prevents repository overload and manages deployment traffic
  */
 
-const fs = require('fs');
-const path = require('path');
-const { exec } = require('child_process');
+// SERVERLESS COMPATIBILITY: Filesystem operations removed for serverless environment
+// const fs = require('fs');
+// const path = require('path');
+// const { exec } = require('child_process');
 
 // Node.js fetch polyfill for compatibility
 const fetch = globalThis.fetch || require('node-fetch');
@@ -21,74 +22,37 @@ class DeploymentOptimizer {
 
   /**
    * Check repository health and size
+   * SERVERLESS COMPATIBILITY: Filesystem operations replaced with mock data
    */
   async checkRepositoryHealth() {
-    return new Promise((resolve, reject) => {
-      exec('du -sb . --exclude=.git', (error, stdout) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        const sizeBytes = parseInt(stdout.split('\t')[0]);
-        const sizeMB = Math.round(sizeBytes / (1024 * 1024));
-
-        const health = {
-          sizeBytes,
-          sizeMB,
-          isHealthy: sizeBytes < this.maxRepoSize,
-          warnings: []
-        };
-
-        if (sizeBytes > this.maxRepoSize) {
-          health.warnings.push(`Repository size (${sizeMB}MB) exceeds limit (${Math.round(this.maxRepoSize / (1024 * 1024))}MB)`);
-        }
-
-        // Check for large files
-        exec('find . -type f -size +10M ! -path "./.git/*" | head -10', (err, largeFiles) => {
-          if (largeFiles.trim()) {
-            health.warnings.push('Large files detected');
-            health.largeFiles = largeFiles.trim().split('\n');
-          }
-
-          resolve(health);
-        });
-      });
-    });
+    // SERVERLESS: Cannot perform filesystem operations in serverless environment
+    // This would need to be implemented using external storage service or build-time checks
+    console.warn('⚠️ Repository health check disabled for serverless environment');
+    
+    return {
+      sizeBytes: 50 * 1024 * 1024, // Mock 50MB size
+      sizeMB: 50,
+      isHealthy: true,
+      warnings: ['Repository health check unavailable in serverless environment'],
+      largeFiles: [],
+      note: 'Filesystem operations not available in serverless environment. Consider implementing build-time checks or external storage monitoring.'
+    };
   }
 
   /**
    * Optimize repository by removing unnecessary files
+   * SERVERLESS COMPATIBILITY: Filesystem operations disabled
    */
   async optimizeRepository() {
-    const optimizations = [];
-
-    // Remove node_modules if present
-    if (fs.existsSync('node_modules')) {
-      await this.executeCommand('rm -rf node_modules');
-      optimizations.push('Removed node_modules');
-    }
-
-    // Remove build artifacts
-    const buildDirs = ['.next', 'dist', 'build', '.vercel'];
-    for (const dir of buildDirs) {
-      if (fs.existsSync(dir)) {
-        await this.executeCommand(`rm -rf ${dir}`);
-        optimizations.push(`Removed ${dir}`);
-      }
-    }
-
-    // Clean npm cache
-    await this.executeCommand('npm cache clean --force');
-    optimizations.push('Cleaned npm cache');
-
-    // Reinstall production dependencies only
-    if (fs.existsSync('package.json')) {
-      await this.executeCommand('npm ci --omit=dev');
-      optimizations.push('Reinstalled production dependencies');
-    }
-
-    return optimizations;
+    // SERVERLESS: Cannot perform filesystem operations in serverless environment
+    // Repository optimization must be done at build time or using external tools
+    console.warn('⚠️ Repository optimization disabled for serverless environment');
+    
+    return [
+      'Repository optimization unavailable in serverless environment',
+      'Consider implementing build-time optimization or external cleanup tools',
+      'For serverless deployment, ensure your build process excludes unnecessary files'
+    ];
   }
 
   /**
@@ -225,17 +189,12 @@ class DeploymentOptimizer {
 
   /**
    * Utility methods
+   * SERVERLESS COMPATIBILITY: Command execution disabled
    */
   async executeCommand(command) {
-    return new Promise((resolve, reject) => {
-      exec(command, (error, stdout, stderr) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        resolve({ stdout, stderr });
-      });
-    });
+    // SERVERLESS: Cannot execute shell commands in serverless environment
+    console.warn(`⚠️ Command execution disabled for serverless: ${command}`);
+    throw new Error('Command execution not available in serverless environment. Consider using build-time scripts or external services.');
   }
 
   async delay(ms) {
