@@ -1,47 +1,80 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, AlertCircle, Loader2, User, CheckCircle } from 'lucide-react';
 
-export default function SignInPage() {
+export default function RegisterPage() {
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     password: '',
+    confirmPassword: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
+    // Basic validation
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const result = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
       });
 
-      if (result?.error) {
-        setError('Invalid email or password');
-      } else if (result?.ok) {
-        // Successful login
-        const session = await getSession();
-        if (session) {
-          router.push(callbackUrl);
-          router.refresh();
-        }
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess(true);
+        
+        // Auto-sign in after registration
+        setTimeout(async () => {
+          const result = await signIn('credentials', {
+            email: formData.email,
+            password: formData.password,
+            redirect: false,
+          });
+
+          if (result?.ok) {
+            router.push('/dashboard');
+          } else {
+            router.push('/auth/signin');
+          }
+        }, 2000);
+      } else {
+        setError(data.error || 'Failed to create account');
       }
     } catch (error) {
-      setError('An error occurred during sign in');
+      setError('An error occurred during registration');
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +83,7 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await signIn('google', { callbackUrl });
+      await signIn('google', { callbackUrl: '/dashboard' });
     } catch (error) {
       setError('Failed to sign in with Google');
       setIsLoading(false);
@@ -65,16 +98,38 @@ export default function SignInPage() {
     if (error) setError('');
   };
 
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-2xl text-center">
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-green-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Account Created!</h2>
+            <p className="text-gray-300 mb-4">
+              Welcome to Zenith Platform. You're being redirected to your dashboard...
+            </p>
+            <div className="flex items-center justify-center gap-2 text-blue-400">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm">Signing you in...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8">
         {/* Logo/Brand */}
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white mb-2">Zenith Platform</h1>
-          <p className="text-gray-300">Sign in to your account</p>
+          <p className="text-gray-300">Create your account</p>
         </div>
 
-        {/* Sign In Form */}
+        {/* Register Form */}
         <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Error Message */}
@@ -84,6 +139,27 @@ export default function SignInPage() {
                 <span className="text-red-300 text-sm">{error}</span>
               </div>
             )}
+
+            {/* Name Field */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-200 mb-2">
+                Full Name
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your full name"
+                />
+              </div>
+            </div>
 
             {/* Email Field */}
             <div>
@@ -117,12 +193,12 @@ export default function SignInPage() {
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
                   value={formData.password}
                   onChange={handleChange}
                   className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your password"
+                  placeholder="Create a password"
                 />
                 <button
                   type="button"
@@ -132,13 +208,35 @@ export default function SignInPage() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              <p className="text-xs text-gray-400 mt-1">Must be at least 8 characters long</p>
             </div>
 
-            {/* Admin Demo Credentials */}
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-              <p className="text-blue-300 text-sm font-medium mb-1">Demo Admin Access:</p>
-              <p className="text-blue-200 text-xs">Email: zenithfresh25@gmail.com</p>
-              <p className="text-blue-200 text-xs">Password: F^bf35(llm1120!2a</p>
+            {/* Confirm Password Field */}
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-200 mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Confirm your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             {/* Submit Button */}
@@ -150,10 +248,10 @@ export default function SignInPage() {
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Signing in...
+                  Creating account...
                 </div>
               ) : (
-                'Sign In'
+                'Create Account'
               )}
             </button>
 
@@ -193,12 +291,12 @@ export default function SignInPage() {
           {/* Footer Links */}
           <div className="mt-6 text-center space-y-2">
             <p className="text-gray-300 text-sm">
-              Don't have an account?{' '}
+              Already have an account?{' '}
               <Link 
-                href="/auth/register" 
+                href="/auth/signin" 
                 className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
               >
-                Sign up
+                Sign in
               </Link>
             </p>
             <Link 
@@ -208,8 +306,22 @@ export default function SignInPage() {
               ← Back to home
             </Link>
           </div>
+
+          {/* Terms */}
+          <div className="mt-4 text-center">
+            <p className="text-xs text-gray-400">
+              By creating an account, you agree to our{' '}
+              <Link href="/terms" className="text-blue-400 hover:text-blue-300">
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link href="/privacy" className="text-blue-400 hover:text-blue-300">
+                Privacy Policy
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
-} 
+}
