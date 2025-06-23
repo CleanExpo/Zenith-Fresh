@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { 
   Check, 
   Zap, 
@@ -99,11 +98,7 @@ const PricingPage = () => {
       {/* Hero Section */}
       <div className="relative pt-20 pb-16 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div className="animate-fadeInUp">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent">
               Simple, Transparent Pricing
             </h1>
@@ -111,15 +106,10 @@ const PricingPage = () => {
               Choose the perfect plan for your needs. All plans include our core features 
               with no hidden fees or surprise charges.
             </p>
-          </motion.div>
+          </div>
 
           {/* Billing Toggle */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex items-center justify-center mb-12"
-          >
+          <div className="flex items-center justify-center mb-12 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
             <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-full p-1 flex items-center">
               <button
                 onClick={() => setBillingCycle('monthly')}
@@ -145,15 +135,10 @@ const PricingPage = () => {
                 </span>
               </button>
             </div>
-          </motion.div>
+          </div>
 
           {/* Trust Indicators */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-400 mb-16"
-          >
+          <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-400 mb-16 animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-green-400" />
               <span>30-day money-back guarantee</span>
@@ -166,7 +151,7 @@ const PricingPage = () => {
               <Globe className="w-4 h-4 text-purple-400" />
               <span>Cancel anytime</span>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
@@ -175,12 +160,10 @@ const PricingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8">
             {plans.map((plan, index) => (
-              <motion.div
+              <div
                 key={plan.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="relative"
+                className="relative animate-fadeInUp"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
@@ -191,7 +174,7 @@ const PricingPage = () => {
                   </div>
                 )}
                 
-                <Card className={`backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 relative overflow-hidden ${
+                <Card className={`backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 relative overflow-hidden transition-all hover:scale-105 ${
                   plan.popular ? 'ring-2 ring-purple-500/50 transform scale-105' : ''
                 }`}>
                   {/* Background Gradient */}
@@ -240,10 +223,10 @@ const PricingPage = () => {
                     <Button
                       onClick={() => handleSubscribe(plan.name)}
                       disabled={loading === plan.name}
-                      className={`w-full h-12 rounded-2xl font-semibold text-lg transition-all ${
+                      className={`w-full h-12 rounded-2xl font-semibold text-lg transition-all hover:scale-105 ${
                         plan.popular
-                          ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105'
-                          : `bg-gradient-to-r ${plan.color} hover:scale-105`
+                          ? 'bg-gradient-to-r from-purple-500 to-pink-500'
+                          : `bg-gradient-to-r ${plan.color}`
                       } ${loading === plan.name ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       {loading === plan.name ? (
@@ -260,7 +243,7 @@ const PricingPage = () => {
                     </Button>
                   </div>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -269,12 +252,7 @@ const PricingPage = () => {
       {/* Enterprise CTA */}
       <div className="relative px-4 pb-20">
         <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-12 text-center"
-          >
+          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-12 text-center animate-fadeInUp">
             <Rocket className="w-16 h-16 text-purple-400 mx-auto mb-6" />
             <h2 className="text-3xl font-bold text-white mb-4">
               Need Something Custom?
@@ -291,7 +269,7 @@ const PricingPage = () => {
                 Contact Sales
               </Button>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
@@ -320,20 +298,35 @@ const PricingPage = () => {
                 answer: "We'll notify you when you're approaching your limits. You can upgrade your plan or purchase additional API calls as needed."
               }
             ].map((faq, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6"
+                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 animate-fadeInUp"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <h3 className="text-lg font-semibold text-white mb-3">{faq.question}</h3>
                 <p className="text-gray-300">{faq.answer}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeInUp {
+          animation: fadeInUp 0.5s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 };
