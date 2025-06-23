@@ -7,6 +7,9 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 
+// Node.js fetch polyfill for compatibility
+const fetch = globalThis.fetch || require('node-fetch');
+
 class DeploymentOptimizer {
   constructor(options = {}) {
     this.maxRepoSize = options.maxRepoSize || 500 * 1024 * 1024; // 500MB
@@ -149,9 +152,20 @@ class DeploymentOptimizer {
     console.log(`📊 Monitoring deployment at ${url}`);
     
     for (let i = 0; i < maxChecks; i++) {
+      const startTime = Date.now();
       try {
-        const response = await fetch(url);
-        const responseTime = Date.now();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
+        const response = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Zenith-Fresh-DeploymentMonitor/1.0'
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        const responseTime = Date.now() - startTime;
         
         if (response.ok) {
           console.log(`✅ Health check ${i + 1}/${maxChecks} passed (${response.status})`);
@@ -166,7 +180,12 @@ class DeploymentOptimizer {
           console.log(`⚠️ Health check ${i + 1}/${maxChecks} failed (${response.status})`);
         }
       } catch (error) {
-        console.log(`❌ Health check ${i + 1}/${maxChecks} error:`, error.message);
+        const responseTime = Date.now() - startTime;
+        if (error.name === 'AbortError') {
+          console.log(`❌ Health check ${i + 1}/${maxChecks} timeout after ${responseTime}ms`);
+        } else {
+          console.log(`❌ Health check ${i + 1}/${maxChecks} error:`, error.message);
+        }
       }
       
       // Wait between checks

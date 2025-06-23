@@ -4,6 +4,132 @@
  */
 
 import { NextResponse } from 'next/server';
+const { metricsOperations } = require('../../../../lib/database.js');
+
+// Error logging utility
+const logError = (error, context, additionalInfo = {}) => {
+  const errorLog = {
+    timestamp: new Date().toISOString(),
+    context,
+    error: {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    },
+    ...additionalInfo
+  };
+  console.error('[SYSTEM_MONITOR_API_ERROR]', JSON.stringify(errorLog));
+};
+
+// Input validation utilities
+const validateEndpoint = (endpoint) => {
+  const validEndpoints = ['overview', 'metrics', 'history', 'health', 'alerts'];
+  
+  if (!endpoint) {
+    return { isValid: true, value: 'overview' }; // Default
+  }
+  
+  if (typeof endpoint !== 'string') {
+    return {
+      isValid: false,
+      error: 'Endpoint parameter must be a string'
+    };
+  }
+  
+  if (!validEndpoints.includes(endpoint)) {
+    return {
+      isValid: false,
+      error: `Invalid endpoint. Allowed values: ${validEndpoints.join(', ')}`
+    };
+  }
+  
+  return { isValid: true, value: endpoint };
+};
+
+const validateHours = (hoursParam) => {
+  if (!hoursParam) {
+    return { isValid: true, value: 1 }; // Default
+  }
+  
+  const hours = parseInt(hoursParam, 10);
+  
+  if (isNaN(hours)) {
+    return {
+      isValid: false,
+      error: 'Hours parameter must be a valid number'
+    };
+  }
+  
+  if (hours < 1 || hours > 168) { // Max 1 week
+    return {
+      isValid: false,
+      error: 'Hours parameter must be between 1 and 168 (1 week)'
+    };
+  }
+  
+  return { isValid: true, value: hours };
+};
+
+const validateMetricsUpdate = (body) => {
+  const errors = [];
+  
+  if (!body || typeof body !== 'object') {
+    errors.push('Request body must be an object');
+    return errors;
+  }
+  
+  if (body.requests && typeof body.requests !== 'object') {
+    errors.push('Requests data must be an object');
+  } else if (body.requests) {
+    const { total, successful, failed, rate } = body.requests;
+    
+    if (total !== undefined && (!Number.isInteger(total) || total < 0)) {
+      errors.push('Total requests must be a non-negative integer');
+    }
+    
+    if (successful !== undefined && (!Number.isInteger(successful) || successful < 0)) {
+      errors.push('Successful requests must be a non-negative integer');
+    }
+    
+    if (failed !== undefined && (!Number.isInteger(failed) || failed < 0)) {
+      errors.push('Failed requests must be a non-negative integer');
+    }
+    
+    if (rate !== undefined && (typeof rate !== 'number' || rate < 0)) {
+      errors.push('Request rate must be a non-negative number');
+    }
+  }
+  
+  if (body.performance && typeof body.performance !== 'object') {
+    errors.push('Performance data must be an object');
+  } else if (body.performance) {
+    const { averageResponseTime, slowQueries, errorRate } = body.performance;
+    
+    if (averageResponseTime !== undefined && (typeof averageResponseTime !== 'number' || averageResponseTime < 0)) {
+      errors.push('Average response time must be a non-negative number');
+    }
+    
+    if (slowQueries !== undefined && (!Number.isInteger(slowQueries) || slowQueries < 0)) {
+      errors.push('Slow queries must be a non-negative integer');
+    }
+    
+    if (errorRate !== undefined && (typeof errorRate !== 'number' || errorRate < 0 || errorRate > 100)) {
+      errors.push('Error rate must be a number between 0 and 100');
+    }
+  }
+  
+  return errors;
+};
+
+// Timeout wrapper for async operations
+const withTimeout = async (operation, timeoutMs = 5000, operationName = 'Operation') => {
+  return Promise.race([
+    operation,
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error(`${operationName} timed out after ${timeoutMs}ms`)), timeoutMs)
+    )
+  ]);
+};
 
 // System metrics storage (use external DB in production)
 let systemMetrics = {
@@ -73,48 +199,70 @@ function calculatePerformanceMetrics() {
 /**
  * Update system metrics
  */
-function updateMetrics() {
-  const resources = getSystemResources();
-  const performance = calculatePerformanceMetrics();
-  const now = Date.now();
-  
-  // Update current metrics
-  systemMetrics = {
-    timestamp: now,
-    requests: {
-      ...systemMetrics.requests,
-      rate: calculateRequestRate()
-    },
-    performance: {
-      ...systemMetrics.performance,
-      errorRate: performance.errorRate,
-      availability: performance.availability
-    },
-    resources: {
-      memoryUsage: resources.memoryUsage,
-      cpuLoad: resources.cpuLoad,
-      activeConnections: resources.activeConnections,
-      diskUsage: resources.diskUsage,
-      networkIO: resources.networkIO
-    },
-    traffic: {
-      ...systemMetrics.traffic,
-      currentLoad: (resources.cpuLoad + resources.memoryUsage) / 2
+async function updateMetrics() {
+  try {
+    const resources = getSystemResources();
+    const performance = calculatePerformanceMetrics();
+    const now = Date.now();
+    
+    // Update current metrics
+    systemMetrics = {
+      timestamp: now,
+      requests: {
+        ...systemMetrics.requests,
+        rate: calculateRequestRate()
+      },
+      performance: {
+        ...systemMetrics.performance,
+        errorRate: performance.errorRate,
+        availability: performance.availability
+      },
+      resources: {
+        memoryUsage: resources.memoryUsage,
+        cpuLoad: resources.cpuLoad,
+        activeConnections: resources.activeConnections,
+        diskUsage: resources.diskUsage,
+        networkIO: resources.networkIO
+      },
+      traffic: {
+        ...systemMetrics.traffic,
+        currentLoad: (resources.cpuLoad + resources.memoryUsage) / 2
+      }
+    };
+    
+    // Store metrics in database with fallback to in-memory
+    try {
+      await withTimeout(
+        metricsOperations.storeMetrics(systemMetrics),
+        3000,
+        'Database metrics storage'
+      );
+    } catch (error) {
+      logError(error, 'database_metrics_storage');
+      console.log('Failed to store metrics in database, using in-memory fallback:', error.message);
+      
+      try {
+        // Add to in-memory history as fallback
+        metricsHistory.push({
+          timestamp: now,
+          cpuLoad: resources.cpuLoad,
+          memoryUsage: resources.memoryUsage,
+          requestRate: systemMetrics.requests.rate,
+          errorRate: performance.errorRate
+        });
+        
+        // Maintain history size
+        if (metricsHistory.length > MAX_HISTORY_ENTRIES) {
+          metricsHistory.shift();
+        }
+      } catch (memoryError) {
+        logError(memoryError, 'in_memory_metrics_storage');
+        // Continue without storing history if both fail
+      }
     }
-  };
-  
-  // Add to history
-  metricsHistory.push({
-    timestamp: now,
-    cpuLoad: resources.cpuLoad,
-    memoryUsage: resources.memoryUsage,
-    requestRate: systemMetrics.requests.rate,
-    errorRate: performance.errorRate
-  });
-  
-  // Maintain history size
-  if (metricsHistory.length > MAX_HISTORY_ENTRIES) {
-    metricsHistory.shift();
+  } catch (error) {
+    logError(error, 'update_metrics');
+    throw error; // Re-throw to be handled by caller
   }
 }
 
@@ -242,49 +390,211 @@ function getDashboardMetrics() {
  * GET handler for system monitoring
  */
 export async function GET(request) {
+  const startTime = Date.now();
+  const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
   try {
-    const url = new URL(request.url);
-    const endpoint = url.searchParams.get('endpoint') || 'overview';
+    // Parse and validate URL
+    let url;
+    try {
+      url = new URL(request.url);
+    } catch (urlError) {
+      logError(urlError, 'url_parsing', { requestId });
+      return NextResponse.json({
+        error: 'Invalid request URL',
+        code: 'INVALID_URL',
+        requestId,
+        timestamp: new Date().toISOString()
+      }, { status: 400 });
+    }
     
-    // Update metrics before responding
-    updateMetrics();
+    // Validate endpoint parameter
+    const endpointParam = url.searchParams.get('endpoint');
+    const endpointValidation = validateEndpoint(endpointParam);
+    
+    if (!endpointValidation.isValid) {
+      return NextResponse.json({
+        error: endpointValidation.error,
+        code: 'INVALID_ENDPOINT',
+        requestId,
+        timestamp: new Date().toISOString()
+      }, { status: 400 });
+    }
+    
+    const endpoint = endpointValidation.value;
+    
+    // Update metrics before responding with timeout protection
+    try {
+      await withTimeout(
+        updateMetrics(),
+        4000,
+        'Metrics update'
+      );
+    } catch (updateError) {
+      logError(updateError, 'metrics_update', { endpoint, requestId });
+      // Continue with stale metrics rather than failing completely
+      console.warn('Using potentially stale metrics due to update failure');
+    }
     
     switch (endpoint) {
       case 'overview':
-        return NextResponse.json(getDashboardMetrics());
+        try {
+          const dashboardMetrics = getDashboardMetrics();
+          return NextResponse.json({
+            ...dashboardMetrics,
+            requestId,
+            processingTime: `${Date.now() - startTime}ms`
+          });
+        } catch (overviewError) {
+          logError(overviewError, 'dashboard_metrics', { requestId });
+          return NextResponse.json({
+            error: 'Failed to generate dashboard metrics',
+            code: 'DASHBOARD_ERROR',
+            requestId,
+            timestamp: new Date().toISOString()
+          }, { status: 500 });
+        }
         
       case 'metrics':
-        return NextResponse.json(systemMetrics);
+        try {
+          return NextResponse.json({
+            ...systemMetrics,
+            requestId,
+            processingTime: `${Date.now() - startTime}ms`
+          });
+        } catch (metricsError) {
+          logError(metricsError, 'system_metrics', { requestId });
+          return NextResponse.json({
+            error: 'Failed to retrieve system metrics',
+            code: 'METRICS_ERROR',
+            requestId,
+            timestamp: new Date().toISOString()
+          }, { status: 500 });
+        }
         
       case 'history':
-        const hours = parseInt(url.searchParams.get('hours')) || 1;
-        const historyData = metricsHistory.slice(-hours * 60);
-        return NextResponse.json({
-          timeRange: `${hours} hour(s)`,
-          dataPoints: historyData.length,
-          data: historyData
-        });
+        // Validate hours parameter
+        const hoursParam = url.searchParams.get('hours');
+        const hoursValidation = validateHours(hoursParam);
+        
+        if (!hoursValidation.isValid) {
+          return NextResponse.json({
+            error: hoursValidation.error,
+            code: 'INVALID_HOURS',
+            requestId,
+            timestamp: new Date().toISOString()
+          }, { status: 400 });
+        }
+        
+        const hours = hoursValidation.value;
+        
+        // Try to get history from database first, fallback to in-memory
+        try {
+          const dbHistory = await withTimeout(
+            metricsOperations.getMetricsHistory(hours),
+            5000,
+            'Database history retrieval'
+          );
+          return NextResponse.json({
+            ...dbHistory,
+            requestId,
+            processingTime: `${Date.now() - startTime}ms`
+          });
+        } catch (dbError) {
+          logError(dbError, 'database_history_retrieval', { hours, requestId });
+          console.log('Database history retrieval failed, using in-memory fallback:', dbError.message);
+          
+          try {
+            const historyData = metricsHistory.slice(-hours * 60);
+            return NextResponse.json({
+              timeRange: `${hours} hour(s)`,
+              dataPoints: historyData.length,
+              data: historyData,
+              source: 'memory_fallback',
+              requestId,
+              processingTime: `${Date.now() - startTime}ms`,
+              timestamp: new Date().toISOString()
+            });
+          } catch (memoryError) {
+            logError(memoryError, 'memory_history_retrieval', { hours, requestId });
+            return NextResponse.json({
+              error: 'Failed to retrieve metrics history from both database and memory',
+              code: 'HISTORY_ERROR',
+              requestId,
+              timestamp: new Date().toISOString()
+            }, { status: 500 });
+          }
+        }
         
       case 'health':
-        const health = getHealthStatus();
-        return NextResponse.json(health);
+        try {
+          const health = getHealthStatus();
+          return NextResponse.json({
+            ...health,
+            requestId,
+            processingTime: `${Date.now() - startTime}ms`
+          });
+        } catch (healthError) {
+          logError(healthError, 'health_status', { requestId });
+          return NextResponse.json({
+            error: 'Failed to get health status',
+            code: 'HEALTH_ERROR',
+            requestId,
+            timestamp: new Date().toISOString()
+          }, { status: 500 });
+        }
         
       case 'alerts':
-        return NextResponse.json({
-          alerts: generateAlerts(),
-          timestamp: Date.now()
-        });
+        try {
+          const alerts = generateAlerts();
+          return NextResponse.json({
+            alerts,
+            timestamp: Date.now(),
+            requestId,
+            processingTime: `${Date.now() - startTime}ms`
+          });
+        } catch (alertsError) {
+          logError(alertsError, 'generate_alerts', { requestId });
+          return NextResponse.json({
+            error: 'Failed to generate alerts',
+            code: 'ALERTS_ERROR',
+            requestId,
+            timestamp: new Date().toISOString()
+          }, { status: 500 });
+        }
         
       default:
-        return NextResponse.json({ error: 'Invalid endpoint' }, { status: 400 });
+        return NextResponse.json({
+          error: `Invalid endpoint: ${endpoint}`,
+          code: 'INVALID_ENDPOINT',
+          requestId,
+          timestamp: new Date().toISOString()
+        }, { status: 400 });
     }
     
   } catch (error) {
-    console.error('System monitor error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', message: error.message },
-      { status: 500 }
-    );
+    const processingTime = Date.now() - startTime;
+    logError(error, 'system_monitor_get', { processingTime, requestId });
+    
+    // Check for specific error types
+    if (error.message && error.message.includes('timed out')) {
+      return NextResponse.json({
+        error: 'Request timed out',
+        code: 'REQUEST_TIMEOUT',
+        processingTime: `${processingTime}ms`,
+        requestId,
+        timestamp: new Date().toISOString()
+      }, { status: 408 });
+    }
+    
+    return NextResponse.json({
+      error: 'Internal server error',
+      code: 'INTERNAL_ERROR',
+      message: error.message,
+      processingTime: `${processingTime}ms`,
+      requestId,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }
 
@@ -292,25 +602,113 @@ export async function GET(request) {
  * POST handler for updating metrics
  */
 export async function POST(request) {
+  const startTime = Date.now();
+  const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
   try {
-    const body = await request.json();
-    
-    if (body.requests) {
-      systemMetrics.requests = { ...systemMetrics.requests, ...body.requests };
+    // Parse request body with timeout
+    let body;
+    try {
+      const text = await withTimeout(
+        request.text(),
+        10000,
+        'Request body parsing'
+      );
+      
+      if (!text || text.trim() === '') {
+        return NextResponse.json({
+          success: false,
+          error: 'Request body is empty',
+          code: 'EMPTY_BODY',
+          requestId
+        }, { status: 400 });
+      }
+      
+      body = JSON.parse(text);
+      
+    } catch (parseError) {
+      logError(parseError, 'json_parsing', { requestId });
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid JSON format',
+        code: 'JSON_PARSE_ERROR',
+        requestId
+      }, { status: 400 });
     }
     
-    if (body.performance) {
-      systemMetrics.performance = { ...systemMetrics.performance, ...body.performance };
+    // Validate metrics update data
+    const validationErrors = validateMetricsUpdate(body);
+    if (validationErrors.length > 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'Validation failed',
+        details: validationErrors,
+        code: 'VALIDATION_ERROR',
+        requestId
+      }, { status: 400 });
     }
     
-    return NextResponse.json({ success: true, message: 'Metrics updated' });
+    // Update metrics with error handling
+    try {
+      if (body.requests) {
+        systemMetrics.requests = { ...systemMetrics.requests, ...body.requests };
+        console.log(`[SYSTEM_MONITOR] Updated requests metrics: ${JSON.stringify(body.requests)}`);
+      }
+      
+      if (body.performance) {
+        systemMetrics.performance = { ...systemMetrics.performance, ...body.performance };
+        console.log(`[SYSTEM_MONITOR] Updated performance metrics: ${JSON.stringify(body.performance)}`);
+      }
+      
+      // Update timestamp
+      systemMetrics.timestamp = Date.now();
+      
+      const processingTime = Date.now() - startTime;
+      
+      return NextResponse.json({
+        success: true,
+        message: 'Metrics updated successfully',
+        updated: {
+          requests: !!body.requests,
+          performance: !!body.performance
+        },
+        processingTime: `${processingTime}ms`,
+        requestId
+      });
+      
+    } catch (updateError) {
+      logError(updateError, 'metrics_update', { body, requestId });
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to update metrics',
+        code: 'UPDATE_ERROR',
+        requestId
+      }, { status: 500 });
+    }
     
   } catch (error) {
-    console.error('System monitor update error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', message: error.message },
-      { status: 500 }
-    );
+    const processingTime = Date.now() - startTime;
+    logError(error, 'system_monitor_post', { processingTime, requestId });
+    
+    // Check for specific error types
+    if (error.message && error.message.includes('timed out')) {
+      return NextResponse.json({
+        success: false,
+        error: 'Request timed out',
+        code: 'REQUEST_TIMEOUT',
+        processingTime: `${processingTime}ms`,
+        requestId
+      }, { status: 408 });
+    }
+    
+    return NextResponse.json({
+      success: false,
+      error: 'Internal server error',
+      code: 'INTERNAL_ERROR',
+      message: error.message,
+      processingTime: `${processingTime}ms`,
+      requestId
+    }, { status: 500 });
   }
 }
 

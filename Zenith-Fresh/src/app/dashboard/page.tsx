@@ -1,4 +1,14 @@
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+
 export default function DashboardPage() {
+  // Server-side authentication check
+  const cookieStore = cookies();
+  const sessionId = cookieStore.get('sessionId');
+  
+  if (!sessionId) {
+    redirect('/auth/signin');
+  }
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Dashboard</h1>

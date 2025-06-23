@@ -3,16 +3,23 @@
  * Provides full access control for master admin and staff testing
  */
 
+const { getSessionStore } = require('../src/lib/session-store.js');
+
 class AuthSystem {
   constructor() {
+    // Master admin credentials - MUST be in environment variables
+    if (!process.env.MASTER_USERNAME || !process.env.MASTER_PASSWORD) {
+      throw new Error('Master credentials not configured in environment variables. Set MASTER_USERNAME and MASTER_PASSWORD.');
+    }
+
+    this.sessionStore = getSessionStore();
     this.masterCredentials = {
-      username: process.env.MASTER_USERNAME || 'zenith_master',
-      password: process.env.MASTER_PASSWORD || 'ZenithMaster2024!',
+      username: process.env.MASTER_USERNAME,
+      password: process.env.MASTER_PASSWORD,
       role: 'master_admin'
     };
     
     this.staffUsers = new Map();
-    this.sessions = new Map();
     this.permissionLevels = {
       master_admin: {
         name: 'Master Administrator',
@@ -90,34 +97,50 @@ class AuthSystem {
   }
 
   /**
-   * Initialize predefined staff users for testing
+   * Initialize staff users from environment variables
+   * Format: STAFF_USERS=user1:pass1:name1:role1,user2:pass2:name2:role2
    */
   initializeStaffUsers() {
-    const staffList = [
-      { username: 'staff_1', password: 'StaffTest2024!', name: 'Staff Tester 1', role: 'staff_tester' },
-      { username: 'staff_2', password: 'StaffTest2024!', name: 'Staff Tester 2', role: 'staff_tester' },
-      { username: 'qa_lead', password: 'QALead2024!', name: 'QA Lead', role: 'staff_tester' },
-      { username: 'dev_test', password: 'DevTest2024!', name: 'Developer Test', role: 'staff_tester' }
-    ];
+    const staffUsersEnv = process.env.STAFF_USERS;
+    
+    if (!staffUsersEnv) {
+      console.log('⚠️  No staff users configured. Set STAFF_USERS environment variable to add staff accounts.');
+      return;
+    }
 
-    staffList.forEach(staff => {
-      this.staffUsers.set(staff.username, {
-        ...staff,
-        createdAt: new Date().toISOString(),
-        lastLogin: null,
-        active: true
+    try {
+      const staffList = staffUsersEnv.split(',').map(userStr => {
+        const [username, password, name, role] = userStr.trim().split(':');
+        if (!username || !password || !name || !role) {
+          throw new Error(`Invalid staff user format: ${userStr}`);
+        }
+        return { username, password, name, role };
       });
-    });
+
+      staffList.forEach(staff => {
+        this.staffUsers.set(staff.username, {
+          ...staff,
+          createdAt: new Date().toISOString(),
+          lastLogin: null,
+          active: true
+        });
+      });
+
+      console.log(`✅ Initialized ${staffList.length} staff users from environment`);
+    } catch (error) {
+      console.error('❌ Error initializing staff users:', error.message);
+      console.log('Format: STAFF_USERS=user1:pass1:name1:role1,user2:pass2:name2:role2');
+    }
   }
 
   /**
    * Authenticate user (master admin or staff)
    */
-  authenticate(username, password) {
+  async authenticate(username, password) {
     // Check master admin credentials
     if (username === this.masterCredentials.username && 
         password === this.masterCredentials.password) {
-      return this.createSession({
+      return await this.createSession({
         username: this.masterCredentials.username,
         role: this.masterCredentials.role,
         name: 'Master Administrator',
@@ -129,7 +152,7 @@ class AuthSystem {
     const staff = this.staffUsers.get(username);
     if (staff && staff.password === password && staff.active) {
       staff.lastLogin = new Date().toISOString();
-      return this.createSession({
+      return await this.createSession({
         username: staff.username,
         role: staff.role,
         name: staff.name,
@@ -143,35 +166,48 @@ class AuthSystem {
   /**
    * Create authenticated session
    */
-  createSession(user) {
+  async createSession(user) {
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const session = {
-      id: sessionId,
+    const sessionData = {
+      userId: user.username,
+      role: user.role,
       user: user,
       createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
       lastActivity: new Date().toISOString()
     };
 
-    this.sessions.set(sessionId, session);
+    // Store session for 24 hours (86400 seconds)
+    await this.sessionStore.setSession(sessionId, sessionData, 86400);
+    
+    const session = {
+      id: sessionId,
+      user: user,
+      createdAt: sessionData.createdAt,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+      lastActivity: sessionData.lastActivity
+    };
+
     return session;
   }
 
   /**
    * Validate session
    */
-  validateSession(sessionId) {
-    const session = this.sessions.get(sessionId);
-    if (!session) return null;
+  async validateSession(sessionId) {
+    const sessionData = await this.sessionStore.getSession(sessionId);
+    if (!sessionData) return null;
 
-    // Check if session expired
-    if (new Date() > new Date(session.expiresAt)) {
-      this.sessions.delete(sessionId);
-      return null;
-    }
+    // Update last activity and renew session
+    await this.sessionStore.renewSession(sessionId, 86400);
+    
+    const session = {
+      id: sessionId,
+      user: sessionData.user,
+      createdAt: sessionData.createdAt,
+      expiresAt: new Date(sessionData.expiresAt).toISOString(),
+      lastActivity: new Date().toISOString()
+    };
 
-    // Update last activity
-    session.lastActivity = new Date().toISOString();
     return session;
   }
 
@@ -300,27 +336,28 @@ class AuthSystem {
   /**
    * Logout user
    */
-  logout(sessionId) {
-    return this.sessions.delete(sessionId);
+  async logout(sessionId) {
+    return await this.sessionStore.deleteSession(sessionId);
   }
 
   /**
    * Get active sessions (master admin only)
    */
-  getActiveSessions(adminSession) {
+  async getActiveSessions(adminSession) {
     if (!this.hasPermission(adminSession, 'user_management')) {
       throw new Error('Insufficient permissions');
     }
 
-    return Array.from(this.sessions.values()).map(session => ({
-      id: session.id,
-      username: session.user.username,
-      role: session.user.role,
-      createdAt: session.createdAt,
-      lastActivity: session.lastActivity,
-      expiresAt: session.expiresAt
+    const activeSessions = await this.sessionStore.getActiveSessions();
+    return activeSessions.map(session => ({
+      id: session.sessionId,
+      username: session.userId,
+      role: session.role,
+      createdAt: new Date(session.createdAt).toISOString(),
+      lastActivity: new Date(session.lastAccessed).toISOString(),
+      expiresAt: new Date(session.expiresAt).toISOString()
     }));
   }
 }
 
-export default AuthSystem;
+module.exports = AuthSystem;

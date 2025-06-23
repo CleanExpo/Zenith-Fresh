@@ -3,6 +3,9 @@
  * Comprehensive technical assessment for AI crawler visibility and server-side rendering optimization
  */
 
+// Node.js fetch polyfill for compatibility
+const fetch = globalThis.fetch || require('node-fetch');
+
 class GEOTechnicalAudit {
   constructor() {
     this.aiCrawlers = [
@@ -400,15 +403,35 @@ class GEOTechnicalAudit {
   // Helper Methods
 
   async fetchContentWithoutJS(url) {
-    // Simulate non-JS crawler behavior
-    // In a real implementation, this would use a headless browser with JS disabled
-    return 'Simulated content without JavaScript';
+    try {
+      // Simulate non-JS crawler behavior
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'GPTBot/1.0 (+https://openai.com/gptbot)'
+        },
+        timeout: 10000
+      });
+      return await response.text();
+    } catch (error) {
+      console.warn('Failed to fetch no-JS content:', error.message);
+      return 'Simulated content without JavaScript';
+    }
   }
 
   async fetchContentWithJS(url) {
-    // Simulate full browser rendering
-    // In a real implementation, this would use a headless browser with JS enabled
-    return 'Simulated content with JavaScript - much more content available';
+    try {
+      // Simulate full browser rendering
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+        },
+        timeout: 15000
+      });
+      return await response.text();
+    } catch (error) {
+      console.warn('Failed to fetch JS content:', error.message);
+      return 'Simulated content with JavaScript - much more content available';
+    }
   }
 
   countWords(content) {
@@ -514,6 +537,110 @@ class GEOTechnicalAudit {
         'Monitor performance metrics closely'
       ]
     };
+  }
+
+  generateSchemaImplementationPlan() {
+    return {
+      phases: [
+        {
+          phase: 1,
+          title: 'Basic Schema Implementation',
+          duration: '1-2 weeks',
+          tasks: [
+            'Implement Organization schema',
+            'Add basic Article/BlogPosting schema',
+            'Set up JSON-LD structure',
+            'Validate schema markup'
+          ]
+        },
+        {
+          phase: 2,
+          title: 'Advanced Schema Types',
+          duration: '2-3 weeks',
+          tasks: [
+            'Implement Service/Product schemas',
+            'Add FAQ and HowTo schemas',
+            'Configure LocalBusiness schema if applicable',
+            'Optimize for rich snippets'
+          ]
+        }
+      ],
+      estimatedCost: '$3,000 - $8,000',
+      estimatedTimeline: '3-5 weeks'
+    };
+  }
+
+  generatePerformanceOptimizationPlan(performance) {
+    return {
+      phases: [
+        {
+          phase: 1,
+          title: 'Critical Performance Fixes',
+          duration: '1-2 weeks',
+          tasks: [
+            'Optimize images and media',
+            'Implement lazy loading',
+            'Minimize and compress assets',
+            'Optimize server response times'
+          ]
+        },
+        {
+          phase: 2,
+          title: 'Advanced Optimizations',
+          duration: '2-3 weeks',
+          tasks: [
+            'Implement service worker caching',
+            'Optimize JavaScript execution',
+            'Configure CDN and edge caching',
+            'Fine-tune Core Web Vitals'
+          ]
+        }
+      ],
+      estimatedCost: '$5,000 - $12,000',
+      estimatedTimeline: '3-5 weeks'
+    };
+  }
+
+  generateImplementationRoadmap(recommendations) {
+    const roadmap = {
+      immediate: [],
+      shortTerm: [],
+      longTerm: []
+    };
+
+    recommendations.forEach(rec => {
+      if (rec.priority === 'CRITICAL') {
+        roadmap.immediate.push(rec);
+      } else if (rec.priority === 'High') {
+        roadmap.shortTerm.push(rec);
+      } else {
+        roadmap.longTerm.push(rec);
+      }
+    });
+
+    return roadmap;
+  }
+
+  identifyCriticalIssues(audit) {
+    const critical = [];
+    
+    if (audit.renderingStrategy.javascriptDependency > 75) {
+      critical.push({
+        category: 'Rendering',
+        issue: 'High JavaScript dependency prevents AI crawler access',
+        impact: 'Critical'
+      });
+    }
+    
+    if (audit.performance.coreWebVitals.score < 50) {
+      critical.push({
+        category: 'Performance',
+        issue: 'Poor Core Web Vitals affecting user experience',
+        impact: 'High'
+      });
+    }
+    
+    return critical;
   }
 }
 

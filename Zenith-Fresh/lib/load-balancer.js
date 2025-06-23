@@ -3,6 +3,9 @@
  * Implements intelligent request distribution and failover mechanisms
  */
 
+// Node.js fetch polyfill for compatibility
+const fetch = globalThis.fetch || require('node-fetch');
+
 class LoadBalancer {
   constructor(options = {}) {
     this.servers = options.servers || [];
@@ -199,11 +202,18 @@ class LoadBalancer {
   async performHealthCheck(server) {
     try {
       const startTime = Date.now();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch(`${server.url}/health`, {
         method: 'GET',
-        timeout: 5000
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Zenith-Fresh-LoadBalancer/1.0'
+        }
       });
       
+      clearTimeout(timeoutId);
       const responseTime = Date.now() - startTime;
       const isHealthy = response.ok && responseTime < 5000;
       

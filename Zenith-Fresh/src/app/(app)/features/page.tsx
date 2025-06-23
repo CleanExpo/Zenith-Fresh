@@ -15,7 +15,7 @@ export default function FeaturesPage() {
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold mb-3">Real-time Monitoring</h3>
             <p className="text-gray-600">
-              Monitor your website's health and performance in real-time with detailed metrics.
+              Monitor your website&apos;s health and performance in real-time with detailed metrics.
             </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-md">

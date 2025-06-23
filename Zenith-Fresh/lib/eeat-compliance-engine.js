@@ -3,6 +3,9 @@
  * Analyzes Experience, Expertise, Authoritativeness, and Trustworthiness
  */
 
+// Node.js fetch polyfill for compatibility
+const fetch = globalThis.fetch || require('node-fetch');
+
 class EEATComplianceEngine {
   constructor(options = {}) {
     this.aiProvider = options.aiProvider || 'openai';

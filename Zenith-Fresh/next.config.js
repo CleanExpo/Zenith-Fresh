@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable standalone output for Docker
-  output: 'standalone',
+  // Remove standalone output for Vercel deployment
+  // output: 'standalone', // Only use for Docker deployments
   
   // Disable development features in production
   swcMinify: true,
@@ -42,6 +43,10 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin'
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block'
           }
         ]
       }
