@@ -78,3 +78,4 @@ dist-ssr
 
 # SSH keys
 .ssh/ .git-credentials
+.claude.json
