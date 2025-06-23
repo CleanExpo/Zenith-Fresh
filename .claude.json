@@ -11,6 +11,14 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "it is still showing the old production",
+          "pastedContents": {}
+        },
+        {
+          "display": "https://api.vercel.com/v1/integrations/deploy/prj_wcP9ttwx27AEzwD7IYJ0UwEl888K/20aqIGeewU",
+          "pastedContents": {}
+        },
+        {
           "display": "Ok, attached is a complete list of the actual environment and current variables: [Pasted text #1 +86 lines] Lets identify if this maybe the cause of the consistant deployment and push to a live saas project. ",
           "pastedContents": {
             "1": {
