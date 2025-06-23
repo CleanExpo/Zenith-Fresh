@@ -10,6 +10,7 @@ export default function middleware(req: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api/user') ||
     pathname.startsWith('/auth') ||
     pathname === '/' ||
     pathname.startsWith('/favicon') ||
