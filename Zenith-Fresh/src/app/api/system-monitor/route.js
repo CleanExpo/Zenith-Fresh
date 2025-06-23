@@ -3,6 +3,10 @@
  * Provides real-time system health and performance metrics
  */
 
+// Force Node.js runtime for serverless compatibility
+export const runtime = 'nodejs';
+export const maxDuration = 10;
+
 import { NextResponse } from 'next/server';
 const { metricsOperations } = require('../../../../lib/database.js');
 

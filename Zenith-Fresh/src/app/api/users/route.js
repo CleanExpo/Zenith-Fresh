@@ -3,6 +3,10 @@
  * Handles staff user management (master admin only)
  */
 
+// Force Node.js runtime for serverless compatibility
+export const runtime = 'nodejs';
+export const maxDuration = 10;
+
 import { NextResponse } from 'next/server';
 
 // Import the AuthSystem and Database operations

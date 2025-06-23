@@ -10,7 +10,8 @@ const requiredEnvVars = [
   'NEXTAUTH_SECRET',
   'MASTER_USERNAME',
   'MASTER_PASSWORD',
-  'OPENAI_API_KEY'
+  'OPENAI_API_KEY',
+  'STAFF_USERS'
 ];
 
 // Optional environment variables with defaults
@@ -20,7 +21,11 @@ const optionalEnvVars = {
   'SESSION_EXPIRY_HOURS': '24',
   'MAX_LOGIN_ATTEMPTS': '5',
   'RATE_LIMIT_WINDOW': '900000', // 15 minutes in milliseconds
-  'RATE_LIMIT_MAX_REQUESTS': '100'
+  'RATE_LIMIT_MAX_REQUESTS': '100',
+  'ANTHROPIC_API_KEY': '',
+  'LOG_LEVEL': 'INFO',
+  'LOG_WEBHOOK_URL': '',
+  'CUSTOM_KEY': ''
 };
 
 /**

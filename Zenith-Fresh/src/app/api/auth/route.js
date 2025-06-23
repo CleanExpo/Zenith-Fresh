@@ -3,6 +3,10 @@
  * Handles master admin and staff login/logout
  */
 
+// Force Node.js runtime for serverless compatibility
+export const runtime = 'nodejs';
+export const maxDuration = 10;
+
 import { NextResponse } from 'next/server';
 import { getSessionStore } from '../../../lib/session-store.mjs';
 const { sessionOperations } = require('../../../../lib/database.js');

@@ -3,6 +3,10 @@
  * Provides system health status for monitoring and load balancers
  */
 
+// Force Node.js runtime for serverless compatibility
+export const runtime = 'nodejs';
+export const maxDuration = 10;
+
 import { NextResponse } from 'next/server';
 const { getDatabaseHealth } = require('../../../../lib/database.js');
 
