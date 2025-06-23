@@ -46,8 +46,10 @@ export function addSecurityHeaders(response) {
   return response;
 }
 
-export default {
+const corsConfig = {
   addCorsHeaders,
   handleOptions,
   addSecurityHeaders
 };
+
+export default corsConfig;

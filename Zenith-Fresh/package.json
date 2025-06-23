@@ -13,7 +13,7 @@
     "test:coverage": "jest --coverage",
     "analyze": "cross-env ANALYZE=true next build",
     "prepare": "echo 'Prepare script executed'",
-    "postinstall": "prisma generate || echo 'Prisma generate skipped'"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

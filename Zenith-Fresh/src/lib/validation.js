@@ -131,7 +131,7 @@ export function checkRateLimit(requests, windowStart, maxRequests = 100, windowM
   };
 }
 
-export default {
+const validationUtils = {
   validateUsername,
   validatePassword,
   validateEmail,
@@ -140,3 +140,5 @@ export default {
   validateNumber,
   checkRateLimit
 };
+
+export default validationUtils;
