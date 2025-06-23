@@ -1,28 +1,3 @@
 {
-  "userID": "b475eaf39c4d84778feca42bfe97c9118473935151e061bf6e86675924f8c04f",
-  "projects": {
-    "/root": {
-      "allowedTools": [],
-      "history": [
-        {
-          "display": "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",
-          "pastedContents": {}
-        },
-        {
-          "display": "the old website",
-          "pastedContents": {}
-        }
-      ],
-      "mcpContextUris": [],
-      "mcpServers": {},
-      "enabledMcpjsonServers": [],
-      "disabledMcpjsonServers": [],
-      "hasTrustDialogAccepted": false,
-      "ignorePatterns": [],
-      "projectOnboardingSeenCount": 0,
-      "hasClaudeMdExternalIncludesApproved": false,
-      "hasClaudeMdExternalIncludesWarningShown": false,
-      "hasCompletedProjectOnboarding": true
-    }
-  }
+  "userID": "1ffd4914c14bea219a308adc24ebde28508ffb03347094d4af6960f6cfd38e61"
 }
