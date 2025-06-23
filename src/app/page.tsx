@@ -16,7 +16,11 @@ import {
   Clock,
   AlertCircle,
   Check,
-  X
+  X,
+  Search,
+  BarChart3,
+  Eye,
+  Target
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -160,8 +164,8 @@ export default function HomePage() {
         >
           <div className="text-center mb-6">
             <Globe className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-            <h2 className="text-3xl font-bold text-white mb-2">Free URL Health Check</h2>
-            <p className="text-gray-300">Get instant insights into your website's performance and health - completely free, no signup required!</p>
+            <h2 className="text-3xl font-bold text-white mb-2">Free SEO & Traffic Analysis</h2>
+            <p className="text-gray-300">Get instant insights into your website's SEO rankings, top keywords, estimated traffic, and performance metrics - completely free, no signup required!</p>
           </div>
 
           <div className="flex gap-4 mb-6">
@@ -208,38 +212,134 @@ export default function HomePage() {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Check className="w-5 h-5 text-green-400" />
-                      <span className="font-medium text-green-400">Status</span>
+                <div className="space-y-6">
+                  {/* Basic Health Metrics */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Check className="w-5 h-5 text-green-400" />
+                        <span className="font-medium text-green-400">Status</span>
+                      </div>
+                      <p className="text-white text-lg">{healthCheck.result.status}</p>
                     </div>
-                    <p className="text-white text-lg">{healthCheck.result.status}</p>
-                  </div>
-                  
-                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Clock className="w-5 h-5 text-blue-400" />
-                      <span className="font-medium text-blue-400">Response Time</span>
+                    
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="w-5 h-5 text-blue-400" />
+                        <span className="font-medium text-blue-400">Response Time</span>
+                      </div>
+                      <p className="text-white text-lg">{healthCheck.result.responseTime}ms</p>
+                      <p className="text-gray-400 text-sm">{healthCheck.result.performance}</p>
                     </div>
-                    <p className="text-white text-lg">{healthCheck.result.responseTime}ms</p>
-                  </div>
-                  
-                  <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Shield className="w-5 h-5 text-purple-400" />
-                      <span className="font-medium text-purple-400">Security</span>
+                    
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Shield className="w-5 h-5 text-purple-400" />
+                        <span className="font-medium text-purple-400">Security</span>
+                      </div>
+                      <p className="text-white text-lg">{healthCheck.result.ssl ? 'SSL Enabled' : 'No SSL'}</p>
+                      <p className="text-gray-400 text-sm">Score: {healthCheck.result.securityScore}/100</p>
                     </div>
-                    <p className="text-white text-lg">{healthCheck.result.ssl ? 'SSL Enabled' : 'No SSL'}</p>
                   </div>
+
+                  {/* SEO & Traffic Analytics */}
+                  {healthCheck.result.seo && (
+                    <div className="space-y-4">
+                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                        <Search className="w-5 h-5 text-blue-400" />
+                        SEO & Traffic Analytics
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* Traffic Estimate */}
+                        <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Eye className="w-5 h-5 text-orange-400" />
+                            <span className="font-medium text-orange-400">Monthly Traffic</span>
+                          </div>
+                          <p className="text-white text-lg">{healthCheck.result.seo.traffic?.estimated?.toLocaleString() || 'N/A'}</p>
+                          <p className="text-gray-400 text-sm">Estimated visitors</p>
+                        </div>
+
+                        {/* Global Rank */}
+                        <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <BarChart3 className="w-5 h-5 text-cyan-400" />
+                            <span className="font-medium text-cyan-400">Global Rank</span>
+                          </div>
+                          <p className="text-white text-lg">#{healthCheck.result.seo.traffic?.rank?.toLocaleString() || 'N/A'}</p>
+                          <p className="text-gray-400 text-sm">Worldwide ranking</p>
+                        </div>
+
+                        {/* SEO Score */}
+                        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Target className="w-5 h-5 text-green-400" />
+                            <span className="font-medium text-green-400">SEO Score</span>
+                          </div>
+                          <p className="text-white text-lg">{healthCheck.result.seo.pageRank || 'N/A'}/100</p>
+                          <p className="text-gray-400 text-sm">Lighthouse SEO</p>
+                        </div>
+
+                        {/* Content Analysis */}
+                        <div className="bg-violet-500/10 border border-violet-500/20 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Globe className="w-5 h-5 text-violet-400" />
+                            <span className="font-medium text-violet-400">Content</span>
+                          </div>
+                          <p className="text-white text-lg">{healthCheck.result.seo.imageCount} images</p>
+                          <p className="text-gray-400 text-sm">{healthCheck.result.seo.linkCount} links</p>
+                        </div>
+                      </div>
+
+                      {/* Top Keywords */}
+                      {healthCheck.result.seo.topKeywords && healthCheck.result.seo.topKeywords.length > 0 && (
+                        <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-4">
+                          <h4 className="font-medium text-indigo-400 mb-3 flex items-center gap-2">
+                            <Target className="w-4 h-4" />
+                            Top 3 Keywords Found on Page
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {healthCheck.result.seo.topKeywords.map((item: any, index: number) => (
+                              <span 
+                                key={index}
+                                className="bg-indigo-600/20 text-indigo-300 px-3 py-1 rounded-full text-sm border border-indigo-500/30"
+                              >
+                                {item.keyword} ({item.frequency}x)
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Page Title & Description */}
+                      {(healthCheck.result.seo.title || healthCheck.result.seo.description) && (
+                        <div className="bg-teal-500/10 border border-teal-500/20 rounded-lg p-4">
+                          <h4 className="font-medium text-teal-400 mb-3">SEO Meta Data</h4>
+                          {healthCheck.result.seo.title && (
+                            <div className="mb-2">
+                              <p className="text-gray-400 text-sm">Title:</p>
+                              <p className="text-white">{healthCheck.result.seo.title}</p>
+                            </div>
+                          )}
+                          {healthCheck.result.seo.description && (
+                            <div>
+                              <p className="text-gray-400 text-sm">Description:</p>
+                              <p className="text-white text-sm">{healthCheck.result.seo.description}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Sales Funnel CTA */}
               <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-6 mt-6">
-                <h3 className="text-xl font-bold text-white mb-2">Want More Advanced Monitoring?</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Unlock Complete SEO & Traffic Intelligence</h3>
                 <p className="text-gray-300 mb-4">
-                  Get 24/7 monitoring, detailed performance analytics, uptime alerts, SEO insights, and competitor analysis with our Pro plans.
+                  Get real-time keyword rankings, accurate traffic data from SimilarWeb, competitor analysis, backlink monitoring, 24/7 uptime alerts, and comprehensive SEO audits with our Pro plans.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Link
