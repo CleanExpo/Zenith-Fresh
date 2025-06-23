@@ -53,8 +53,8 @@ export async function POST(request: NextRequest) {
       data: {
         userId: user.id,
         theme: 'system',
-        notifications: true,
-        emailUpdates: true,
+        emailNotifications: true,
+        pushNotifications: true,
       },
     });
 
