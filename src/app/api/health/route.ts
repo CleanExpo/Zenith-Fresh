@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,9 +10,30 @@ export async function GET(req: NextRequest) {
       JWT_SECRET: !!process.env.JWT_SECRET,
     };
 
+    // Check database connection and demo data
+    let dbStatus = 'unknown';
+    let demoDataExists = false;
+    
+    try {
+      await prisma.$connect();
+      dbStatus = 'connected';
+      
+      // Check if demo user exists
+      const demoUser = await prisma.user.findUnique({
+        where: { email: 'test@zenith.engineer' }
+      });
+      
+      demoDataExists = !!demoUser;
+    } catch (dbError) {
+      dbStatus = 'error';
+      console.error('Database connection error:', dbError);
+    }
+
     return NextResponse.json({
       status: 'ok',
-      authentication: 'hardcoded - no database required',
+      authentication: 'NextAuth + Prisma',
+      database: dbStatus,
+      demoData: demoDataExists,
       environment: envCheck,
       timestamp: new Date().toISOString(),
     });
