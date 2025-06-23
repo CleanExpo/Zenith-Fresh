@@ -7,6 +7,8 @@ import { ProjectCard } from '@/components/projects/ProjectCard';
 import { CreateProjectModal } from '@/components/projects/CreateProjectModal';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { UsageLimitGuard } from '@/components/PaywallGuard';
+import { SubscriptionGuard } from '@/lib/subscription-guard';
 
 async function getProjects(userId: string) {
   try {
@@ -71,6 +73,11 @@ export default async function ProjectsPage() {
 
   const projects = await getProjects(session.user.id);
 
+  // Check project limits on server side
+  const guard = new SubscriptionGuard(session.user.id);
+  const projectLimit = await guard.checkUsageLimit('projects');
+  const canCreateProjects = projectLimit.allowed;
+
   return (
     <Layout>
       <div className="space-y-8">
@@ -84,7 +91,9 @@ export default async function ProjectsPage() {
               Manage your projects and track progress across teams.
             </p>
           </div>
-          <CreateProjectModal />
+          <UsageLimitGuard feature="projects">
+            <CreateProjectModal />
+          </UsageLimitGuard>
         </div>
 
         {/* Stats */}
@@ -204,7 +213,9 @@ export default async function ProjectsPage() {
             </div>
             <h3 className="text-lg font-medium text-white mb-2">No projects yet</h3>
             <p className="text-white/60 mb-6">Get started by creating your first project.</p>
-            <CreateProjectModal variant="primary" />
+            <UsageLimitGuard feature="projects">
+              <CreateProjectModal variant="primary" />
+            </UsageLimitGuard>
           </Card>
         )}
       </div>

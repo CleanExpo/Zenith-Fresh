@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { SubscriptionGuard } from '@/lib/subscription-guard';
 
 const createProjectSchema = z.object({
   name: z.string().min(1, 'Project name is required').max(100, 'Project name must be less than 100 characters'),
@@ -16,6 +17,23 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check subscription limits before creating project
+    const guard = new SubscriptionGuard(session.user.id);
+    const projectLimit = await guard.checkUsageLimit('projects');
+    
+    if (!projectLimit.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Project limit exceeded',
+          message: projectLimit.message,
+          upgradeRequired: true,
+          currentUsage: projectLimit.currentUsage,
+          limit: projectLimit.limit
+        },
+        { status: 402 } // Payment Required
+      );
     }
 
     const body = await request.json();
@@ -65,6 +83,9 @@ export async function POST(request: NextRequest) {
         projectId: project.id,
       }
     });
+
+    // Record usage for billing/analytics
+    await guard.recordUsage('projects', 1);
 
     return NextResponse.json(project, { status: 201 });
   } catch (error) {
