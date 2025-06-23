@@ -1,148 +1,261 @@
-// src/app/page.tsx
-'use client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
+import Link from 'next/link';
+import { 
+  UserIcon, 
+  BellIcon, 
+  ShieldCheckIcon, 
+  KeyIcon,
+  ArrowLeftIcon
+} from '@heroicons/react/24/outline';
 
-import React from 'react';
+async function getUserData(userId: string) {
+  try {
+    const [user, preferences] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          image: true,
+        },
+      }),
+      prisma.userPreferences.findUnique({
+        where: { userId },
+      }),
+    ]);
 
-// SVG Icon Helper Component
-const Icon = ({ path, className = "w-6 h-6" }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-        {path}
-    </svg>
-);
+    return { user, preferences };
+  } catch (error) {
+    console.error('Failed to fetch user data:', error);
+    return { user: null, preferences: null };
+  }
+}
 
-const CheckIcon = () => <Icon path={<path fillRule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clipRule="evenodd" />} className="w-5 h-5 text-blue-500" />;
+export default async function SettingsPage() {
+  const session = await getServerSession(authOptions);
 
-/**
- * This is the main landing page component for Zenith.
- * It is fully styled using Tailwind CSS utility classes to create a modern, professional look.
- * @returns {JSX.Element} The landing page component.
- */
-export default function LandingPage() {
-    const stats = [
-        { name: "Active Users", value: "15,842" },
-        { name: "API Calls Today", value: "2,847,593" },
-        { name: "Avg Response", value: "47ms" },
-        { name: "Uptime", value: "99.99%" },
-    ];
+  if (!session?.user?.id) {
+    redirect('/auth/signin');
+  }
 
-    const features = [
-        { name: "Real-time Analytics", description: "Track every metric with sub-50ms latency." },
-        { name: "Bank-Grade Security", description: "SOC2 compliant with end-to-end encryption." },
-        { name: "Global CDN", description: "Deploy to 300+ edge locations instantly." },
-    ];
+  const { user, preferences } = await getUserData(session.user.id);
 
-    const testimonials = [
-        { quote: "Cut our deployment time by 90%", author: "Sarah Chen", role: "CTO at TechStart", initial: "S" },
-        { quote: "Best developer experience ever", author: "Marcus Johnson", role: "Lead Dev at Scale", initial: "M" },
-        { quote: "Our secret weapon for rapid scaling", author: "Elena Rodriguez", role: "Founder of NextGen", initial: "E" },
-    ];
-    
-    return (
-        <div className="bg-gray-900 text-white font-sans">
-            {/* Hero Section */}
-            <div className="relative isolate overflow-hidden pt-14">
-                <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
-                    <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#8085ff] to-[#4f46e5] opacity-20 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style={{ clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)' }}></div>
-                </div>
+  if (!user) {
+    redirect('/auth/signin');
+  }
 
-                <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10 lg:px-8 lg:py-40">
-                    <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto">
-                        <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">Build Apps That Think & Scale</h1>
-                        <p className="mt-6 text-lg leading-8 text-gray-300">Deploy AI-powered applications in minutes, not months. See it work in 30 seconds.</p>
-                        <div className="mt-10 flex items-center gap-x-6">
-                            <a href="/dashboard/sandbox" className="rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">See Magic in 30 Seconds</a>
-                            <a href="#" className="text-sm font-semibold leading-6">Start Free Trial <span aria-hidden="true">→</span></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Stats Section */}
-            <div className="bg-gray-900 py-12 sm:py-16">
-                <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                    <div className="mx-auto max-w-2xl lg:max-w-none">
-                        <dl className="grid grid-cols-1 gap-x-8 gap-y-10 text-center lg:grid-cols-4 lg:text-left">
-                            {stats.map((stat) => (
-                                <div key={stat.name}>
-                                    <dt className="text-sm leading-6 text-gray-300">{stat.name}</dt>
-                                    <dd className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">{stat.value}</dd>
-                                </div>
-                            ))}
-                        </dl>
-                    </div>
-                </div>
-            </div>
-
-            {/* Features Section */}
-            <div className="mx-auto mt-16 max-w-7xl px-6 sm:mt-20 md:mt-24 lg:px-8">
-                <div className="mx-auto max-w-2xl lg:max-w-none">
-                    <div className="text-center">
-                        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Enterprise Features, Startup Speed</h2>
-                        <p className="mt-4 text-lg leading-8 text-gray-300">Every feature is live and battle-tested in production.</p>
-                    </div>
-                    <dl className="mt-16 grid grid-cols-1 gap-0.5 overflow-hidden rounded-2xl text-center sm:grid-cols-2 lg:grid-cols-3">
-                        {features.map((feature) => (
-                            <div key={feature.name} className="flex flex-col bg-white/5 p-8">
-                                <dt className="text-sm font-semibold leading-6 text-gray-300">{feature.name}</dt>
-                                <dd className="order-first text-3xl font-semibold tracking-tight">{feature.description}</dd>
-                            </div>
-                        ))}
-                    </dl>
-                </div>
-            </div>
-
-            {/* Command Center CTA */}
-            <div className="relative isolate mt-16 sm:mt-20 lg:mt-24">
-                <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                    <div className="relative flex flex-col items-center gap-y-10 rounded-2xl bg-blue-600/10 px-6 py-20 ring-1 ring-white/10 sm:flex-row sm:gap-y-0 lg:gap-x-10 lg:px-24">
-                        <div className="flex-auto">
-                            <h2 className="text-3xl font-bold tracking-tight">Try the Zenith Command Center</h2>
-                            <p className="mt-4 text-lg leading-8 text-gray-300">Experience our AI-powered website analysis and optimization sandbox. Analyze any website and get real-time recommendations with competitive insights.</p>
-                            <ul className="mt-6 space-y-2 text-gray-300">
-                                <li className="flex gap-x-3"><CheckIcon />No signup required</li>
-                                <li className="flex gap-x-3"><CheckIcon />Analyze any website</li>
-                                <li className="flex gap-x-3"><CheckIcon />Real competitive insights</li>
-                            </ul>
-                        </div>
-                        <div className="flex-none">
-                            <a href="/dashboard/sandbox" className="rounded-md bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100">Launch Command Center</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-             {/* Testimonials */}
-            <div className="mx-auto mt-16 max-w-7xl px-6 sm:mt-20 lg:px-8">
-                <div className="mx-auto grid max-w-2xl grid-cols-1 grid-rows-1 gap-8 text-sm leading-6 text-gray-300 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-                    {testimonials.map((testimonial) => (
-                        <figure key={testimonial.author} className="rounded-2xl bg-white/5 p-6 shadow-sm ring-1 ring-white/10">
-                            <blockquote className="text-white"><p>“{testimonial.quote}”</p></blockquote>
-                            <figcaption className="mt-6 flex items-center gap-x-4">
-                                <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-indigo-500">
-                                    {testimonial.initial}
-                                </div>
-                                <div>
-                                    <div className="font-semibold text-white">{testimonial.author}</div>
-                                    <div className="text-gray-400">{testimonial.role}</div>
-                                </div>
-                            </figcaption>
-                        </figure>
-                    ))}
-                </div>
-            </div>
-
-            {/* Final CTA Section */}
-            <div className="mx-auto my-24 max-w-7xl px-6 lg:px-8">
-                <div className="text-center">
-                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ready to <span className="text-blue-500">10x</span> Your Development?</h2>
-                    <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-gray-300">Join thousands of developers building the future with Zenith.</p>
-                    <div className="mt-10 flex items-center justify-center gap-x-6">
-                        <a href="#" className="rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold shadow-sm hover:bg-blue-500">Start Building Now</a>
-                        <a href="#" className="text-sm font-semibold leading-6">Schedule Demo <span aria-hidden="true">→</span></a>
-                    </div>
-                </div>
-            </div>
-
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <Link 
+            href="/dashboard"
+            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mb-4"
+          >
+            <ArrowLeftIcon className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Manage your account settings and preferences.
+          </p>
         </div>
-    );
+
+        <div className="space-y-8">
+          {/* Profile Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <UserIcon className="w-5 h-5" />
+                Profile Information
+              </h2>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Full Name
+                  </label>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <span className="text-gray-900 dark:text-white">{user.name || 'Not set'}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Email Address
+                  </label>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <span className="text-gray-900 dark:text-white">{user.email}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Role
+                  </label>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      user.role === 'ADMIN' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' :
+                      'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                    }`}>
+                      {user.role}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Member Since
+                  </label>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <span className="text-gray-900 dark:text-white">
+                      {new Date(user.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-6">
+                <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                  Edit Profile
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Preferences Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <BellIcon className="w-5 h-5" />
+                Preferences
+              </h2>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Theme</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Choose your preferred theme</p>
+                </div>
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span className="text-gray-900 dark:text-white">
+                    {preferences?.theme || 'System'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Email Notifications</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Receive email updates about your projects</p>
+                </div>
+                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  preferences?.emailUpdates ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                }`}>
+                  {preferences?.emailUpdates ? 'Enabled' : 'Disabled'}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Push Notifications</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Receive push notifications for important updates</p>
+                </div>
+                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  preferences?.notifications ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                }`}>
+                  {preferences?.notifications ? 'Enabled' : 'Disabled'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Security Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <ShieldCheckIcon className="w-5 h-5" />
+                Security
+              </h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Password</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Change your password</p>
+                </div>
+                <button className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                  Change Password
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Two-Factor Authentication</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Add an extra layer of security</p>
+                </div>
+                <button className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                  Enable 2FA
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* API Keys Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <KeyIcon className="w-5 h-5" />
+                API Keys
+              </h2>
+            </div>
+            <div className="p-6">
+              <div className="text-center py-8">
+                <KeyIcon className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No API keys</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Create API keys to integrate with external services.
+                </p>
+                <div className="mt-6">
+                  <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Generate API Key
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Danger Zone */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-red-200 dark:border-red-900">
+            <div className="px-6 py-4 border-b border-red-200 dark:border-red-900">
+              <h2 className="text-lg font-semibold text-red-900 dark:text-red-400">Danger Zone</h2>
+            </div>
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-red-900 dark:text-red-400">Delete Account</h3>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    Permanently delete your account and all associated data.
+                  </p>
+                </div>
+                <button className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                  Delete Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
