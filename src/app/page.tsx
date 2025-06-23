@@ -106,19 +106,6 @@ export default function HomePage() {
             </Link>
           </motion.div>
 
-          {/* Demo Credentials Alert */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg max-w-md mx-auto"
-          >
-            <p className="text-blue-300 text-sm font-medium mb-2">🎯 Demo Access Available</p>
-            <p className="text-blue-200 text-xs">
-              Email: zenithfresh25@gmail.com<br />
-              Password: F^bf35(llm1120!2a
-            </p>
-          </motion.div>
         </div>
       </div>
 

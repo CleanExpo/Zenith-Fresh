@@ -21,7 +21,7 @@ async function seedDatabase() {
     console.log('✅ Cleared existing users');
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash('F^bf35(llm1120!2a', 12);
+    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'defaultPassword123', 12);
 
     // Create the admin user
     const user = await prisma.user.create({

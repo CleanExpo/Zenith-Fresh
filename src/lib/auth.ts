@@ -93,14 +93,6 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Check for the specific admin credentials first (hardcoded for production safety)
-          if (credentials.email.toLowerCase() === 'zenithfresh25@gmail.com' && credentials.password === 'F^bf35(llm1120!2a') {
-            return {
-              id: 'admin-user-001',
-              email: 'zenithfresh25@gmail.com',
-              name: 'Admin User',
-            };
-          }
 
           // For database users, wrap in try-catch for production safety
           try {
@@ -127,14 +119,6 @@ export const authOptions: NextAuthOptions = {
             };
           } catch (dbError) {
             console.error('Database auth error:', dbError);
-            // Fall back to hardcoded admin if database fails
-            if (credentials.email.toLowerCase() === 'zenithfresh25@gmail.com' && credentials.password === 'F^bf35(llm1120!2a') {
-              return {
-                id: 'admin-user-001',
-                email: 'zenithfresh25@gmail.com',
-                name: 'Admin User',
-              };
-            }
             return null;
           }
         } catch (error) {

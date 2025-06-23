@@ -134,12 +134,6 @@ export default function SignInPage() {
               </div>
             </div>
 
-            {/* Admin Demo Credentials */}
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-              <p className="text-blue-300 text-sm font-medium mb-1">Demo Admin Access:</p>
-              <p className="text-blue-200 text-xs">Email: zenithfresh25@gmail.com</p>
-              <p className="text-blue-200 text-xs">Password: F^bf35(llm1120!2a</p>
-            </div>
 
             {/* Submit Button */}
             <button
