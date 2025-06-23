@@ -11,6 +11,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "start working onn the critical issues first",
+          "pastedContents": {}
+        },
+        {
           "display": "It looks like now you have also gone back to the old site and it is showing the mock data again. You need to find the last good save error, address and fix this ever happening again and then move onto the ZENITH_OVERNIGHT_AUDIT_SUMMARY.md)",
           "pastedContents": {}
         },
