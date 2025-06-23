@@ -77,4 +77,4 @@ dist-ssr
 *.sw?
 
 # SSH keys
-.ssh/ 
+.ssh/ .git-credentials
