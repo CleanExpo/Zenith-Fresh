@@ -24,13 +24,9 @@ export default function RootLayout({
       <body className={inter.className}>
         {/* <GoogleAnalytics /> */}
         <Providers>
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <main className="container mx-auto p-4">
-              <Suspense fallback={<div>Loading...</div>}>
-                {children}
-              </Suspense>
-            </main>
-          </div>
+          <Suspense fallback={<div>Loading...</div>}>
+            {children}
+          </Suspense>
         </Providers>
       </body>
     </html>
