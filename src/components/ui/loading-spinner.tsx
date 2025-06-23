@@ -1,3 +1,5 @@
+'use client';
+
 import { cn } from "@/lib/utils";
 
 interface LoadingSpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
