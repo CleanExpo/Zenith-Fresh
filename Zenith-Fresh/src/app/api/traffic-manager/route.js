@@ -1,7 +1,7 @@
 /**
  * Traffic Management API for Zenith-Fresh
  * Prevents system overload and implements progressive traffic handling
- * Note: @vercel/edge functions are replaced with standard Next.js edge runtime
+ * Note: Uses Node.js runtime for persistent in-memory storage
  */
 
 import { NextResponse } from 'next/server';
@@ -248,6 +248,5 @@ export async function POST(request) {
 }
 
 /**
- * Edge runtime configuration
+ * Using Node.js runtime for persistent in-memory storage with Maps
  */
-export const runtime = 'edge';

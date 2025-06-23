@@ -155,6 +155,5 @@ function checkEnvironment() {
 }
 
 /**
- * Edge runtime configuration
+ * Using Node.js runtime for process.memoryUsage() support
  */
-export const runtime = 'edge';

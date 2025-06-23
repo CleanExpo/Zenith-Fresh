@@ -315,6 +315,5 @@ export async function POST(request) {
 }
 
 /**
- * Edge runtime configuration
+ * Using Node.js runtime for persistent in-memory storage with Maps and arrays
  */
-export const runtime = 'edge';

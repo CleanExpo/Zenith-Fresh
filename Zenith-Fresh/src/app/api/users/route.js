@@ -167,6 +167,5 @@ export async function POST(request) {
 }
 
 /**
- * Edge runtime configuration
+ * Using Node.js runtime for AuthSystem lib import and persistent storage
  */
-export const runtime = 'edge';

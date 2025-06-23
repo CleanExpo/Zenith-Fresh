@@ -303,6 +303,5 @@ export async function GET(request) {
 }
 
 /**
- * Edge runtime configuration
+ * Using Node.js runtime for persistent in-memory storage with Maps
  */
-export const runtime = 'edge';
