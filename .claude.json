@@ -1,3 +1,32 @@
 {
-  "userID": "1ffd4914c14bea219a308adc24ebde28508ffb03347094d4af6960f6cfd38e61"
+  "userID": "1ffd4914c14bea219a308adc24ebde28508ffb03347094d4af6960f6cfd38e61",
+  "projects": {
+    "/root": {
+      "allowedTools": [],
+      "history": [
+        {
+          "display": "nope, still just html no css",
+          "pastedContents": {}
+        },
+        {
+          "display": "completed",
+          "pastedContents": {}
+        },
+        {
+          "display": "which option please: It's used in tests\nThe secret poses no risk. If anyone finds it, they cannot do any damage or gain access to sensitive information.\n\nIt's a false positive\nThe detected string is not a secret.\n\nI'll fix it later\nThe secret is real, I understand the risk, and I will need to revoke it. This will open a security alert and notify admins of this repository.",
+          "pastedContents": {}
+        }
+      ],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "ignorePatterns": [],
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "hasCompletedProjectOnboarding": true
+    }
+  }
 }

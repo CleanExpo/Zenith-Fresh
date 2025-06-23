@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { Inter } from 'next/font/google';
 import { Providers } from './providers';
+import './globals.css';
 // import { ErrorBoundary } from '@/components/ErrorBoundary';
 // import { LoadingSpinner } from '@/components/ui/loading-spinner';
 // import { Sidebar } from '@/components/Sidebar';
