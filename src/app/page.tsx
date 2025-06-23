@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -11,12 +11,23 @@ import {
   TrendingUp,
   Users,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Globe,
+  Clock,
+  AlertCircle,
+  Check,
+  X
 } from 'lucide-react';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [healthCheck, setHealthCheck] = useState({
+    url: '',
+    loading: false,
+    result: null,
+    showResults: false
+  });
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -24,6 +35,36 @@ export default function HomePage() {
       router.push('/dashboard');
     }
   }, [session, router]);
+
+  // URL Health Check Function
+  const performHealthCheck = async () => {
+    if (!healthCheck.url.trim()) return;
+    
+    setHealthCheck(prev => ({ ...prev, loading: true, showResults: false }));
+    
+    try {
+      const response = await fetch('/api/health-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: healthCheck.url })
+      });
+      
+      const result = await response.json();
+      setHealthCheck(prev => ({ 
+        ...prev, 
+        loading: false, 
+        result,
+        showResults: true 
+      }));
+    } catch (error) {
+      setHealthCheck(prev => ({ 
+        ...prev, 
+        loading: false,
+        result: { error: 'Failed to check URL health' },
+        showResults: true 
+      }));
+    }
+  };
 
   // Show loading while checking authentication
   if (status === 'loading') {
@@ -107,6 +148,118 @@ export default function HomePage() {
           </motion.div>
 
         </div>
+      </div>
+
+      {/* Free URL Health Check Tool */}
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8"
+        >
+          <div className="text-center mb-6">
+            <Globe className="w-12 h-12 text-blue-400 mx-auto mb-4" />
+            <h2 className="text-3xl font-bold text-white mb-2">Free URL Health Check</h2>
+            <p className="text-gray-300">Get instant insights into your website's performance and health - completely free, no signup required!</p>
+          </div>
+
+          <div className="flex gap-4 mb-6">
+            <input
+              type="url"
+              placeholder="Enter your website URL (e.g., https://example.com)"
+              value={healthCheck.url}
+              onChange={(e) => setHealthCheck(prev => ({ ...prev, url: e.target.value }))}
+              className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onKeyPress={(e) => e.key === 'Enter' && performHealthCheck()}
+            />
+            <button
+              onClick={performHealthCheck}
+              disabled={healthCheck.loading || !healthCheck.url.trim()}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-8 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all duration-200"
+            >
+              {healthCheck.loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Checking...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-5 h-5" />
+                  Check Health
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Health Check Results */}
+          {healthCheck.showResults && healthCheck.result && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4"
+            >
+              {healthCheck.result.error ? (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-red-400">
+                    <X className="w-5 h-5" />
+                    <span className="font-medium">Error: {healthCheck.result.error}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Check className="w-5 h-5 text-green-400" />
+                      <span className="font-medium text-green-400">Status</span>
+                    </div>
+                    <p className="text-white text-lg">{healthCheck.result.status}</p>
+                  </div>
+                  
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock className="w-5 h-5 text-blue-400" />
+                      <span className="font-medium text-blue-400">Response Time</span>
+                    </div>
+                    <p className="text-white text-lg">{healthCheck.result.responseTime}ms</p>
+                  </div>
+                  
+                  <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="w-5 h-5 text-purple-400" />
+                      <span className="font-medium text-purple-400">Security</span>
+                    </div>
+                    <p className="text-white text-lg">{healthCheck.result.ssl ? 'SSL Enabled' : 'No SSL'}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Sales Funnel CTA */}
+              <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-6 mt-6">
+                <h3 className="text-xl font-bold text-white mb-2">Want More Advanced Monitoring?</h3>
+                <p className="text-gray-300 mb-4">
+                  Get 24/7 monitoring, detailed performance analytics, uptime alerts, SEO insights, and competitor analysis with our Pro plans.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href="/auth/register"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-200"
+                  >
+                    Start Free 14-Day Trial
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    className="border border-white/20 hover:border-white/40 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 text-center"
+                  >
+                    View Pricing
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
       </div>
 
       {/* Features Section */}
