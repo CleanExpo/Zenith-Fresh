@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { 
   Zap, 
   Shield, 
@@ -148,11 +147,7 @@ const FeaturesPage = () => {
       {/* Hero Section */}
       <div className="relative pt-20 pb-16 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div className="animate-fadeInUp">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent">
               Everything You Need to Build at Scale
             </h1>
@@ -163,7 +158,7 @@ const FeaturesPage = () => {
             <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 transition-transform text-lg px-8 py-4">
               Start Building Today
             </Button>
-          </motion.div>
+          </div>
         </div>
       </div>
 
@@ -171,12 +166,10 @@ const FeaturesPage = () => {
       <div className="relative px-4 pb-20">
         <div className="max-w-7xl mx-auto">
           {featureCategories.map((category, categoryIndex) => (
-            <motion.div
+            <div
               key={category.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
-              className="mb-20"
+              className="mb-20 animate-fadeInUp"
+              style={{ animationDelay: `${categoryIndex * 0.1}s` }}
             >
               {/* Category Header */}
               <div className="text-center mb-12">
@@ -192,11 +185,10 @@ const FeaturesPage = () => {
               {/* Features Grid */}
               <div className="grid md:grid-cols-3 gap-8">
                 {category.features.map((feature, featureIndex) => (
-                  <motion.div
+                  <div
                     key={feature.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: featureIndex * 0.1 }}
+                    className="animate-fadeInUp"
+                    style={{ animationDelay: `${featureIndex * 0.1}s` }}
                   >
                     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 h-full hover:bg-white/10 transition-all">
                       <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${category.color} p-0.5 mb-6`}>
@@ -215,10 +207,10 @@ const FeaturesPage = () => {
                         ))}
                       </div>
                     </Card>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
@@ -226,30 +218,23 @@ const FeaturesPage = () => {
       {/* Integrations Section */}
       <div className="relative px-4 pb-20">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12"
-          >
+          <div className="text-center mb-12 animate-fadeInUp">
             <h2 className="text-4xl font-bold text-white mb-4">Seamless Integrations</h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
               Connect with your favorite tools and services with just a few clicks
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6">
             {integrations.map((integration, index) => (
-              <motion.div
+              <div
                 key={integration.name}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition-all"
+                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition-all animate-fadeInUp"
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <div className="text-4xl mb-3">{integration.logo}</div>
                 <div className="text-sm text-gray-300 font-medium">{integration.name}</div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -258,12 +243,7 @@ const FeaturesPage = () => {
       {/* Performance Metrics */}
       <div className="relative px-4 pb-20">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-12"
-          >
+          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-12 animate-fadeInUp">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-white mb-4">Built for Performance</h2>
               <p className="text-xl text-gray-300">
@@ -278,12 +258,10 @@ const FeaturesPage = () => {
                 { metric: '300+', label: 'Global Locations', icon: <Globe className="w-8 h-8" /> },
                 { metric: '10M+', label: 'API Calls/Day', icon: <TrendingUp className="w-8 h-8" /> }
               ].map((stat, index) => (
-                <motion.div
+                <div
                   key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="text-center"
+                  className="text-center animate-fadeInUp"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-500 p-0.5 mx-auto mb-4">
                     <div className="w-full h-full bg-black rounded-2xl flex items-center justify-center text-white">
@@ -292,22 +270,17 @@ const FeaturesPage = () => {
                   </div>
                   <div className="text-4xl font-bold text-white mb-2">{stat.metric}</div>
                   <div className="text-gray-300">{stat.label}</div>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
       {/* CTA Section */}
       <div className="relative px-4 pb-20">
         <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-12 text-center"
-          >
+          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-12 text-center animate-fadeInUp">
             <Rocket className="w-16 h-16 text-purple-400 mx-auto mb-6" />
             <h2 className="text-3xl font-bold text-white mb-4">
               Ready to Experience the Future?
@@ -330,9 +303,26 @@ const FeaturesPage = () => {
             <p className="text-sm text-gray-400 mt-6">
               No credit card required • 14-day free trial • Cancel anytime
             </p>
-          </motion.div>
+          </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeInUp {
+          animation: fadeInUp 0.5s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 };
