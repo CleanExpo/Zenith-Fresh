@@ -25,7 +25,6 @@ async function getDashboardData(userId: string) {
           ]
         },
         include: {
-          tasks: true,
           _count: { select: { tasks: true, files: true } }
         },
         orderBy: { updatedAt: 'desc' },
