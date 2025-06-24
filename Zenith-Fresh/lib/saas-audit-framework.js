@@ -3,8 +3,9 @@
  * AI-driven optimization and analysis engine
  */
 
-const fs = require('fs');
-const path = require('path');
+// SERVERLESS COMPATIBILITY: Filesystem operations not needed for this module
+// const fs = require('fs');
+// const path = require('path');
 
 class SaaSAuditFramework {
   constructor(options = {}) {

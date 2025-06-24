@@ -3,6 +3,9 @@
  * AI-powered competitor analysis and market positioning insights
  */
 
+// Node.js fetch polyfill for compatibility
+const fetch = globalThis.fetch || require('node-fetch');
+
 class CompetitiveAnalysisSystem {
   constructor(options = {}) {
     this.aiProvider = options.aiProvider || 'openai';

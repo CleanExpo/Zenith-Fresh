@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Webpack Bundle</title>
+</head>
+<body>
+    <h1>Testing Webpack Bundle</h1>
+    <div id="error-log"></div>
+    
+    <script>
+        // Capture webpack errors
+        window.addEventListener('error', function(e) {
+            console.error('Error:', e.error);
+            document.getElementById('error-log').innerHTML = 
+                'Error: ' + e.error.message + '<br>Stack: ' + e.error.stack;
+        });
+        
+        // Load webpack bundle directly
+        const script = document.createElement('script');
+        script.src = '/_next/static/chunks/webpack.js?v=' + Date.now();
+        script.async = true;
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

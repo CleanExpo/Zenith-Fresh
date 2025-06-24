@@ -3,6 +3,9 @@
  * Optimizes content for AI search engines and LLM visibility
  */
 
+// Node.js fetch polyfill for compatibility
+const fetch = globalThis.fetch || require('node-fetch');
+
 class GEOOptimizationTools {
   constructor(options = {}) {
     this.aiProviders = options.aiProviders || ['openai', 'anthropic', 'google'];

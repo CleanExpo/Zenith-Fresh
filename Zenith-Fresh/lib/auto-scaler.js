@@ -3,6 +3,9 @@
  * Implements predictive scaling based on traffic patterns and system load
  */
 
+// Node.js fetch polyfill for compatibility
+const fetch = globalThis.fetch || require('node-fetch');
+
 class AutoScaler {
   constructor(options = {}) {
     this.minInstances = options.minInstances || 1;
@@ -18,6 +21,10 @@ class AutoScaler {
     this.metricsHistory = [];
     this.trafficPredictions = [];
     
+    // Store interval IDs for cleanup
+    this.evaluationInterval = null;
+    this.metricsInterval = null;
+    
     // Start monitoring
     this.startMonitoring();
   }
@@ -28,32 +35,66 @@ class AutoScaler {
   async collectMetrics() {
     try {
       // In production, integrate with actual monitoring APIs
-      const response = await fetch('/api/system-monitor?endpoint=metrics');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch('/api/system-monitor?endpoint=metrics', {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Zenith-Fresh-AutoScaler/1.0'
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const metrics = await response.json();
       
       const timestamp = Date.now();
       const metricData = {
         timestamp,
-        cpuLoad: metrics.resources?.cpuLoad || 0,
-        memoryUsage: metrics.resources?.memoryUsage || 0,
-        activeConnections: metrics.resources?.activeConnections || 0,
-        requestRate: metrics.requests?.rate || 0,
-        errorRate: metrics.performance?.errorRate || 0,
-        responseTime: metrics.performance?.averageResponseTime || 0
+        cpuLoad: this.validateMetric(metrics.resources?.cpuLoad, 0, 1, 0),
+        memoryUsage: this.validateMetric(metrics.resources?.memoryUsage, 0, 1, 0),
+        activeConnections: this.validateMetric(metrics.resources?.activeConnections, 0, 10000, 0),
+        requestRate: this.validateMetric(metrics.requests?.rate, 0, 1000, 0),
+        errorRate: this.validateMetric(metrics.performance?.errorRate, 0, 1, 0),
+        responseTime: this.validateMetric(metrics.performance?.averageResponseTime, 0, 10000, 0)
       };
       
       this.metricsHistory.push(metricData);
       
-      // Keep only last 24 hours of data
+      // Keep only last 24 hours of data to prevent memory leaks
       const dayAgo = timestamp - (24 * 60 * 60 * 1000);
       this.metricsHistory = this.metricsHistory.filter(m => m.timestamp > dayAgo);
+      
+      // Additional safeguard: limit to max 2880 entries (30-second intervals for 24 hours)
+      if (this.metricsHistory.length > 2880) {
+        this.metricsHistory = this.metricsHistory.slice(-2880);
+      }
       
       return metricData;
       
     } catch (error) {
-      console.error('Failed to collect metrics:', error);
+      if (error.name === 'AbortError') {
+        console.warn('Metrics collection timeout - using defaults');
+      } else {
+        console.error('Failed to collect metrics:', error.message);
+      }
       return this.getDefaultMetrics();
     }
+  }
+
+  /**
+   * Validate and sanitize metric values
+   */
+  validateMetric(value, min, max, defaultValue) {
+    if (typeof value !== 'number' || isNaN(value)) {
+      return defaultValue;
+    }
+    return Math.max(min, Math.min(max, value));
   }
 
   /**
@@ -325,14 +366,37 @@ class AutoScaler {
     console.log(`📊 Configuration: ${this.minInstances}-${this.maxInstances} instances, target CPU: ${this.targetCpuUtilization * 100}%`);
     
     // Evaluate scaling every 2 minutes
-    setInterval(() => {
-      this.evaluateScaling();
+    this.evaluationInterval = setInterval(() => {
+      this.evaluateScaling().catch(error => {
+        console.error('Scaling evaluation error:', error.message);
+      });
     }, 120000);
     
     // Collect metrics every 30 seconds
-    setInterval(() => {
-      this.collectMetrics();
+    this.metricsInterval = setInterval(() => {
+      this.collectMetrics().catch(error => {
+        console.error('Metrics collection error:', error.message);
+      });
     }, 30000);
+  }
+
+  /**
+   * Stop monitoring and cleanup intervals
+   */
+  stopMonitoring() {
+    console.log('🛑 Auto-scaler stopping');
+    
+    if (this.evaluationInterval) {
+      clearInterval(this.evaluationInterval);
+      this.evaluationInterval = null;
+    }
+    
+    if (this.metricsInterval) {
+      clearInterval(this.metricsInterval);
+      this.metricsInterval = null;
+    }
+    
+    console.log('✅ Auto-scaler stopped and cleaned up');
   }
 
   /**

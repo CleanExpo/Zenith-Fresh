@@ -402,6 +402,314 @@ class SaaSOrchestrationEngine {
 
     return signals;
   }
+
+  generateExperienceRecommendations(signals) {
+    const recommendations = [];
+    
+    if (signals.length < 3) {
+      recommendations.push('Add more experiential content like case studies and testimonials');
+    }
+    
+    if (!signals.some(s => /case study/i.test(s))) {
+      recommendations.push('Create detailed case studies showcasing client results');
+    }
+    
+    return recommendations;
+  }
+
+  calculateEEATScore(eeatAnalysis) {
+    const scores = [
+      eeatAnalysis.expertise.score || 0,
+      eeatAnalysis.experience.score || 0,
+      eeatAnalysis.authoritativeness.score || 0,
+      eeatAnalysis.trustworthiness.score || 0
+    ];
+    
+    return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
+  }
+
+  identifyEEATGaps(eeatAnalysis) {
+    const gaps = [];
+    const threshold = 70;
+    
+    Object.entries(eeatAnalysis).forEach(([key, analysis]) => {
+      if (analysis.score && analysis.score < threshold) {
+        gaps.push({
+          category: key,
+          score: analysis.score,
+          gap: threshold - analysis.score,
+          severity: analysis.score < 50 ? 'critical' : 'high'
+        });
+      }
+    });
+    
+    return gaps;
+  }
+
+  generateEEATRecommendations(eeatAnalysis) {
+    const recommendations = [];
+    
+    if (eeatAnalysis.expertise.score < 70) {
+      recommendations.push({
+        category: 'Expertise',
+        priority: 'high',
+        action: 'Enhance author credentials and technical content depth',
+        impact: 'Improved search engine trust signals'
+      });
+    }
+    
+    if (eeatAnalysis.experience.score < 70) {
+      recommendations.push({
+        category: 'Experience',
+        priority: 'high',
+        action: 'Add more first-person experiences and case studies',
+        impact: 'Better user engagement and trust building'
+      });
+    }
+    
+    return recommendations;
+  }
+
+  calculateNarrativeScore(narrativeAnalysis) {
+    const weights = {
+      brandNarrative: 0.2,
+      toneOfVoice: 0.15,
+      brandArchetype: 0.15,
+      visualHierarchy: 0.2,
+      userJourney: 0.15,
+      ctaEffectiveness: 0.15
+    };
+    
+    let totalScore = 0;
+    let totalWeight = 0;
+    
+    Object.entries(weights).forEach(([key, weight]) => {
+      const analysis = narrativeAnalysis[key];
+      if (analysis && (analysis.score !== undefined || analysis.confidence !== undefined)) {
+        const score = analysis.score || analysis.confidence || analysis.overallScore || 50;
+        totalScore += score * weight;
+        totalWeight += weight;
+      }
+    });
+    
+    return totalWeight > 0 ? Math.round(totalScore / totalWeight) : 0;
+  }
+
+  generateNarrativeRecommendations(narrativeAnalysis) {
+    const recommendations = [];
+    
+    if (narrativeAnalysis.brandNarrative.confidence < 70) {
+      recommendations.push({
+        category: 'Brand Narrative',
+        priority: 'high',
+        action: 'Clarify core story elements and brand messaging',
+        impact: 'Stronger brand identity and user connection'
+      });
+    }
+    
+    if (narrativeAnalysis.userJourney.journeyScore < 70) {
+      recommendations.push({
+        category: 'User Journey',
+        priority: 'medium',
+        action: 'Optimize user flow and conversion paths',
+        impact: 'Improved conversion rates and user experience'
+      });
+    }
+    
+    return recommendations;
+  }
+
+  async analyzeCompetitor(competitor) {
+    // Simplified competitor analysis
+    return {
+      eeatAnalysis: { overallEEATScore: 75 },
+      geoAnalysis: { overallScore: 70 },
+      narrativeAnalysis: { overallNarrativeScore: 80 }
+    };
+  }
+
+  groupRecommendationsByPillar(recommendations) {
+    const grouped = {};
+    
+    Object.keys(this.strategicPillars).forEach(pillar => {
+      grouped[pillar] = [];
+    });
+    
+    recommendations.forEach(rec => {
+      // Categorize recommendations by strategic pillar
+      if (rec.category && rec.category.includes('E-E-A-T') || rec.category === 'Expertise' || rec.category === 'Experience') {
+        grouped['E-E-A-T Compliance'].push(rec);
+      } else if (rec.category && (rec.category.includes('Technical') || rec.category.includes('GEO'))) {
+        grouped['GEO Readiness'].push(rec);
+      } else if (rec.category && (rec.category.includes('Narrative') || rec.category.includes('Brand'))) {
+        grouped['Narrative Consistency'].push(rec);
+      }
+    });
+    
+    return grouped;
+  }
+
+  generateCompetitiveDifferentiation(clientAnalysis, competitorAnalyses) {
+    const recommendations = [];
+    
+    // Find areas where client outperforms competitors
+    const strengths = this.identifyCompetitiveStrengths(clientAnalysis, competitorAnalyses);
+    
+    strengths.forEach(strength => {
+      recommendations.push({
+        category: 'Competitive Advantage',
+        priority: 'medium',
+        action: `Leverage ${strength.area} strength in marketing and positioning`,
+        impact: 'Competitive differentiation and market positioning'
+      });
+    });
+    
+    return recommendations;
+  }
+
+  identifyCompetitiveStrengths(clientAnalysis, competitorAnalyses) {
+    const strengths = [];
+    const areas = ['eeatAnalysis', 'geoAnalysis', 'narrativeAnalysis'];
+    
+    areas.forEach(area => {
+      const clientScore = clientAnalysis[area].overallEEATScore || clientAnalysis[area].overallScore || clientAnalysis[area].overallNarrativeScore;
+      const competitorScores = Object.values(competitorAnalyses)
+        .map(comp => comp[area]?.overallEEATScore || comp[area]?.overallScore || comp[area]?.overallNarrativeScore || 0);
+      
+      const avgCompetitorScore = competitorScores.reduce((sum, score) => sum + score, 0) / competitorScores.length;
+      
+      if (clientScore > avgCompetitorScore + 10) {
+        strengths.push({
+          area,
+          advantage: clientScore - avgCompetitorScore
+        });
+      }
+    });
+    
+    return strengths;
+  }
+
+  estimatePhaseDuration(items) {
+    const totalComplexity = items.reduce((sum, item) => sum + (item.effortScore || 3), 0);
+    const weeks = Math.ceil(totalComplexity / 2);
+    return `${weeks} weeks`;
+  }
+
+  estimateResourceRequirements(items) {
+    const resources = new Set();
+    items.forEach(item => {
+      if (item.category?.includes('Technical')) {
+        resources.add('Development team');
+      }
+      if (item.category?.includes('Content') || item.category?.includes('Narrative')) {
+        resources.add('Content team');
+      }
+      if (item.category?.includes('Design')) {
+        resources.add('Design team');
+      }
+    });
+    
+    return Array.from(resources);
+  }
+
+  calculatePhaseROI(items) {
+    const totalROI = items.reduce((sum, item) => sum + (item.roi || 5), 0);
+    return Math.round(totalROI / items.length);
+  }
+
+  generateOverallAssessment(clientAnalysis) {
+    const overallScore = clientAnalysis.overallScore;
+    
+    if (overallScore >= 80) {
+      return 'Strong digital presence with minor optimization opportunities';
+    } else if (overallScore >= 60) {
+      return 'Good foundation with significant improvement potential';
+    } else {
+      return 'Critical optimization needed across multiple areas';
+    }
+  }
+
+  extractCriticalFindings(analysis) {
+    const findings = [];
+    
+    // Extract critical issues from each analysis module
+    if (analysis.client.eeatAnalysis.criticalGaps?.length > 0) {
+      findings.push(`E-E-A-T compliance needs attention: ${analysis.client.eeatAnalysis.criticalGaps.length} critical gaps identified`);
+    }
+    
+    if (analysis.client.geoAnalysis.criticalIssues?.length > 0) {
+      findings.push(`GEO readiness requires improvement: ${analysis.client.geoAnalysis.criticalIssues.length} critical technical issues`);
+    }
+    
+    return findings;
+  }
+
+  assessCompetitivePosition(clientAnalysis, competitorAnalyses) {
+    const competitorCount = Object.keys(competitorAnalyses).length;
+    const clientScore = clientAnalysis.overallScore;
+    
+    const competitorScores = Object.values(competitorAnalyses)
+      .map(comp => comp.eeatAnalysis?.overallEEATScore || comp.geoAnalysis?.overallScore || comp.narrativeAnalysis?.overallNarrativeScore || 50);
+    
+    const betterThan = competitorScores.filter(score => clientScore > score).length;
+    const position = betterThan + 1;
+    
+    return {
+      position,
+      totalCompetitors: competitorCount,
+      percentile: Math.round((betterThan / competitorCount) * 100)
+    };
+  }
+
+  extractTopPriorities(prioritizationMatrix) {
+    const priorities = [];
+    
+    // Extract top items from quick wins and major projects
+    if (prioritizationMatrix.quadrant1?.items?.length > 0) {
+      priorities.push(...prioritizationMatrix.quadrant1.items.slice(0, 3));
+    }
+    
+    if (prioritizationMatrix.quadrant2?.items?.length > 0) {
+      priorities.push(...prioritizationMatrix.quadrant2.items.slice(0, 2));
+    }
+    
+    return priorities.slice(0, 5); // Top 5 priorities
+  }
+
+  calculateExpectedImpact(implementationRoadmap) {
+    const phases = Object.values(implementationRoadmap);
+    const totalROI = phases.reduce((sum, phase) => sum + (phase.expectedROI || 0), 0);
+    
+    return {
+      totalROI: Math.round(totalROI / phases.length),
+      timeframe: '6-12 months',
+      confidence: 'High'
+    };
+  }
+
+  generateInvestmentRecommendation(analysis) {
+    const clientScore = analysis.client.overallScore;
+    
+    if (clientScore < 50) {
+      return {
+        level: 'High',
+        rationale: 'Significant gaps require comprehensive digital transformation',
+        priority: 'Critical'
+      };
+    } else if (clientScore < 70) {
+      return {
+        level: 'Medium',
+        rationale: 'Good foundation with targeted improvements needed',
+        priority: 'High'
+      };
+    } else {
+      return {
+        level: 'Low',
+        rationale: 'Strong position with optimization opportunities',
+        priority: 'Medium'
+      };
+    }
+  }
 }
 
 module.exports = { SaaSOrchestrationEngine };
