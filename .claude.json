@@ -13,6 +13,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "push and commit all changes to the github repo and then force a new vercel production",
+          "pastedContents": {}
+        },
+        {
           "display": "ok, we are only getting html, no css",
           "pastedContents": {}
         },
