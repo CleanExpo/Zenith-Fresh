@@ -13,6 +13,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "push and commit all changes and then push to vercel deployment",
+          "pastedContents": {}
+        },
+        {
           "display": "time to go back to the No BS roadmap and create a new one i think. We are mising and not connected to the majority of the contents within the site. Both frontend and backend issues. Lets go back through and do another deep dive into the frontend and backend, look at eh claude.md and the NS bullshit deployment.md and see what has been missed",
           "pastedContents": {}
         },
