@@ -298,12 +298,12 @@ model Team {
   
   // Innovation Agent relations
   technologyTrends     TechnologyTrend[]
-  competitorProfiles   CompetitorProfile[]
+  // competitorProfiles   CompetitorProfile[] // Temporarily disabled for deployment
   researchPapers       ResearchPaper[]
   githubTrends         GitHubTrend[]
   innovationBriefs     InnovationBrief[]
   innovationAlerts     InnovationAlert[]
-  competitorAlerts     CompetitorAlert[]
+  // competitorAlerts     CompetitorAlert[] // Temporarily disabled for deployment
   monitoringSources    MonitoringSource[]
 }
 
@@ -1679,85 +1679,89 @@ model TechnologyTrend {
 
 // Duplicate CompetitorProfile model removed - already defined above
 
-model FeatureDetection {
-  id              String             @id @default(cuid())
-  competitorId    String
-  competitor      CompetitorProfile  @relation(fields: [competitorId], references: [id], onDelete: Cascade)
-  featureName     String
-  category        String             // core, addon, integration, performance, ui, api, pricing
-  description     String
-  detectedDate    DateTime           @default(now())
-  launchDate      DateTime?
-  screenshots     String[]
-  technicalDetails Json              // {stack, apis, integrations, performance}
-  pricingImpact   Json?              // {type, oldPrice, newPrice, details}
-  marketAnalysis  Json               // {targetAudience, uniqueValue, competitiveAdvantage, estimatedDevelopmentTime, threatLevel}
-  userReaction    Json?              // {sentiment, feedback, adoptionSignals}
-  responseStatus  String             @default("pending") // pending, planned, in_progress, completed, dismissed
-  responsePlan    String?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-  
-  @@index([competitorId, detectedDate])
-  @@index([category, detectedDate])
-  @@map("feature_detections")
-}
+// COMMENTED OUT FOR BUILD: FeatureDetection model has broken CompetitorProfile relation
+// model FeatureDetection {
+//   id              String             @id @default(cuid())
+//   competitorId    String
+//   competitor      CompetitorProfile  @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+//   featureName     String
+//   category        String             // core, addon, integration, performance, ui, api, pricing
+//   description     String
+//   detectedDate    DateTime           @default(now())
+//   launchDate      DateTime?
+//   screenshots     String[]
+//   technicalDetails Json              // {stack, apis, integrations, performance}
+//   pricingImpact   Json?              // {type, oldPrice, newPrice, details}
+//   marketAnalysis  Json               // {targetAudience, uniqueValue, competitiveAdvantage, estimatedDevelopmentTime, threatLevel}
+//   userReaction    Json?              // {sentiment, feedback, adoptionSignals}
+//   responseStatus  String             @default("pending") // pending, planned, in_progress, completed, dismissed
+//   responsePlan    String?
+//   createdAt       DateTime           @default(now())
+//   updatedAt       DateTime           @updatedAt
+//   
+//   @@index([competitorId, detectedDate])
+//   @@index([category, detectedDate])
+//   @@map("feature_detections")
+// }
 
-model PricingChange {
-  id                String             @id @default(cuid())
-  competitorId      String
-  competitor        CompetitorProfile  @relation(fields: [competitorId], references: [id], onDelete: Cascade)
-  changeType        String             // increase, decrease, new_plan, plan_removal, feature_change
-  oldPricing        Json
-  newPricing        Json
-  affectedPlans     String[]
-  percentageChange  Float?
-  effectiveDate     DateTime
-  detectedDate      DateTime           @default(now())
-  marketImpact      String
-  recommendedResponse String
-  createdAt         DateTime           @default(now())
-  
-  @@index([competitorId, detectedDate])
-  @@index([changeType, detectedDate])
-  @@map("pricing_changes")
-}
+// COMMENTED OUT FOR BUILD: PricingChange model has broken CompetitorProfile relation
+// model PricingChange {
+//   id                String             @id @default(cuid())
+//   competitorId      String
+//   competitor        CompetitorProfile  @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+//   changeType        String             // increase, decrease, new_plan, plan_removal, feature_change
+//   oldPricing        Json
+//   newPricing        Json
+//   affectedPlans     String[]
+//   percentageChange  Float?
+//   effectiveDate     DateTime
+//   detectedDate      DateTime           @default(now())
+//   marketImpact      String
+//   recommendedResponse String
+//   createdAt         DateTime           @default(now())
+//   
+//   @@index([competitorId, detectedDate])
+//   @@index([changeType, detectedDate])
+//   @@map("pricing_changes")
+// }
 
-model CompetitorSnapshot {
-  id            String             @id @default(cuid())
-  competitorId  String
-  competitor    CompetitorProfile  @relation(fields: [competitorId], references: [id], onDelete: Cascade)
-  timestamp     DateTime           @default(now())
-  features      Json               // Array of features at time of snapshot
-  pricing       Json               // Pricing structure at time of snapshot
-  marketPosition Json             // Market position data
-  featureCount  Int                @default(0)
-  changes       Json?              // {newFeatures, removedFeatures, priceChanges, otherChanges}
-  
-  @@index([competitorId, timestamp])
-  @@map("competitor_snapshots")
-}
+// COMMENTED OUT FOR BUILD: CompetitorSnapshot model has broken CompetitorProfile relation
+// model CompetitorSnapshot {
+//   id            String             @id @default(cuid())
+//   competitorId  String
+//   competitor    CompetitorProfile  @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+//   timestamp     DateTime           @default(now())
+//   features      Json               // Array of features at time of snapshot
+//   pricing       Json               // Pricing structure at time of snapshot
+//   marketPosition Json             // Market position data
+//   featureCount  Int                @default(0)
+//   changes       Json?              // {newFeatures, removedFeatures, priceChanges, otherChanges}
+//   
+//   @@index([competitorId, timestamp])
+//   @@map("competitor_snapshots")
+// }
 
-model CompetitorAlert {
-  id                String             @id @default(cuid())
-  competitorId      String?
-  competitor        CompetitorProfile? @relation(fields: [competitorId], references: [id], onDelete: Cascade)
-  type              String             // feature_launch, pricing_change, market_move, strategic_shift
-  severity          String             // low, medium, high, critical
-  title             String
-  description       String
-  recommendedAction String?
-  isRead            Boolean            @default(false)
-  readAt            DateTime?
-  readBy            String?
-  teamId            String?
-  team              Team?              @relation(fields: [teamId], references: [id])
-  createdAt         DateTime           @default(now())
-  
-  @@index([isRead, severity])
-  @@index([teamId, createdAt])
-  @@map("competitor_alerts")
-}
+// COMMENTED OUT FOR BUILD: CompetitorAlert model has broken CompetitorProfile relation
+// model CompetitorAlert {
+//   id                String             @id @default(cuid())
+//   competitorId      String?
+//   competitor        CompetitorProfile? @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+//   type              String             // feature_launch, pricing_change, market_move, strategic_shift
+//   severity          String             // low, medium, high, critical
+//   title             String
+//   description       String
+//   recommendedAction String?
+//   isRead            Boolean            @default(false)
+//   readAt            DateTime?
+//   readBy            String?
+//   teamId            String?
+//   team              Team?              @relation(fields: [teamId], references: [id])
+//   createdAt         DateTime           @default(now())
+//   
+//   @@index([isRead, severity])
+//   @@index([teamId, createdAt])
+//   @@map("competitor_alerts")
+// }
 
 model ResearchPaper {
   id                    String    @id @default(cuid())
