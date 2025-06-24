@@ -14,9 +14,11 @@ export async function GET(request: NextRequest) {
     const cacheKey = `dashboard:keywords:${session.user.id}`;
     
     try {
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        return NextResponse.json(JSON.parse(cached));
+      if (redis) {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          return NextResponse.json(JSON.parse(cached));
+        }
       }
     } catch (error) {
       console.error('Redis error:', error);
@@ -36,7 +38,9 @@ export async function GET(request: NextRequest) {
 
     // Cache for 10 minutes
     try {
-      await redis.setex(cacheKey, 600, JSON.stringify(responseData));
+      if (redis) {
+        await redis.setex(cacheKey, 600, JSON.stringify(responseData));
+      }
     } catch (error) {
       console.error('Redis set error:', error);
     }
@@ -80,12 +84,14 @@ export async function POST(request: NextRequest) {
 
     // Check Redis cache
     try {
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        return NextResponse.json({
-          data: JSON.parse(cached),
-          source: 'cache',
-        });
+      if (redis) {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          return NextResponse.json({
+            data: JSON.parse(cached),
+            source: 'cache',
+          });
+        }
       }
     } catch (error) {
       console.error('Redis error:', error);
@@ -104,7 +110,9 @@ export async function POST(request: NextRequest) {
 
     // Store in Redis cache for 1 hour
     try {
-      await redis.setex(cacheKey, 3600, JSON.stringify(mockData));
+      if (redis) {
+        await redis.setex(cacheKey, 3600, JSON.stringify(mockData));
+      }
     } catch (error) {
       console.error('Redis set error:', error);
     }

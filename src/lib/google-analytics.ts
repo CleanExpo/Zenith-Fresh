@@ -238,7 +238,7 @@ class GoogleAnalyticsService {
         throw new Error('Google Analytics Admin client not initialized');
       }
 
-      const [property] = await this.adminClient.createProperty({
+      const response = await this.adminClient.createProperty({
         parent: `accounts/${accountId}`,
         property: {
           displayName: propertyName,
@@ -246,7 +246,9 @@ class GoogleAnalyticsService {
           timeZone: 'America/Los_Angeles',
           currencyCode: 'USD',
         },
-      });
+      } as any);
+      
+      const property = Array.isArray(response) ? response[0] : response;
 
       return {
         success: true,

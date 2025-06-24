@@ -406,7 +406,7 @@ export class HemingwayAgent {
       'University': { maxSentenceLength: 25, maxWordsPerSentence: 30, maxComplexWords: 25 }
     };
 
-    return targets[level] || targets['Year 7-9'];
+    return targets[level as keyof typeof targets] || targets['Year 7-9'];
   }
 
   private generateRelevantExamples(brief: ContentBrief): string[] {

@@ -335,7 +335,7 @@ export class SocraticAgent {
       creativity: "Explore unconventional solutions and innovative approaches"
     };
 
-    return improvements[challengeType] || "General improvement in output quality";
+    return improvements[challengeType as keyof typeof improvements] || "General improvement in output quality";
   }
 
   private async analyzeImprovement(original: any, revised: any, challengeType: string): Promise<any> {

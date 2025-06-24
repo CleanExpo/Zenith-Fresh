@@ -124,9 +124,11 @@ export async function discoverCompetitors(url: string, industry: string): Promis
   
   try {
     // Check cache first
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      return JSON.parse(cached);
+    if (redis) {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        return JSON.parse(cached);
+      }
     }
 
     // For MVP, return industry-based competitors
@@ -144,7 +146,9 @@ export async function discoverCompetitors(url: string, industry: string): Promis
     });
 
     // Cache for 1 hour
-    await redis.setex(cacheKey, 3600, JSON.stringify(filteredCompetitors));
+    if (redis) {
+      await redis.setex(cacheKey, 3600, JSON.stringify(filteredCompetitors));
+    }
     
     return filteredCompetitors.slice(0, 5); // Limit to top 5 competitors
   } catch (error) {
@@ -351,9 +355,11 @@ export async function performCompetitiveAnalysis(url: string): Promise<Competiti
   
   try {
     // Check cache first (24 hour TTL for competitive analysis)
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      return JSON.parse(cached);
+    if (redis) {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        return JSON.parse(cached);
+      }
     }
 
     // Step 1: Analyze target website
@@ -370,7 +376,9 @@ export async function performCompetitiveAnalysis(url: string): Promise<Competiti
     const analysis = await generateCompetitiveInsights(url, targetAnalysis, competitorData);
     
     // Cache the results for 24 hours
-    await redis.setex(cacheKey, 86400, JSON.stringify(analysis));
+    if (redis) {
+      await redis.setex(cacheKey, 86400, JSON.stringify(analysis));
+    }
     
     return analysis;
   } catch (error) {
@@ -394,12 +402,20 @@ export async function getCompetitorComparison(
   try {
     const analysis = await performCompetitiveAnalysis(url);
     
+    // Map metric to actual pillar property
+    const getMetricScore = (pillars: any, metric: string) => {
+      if (metric === 'seo') {
+        return Math.round((pillars.technicalSEO + pillars.onPageSEO) / 2);
+      }
+      return pillars[metric as keyof typeof pillars] || 0;
+    };
+
     const targetScore = metric === 'performance' ? analysis.targetScore : 
-                       analysis.competitors.find(c => c.url === url)?.pillars[metric] || 0;
+                       getMetricScore(analysis.competitors.find(c => c.url === url)?.pillars || {}, metric);
     
     const competitorScores = analysis.competitors.map(c => ({
       url: c.url,
-      score: c.pillars[metric] || c.healthScore,
+      score: getMetricScore(c.pillars, metric) || c.healthScore,
       name: new URL(c.url).hostname.replace('www.', '')
     }));
     

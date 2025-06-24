@@ -602,7 +602,7 @@ export class TrainingAgent {
     const issueKeywords = issue.type.toLowerCase().split(' ');
     const lessonKeywords = lesson?.title.toLowerCase().split(' ') || [];
     
-    return issueKeywords.some(keyword => lessonKeywords.includes(keyword));
+    return issueKeywords.some((keyword: string) => lessonKeywords.includes(keyword));
   }
 
   private extractTopicFromCommand(command: string): string {

@@ -1,0 +1,227 @@
+.next/types/app/api/activity/route.ts(8,13): error TS2344: Type 'OmitWithTag<typeof import("/root/src/app/api/activity/route"), "config" | "generateStaticParams" | "revalidate" | "dynamic" | "dynamicParams" | "fetchCache" | "preferredRegion" | "runtime" | ... 7 more ... | "PATCH", "">' does not satisfy the constraint '{ [x: string]: never; }'.
+  Property 'GET_PROJECT' is incompatible with index signature.
+    Type '(req: NextRequest, { params }: { params: { projectId: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<({ file: { id: string; name: string; type: string; size: number; ... 4 more ...; projectId: string; } | null; task: { ...; } | null; } & { ...; })[]>>' is not assignable to type 'never'.
+.next/types/app/api/auth/[...nextauth]/route.ts(8,13): error TS2344: Type 'OmitWithTag<typeof import("/root/src/app/api/auth/[...nextauth]/route"), "config" | "generateStaticParams" | "revalidate" | "dynamic" | "dynamicParams" | "fetchCache" | "preferredRegion" | ... 8 more ... | "PATCH", "">' does not satisfy the constraint '{ [x: string]: never; }'.
+  Property 'authOptions' is incompatible with index signature.
+    Type 'AuthOptions' is not assignable to type 'never'.
+Zenith-Fresh/src/app/layout.tsx(4,8): error TS2613: Module '"/root/src/components/Sidebar"' has no default export. Did you mean to use 'import { Sidebar } from "/root/src/components/Sidebar"' instead?
+sentry.client.config.ts(36,12): error TS2551: Property 'consoleLoggingIntegration' does not exist on type 'typeof import("/root/node_modules/@sentry/nextjs/types/index.types")'. Did you mean 'consoleIntegration'?
+sentry.edge.config.ts(25,12): error TS2551: Property 'consoleLoggingIntegration' does not exist on type 'typeof import("/root/node_modules/@sentry/nextjs/types/index.types")'. Did you mean 'consoleIntegration'?
+sentry.server.config.ts(25,12): error TS2551: Property 'consoleLoggingIntegration' does not exist on type 'typeof import("/root/node_modules/@sentry/nextjs/types/index.types")'. Did you mean 'consoleIntegration'?
+src/app/academy/page.tsx(42,17): error TS7031: Binding element 'path' implicitly has an 'any' type.
+src/app/academy/page.tsx(48,23): error TS7031: Binding element 'title' implicitly has an 'any' type.
+src/app/academy/page.tsx(48,30): error TS7031: Binding element 'description' implicitly has an 'any' type.
+src/app/academy/page.tsx(48,43): error TS7031: Binding element 'level' implicitly has an 'any' type.
+src/app/academy/page.tsx(48,50): error TS7031: Binding element 'duration' implicitly has an 'any' type.
+src/app/academy/page.tsx(48,60): error TS7031: Binding element 'modules' implicitly has an 'any' type.
+src/app/api/analytics/google/route.ts(59,7): error TS2783: 'success' is specified more than once, so this usage will be overwritten.
+src/app/api/analytics/google/route.ts(61,20): error TS2339: Property 'data' does not exist on type '{ success: boolean; data: IRunRealtimeReportResponse; activeUsers: string; pageViews: string; error?: undefined; } | { success: boolean; data: IRunReportResponse; error?: undefined; } | ... 4 more ... | { ...; }'.
+  Property 'data' does not exist on type '{ success: boolean; accounts: IAccountSummary[]; error?: undefined; }'.
+src/app/api/analytics/google/route.ts(62,23): error TS2339: Property 'summary' does not exist on type '{ success: boolean; data: IRunRealtimeReportResponse; activeUsers: string; pageViews: string; error?: undefined; } | { success: boolean; data: IRunReportResponse; error?: undefined; } | ... 4 more ... | { ...; }'.
+  Property 'summary' does not exist on type '{ success: boolean; data: IRunRealtimeReportResponse; activeUsers: string; pageViews: string; error?: undefined; }'.
+src/app/api/analytics/google/route.ts(125,7): error TS2783: 'success' is specified more than once, so this usage will be overwritten.
+src/app/api/cron/database-cleanup/route.ts(31,42): error TS2339: Property 'activity' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/cron/email-queue/route.ts(34,42): error TS2339: Property 'emailQueue' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/cron/email-queue/route.ts(59,24): error TS2339: Property 'emailQueue' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/cron/email-queue/route.ts(76,26): error TS2339: Property 'emailQueue' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/cron/email-queue/route.ts(88,26): error TS2339: Property 'emailQueue' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/app/api/cron/health-check/route.ts(24,9): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(input: string | Request | URL, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Object literal may only specify known properties, and 'timeout' does not exist in type 'RequestInit'.
+  Overload 2 of 2, '(input: URL | RequestInfo, init?: RequestInit | undefined): Promise<Response>', gave the following error.
+    Object literal may only specify known properties, and 'timeout' does not exist in type 'RequestInit'.
+src/app/api/integrations/architect/route.ts(149,16): error TS18046: 'error' is of type 'unknown'.
+src/app/api/integrations/architect/route.ts(175,16): error TS18046: 'error' is of type 'unknown'.
+src/app/api/presence/keywords/rankings/route.ts(17,28): error TS18047: 'redis' is possibly 'null'.
+src/app/api/presence/keywords/rankings/route.ts(39,13): error TS18047: 'redis' is possibly 'null'.
+src/app/api/presence/keywords/rankings/route.ts(83,28): error TS18047: 'redis' is possibly 'null'.
+src/app/api/presence/keywords/rankings/route.ts(107,13): error TS18047: 'redis' is possibly 'null'.
+src/app/api/presence/social/stats/route.ts(18,28): error TS18047: 'redis' is possibly 'null'.
+src/app/api/presence/social/stats/route.ts(78,13): error TS18047: 'redis' is possibly 'null'.
+src/app/api/stripe/webhook/route.ts(39,15): error TS2353: Object literal may only specify known properties, and 'stripeSubscriptionId' does not exist in type '(Without<TeamUpdateInput, TeamUncheckedUpdateInput> & TeamUncheckedUpdateInput) | (Without<...> & TeamUpdateInput)'.
+src/app/api/stripe/webhook/route.ts(48,21): error TS2339: Property 'subscription' does not exist on type 'Invoice'.
+src/app/api/stripe/webhook/route.ts(49,76): error TS2339: Property 'subscription' does not exist on type 'Invoice'.
+src/app/api/stripe/webhook/route.ts(51,22): error TS2353: Object literal may only specify known properties, and 'stripeSubscriptionId' does not exist in type 'TeamWhereInput'.
+src/app/api/stripe/webhook/route.ts(57,23): error TS2353: Object literal may only specify known properties, and 'subscriptionStatus' does not exist in type '(Without<TeamUpdateInput, TeamUncheckedUpdateInput> & TeamUncheckedUpdateInput) | (Without<...> & TeamUpdateInput)'.
+src/app/api/stripe/webhook/route.ts(65,27): error TS2339: Property 'subscription' does not exist on type 'Invoice'.
+src/app/api/stripe/webhook/route.ts(66,82): error TS2339: Property 'subscription' does not exist on type 'Invoice'.
+src/app/api/stripe/webhook/route.ts(68,22): error TS2353: Object literal may only specify known properties, and 'stripeSubscriptionId' does not exist in type 'TeamWhereInput'.
+src/app/api/stripe/webhook/route.ts(74,23): error TS2353: Object literal may only specify known properties, and 'subscriptionStatus' does not exist in type '(Without<TeamUpdateInput, TeamUncheckedUpdateInput> & TeamUncheckedUpdateInput) | (Without<...> & TeamUpdateInput)'.
+src/app/api/stripe/webhook/route.ts(83,20): error TS2353: Object literal may only specify known properties, and 'stripeSubscriptionId' does not exist in type 'TeamWhereInput'.
+src/app/api/stripe/webhook/route.ts(90,15): error TS2353: Object literal may only specify known properties, and 'subscriptionStatus' does not exist in type '(Without<TeamUpdateInput, TeamUncheckedUpdateInput> & TeamUncheckedUpdateInput) | (Without<...> & TeamUpdateInput)'.
+src/app/auth/signin/page.tsx(19,23): error TS18047: 'searchParams' is possibly 'null'.
+src/app/settings/page.tsx(161,32): error TS2339: Property 'emailUpdates' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; userId: string; theme: string; language: string; emailNotifications: boolean; pushNotifications: boolean; timezone: string; dateFormat: string; timeFormat: string; }'.
+src/app/settings/page.tsx(164,33): error TS2339: Property 'emailUpdates' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; userId: string; theme: string; language: string; emailNotifications: boolean; pushNotifications: boolean; timezone: string; dateFormat: string; timeFormat: string; }'.
+src/app/settings/page.tsx(174,32): error TS2551: Property 'notifications' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; userId: string; theme: string; language: string; emailNotifications: boolean; pushNotifications: boolean; timezone: string; dateFormat: string; timeFormat: string; }'. Did you mean 'pushNotifications'?
+src/app/settings/page.tsx(177,33): error TS2551: Property 'notifications' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; userId: string; theme: string; language: string; emailNotifications: boolean; pushNotifications: boolean; timezone: string; dateFormat: string; timeFormat: string; }'. Did you mean 'pushNotifications'?
+src/components/GoogleAnalytics.tsx(15,28): error TS18047: 'searchParams' is possibly 'null'.
+src/components/VisionSandbox.tsx(60,9): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+src/components/VisionSandbox.tsx(103,25): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+src/components/VisionSandbox.tsx(109,25): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+src/components/VisionSandbox.tsx(155,27): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+src/components/VisionSandbox.tsx(159,20): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+src/components/VisionSandbox.tsx(172,27): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+src/components/VisionSandbox.tsx(176,16): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ Free: number; Pro: number; Business: number; Enterprise: number; }'.
+src/components/dashboard/AnalyticsDashboard.tsx(141,80): error TS2339: Property 'activeUsers' does not exist on type '{ refresh: () => Promise<void>; summary?: any; realtime?: any; acquisition?: any; pages?: any; loading: boolean; error?: string | undefined; }'.
+src/components/dashboard/AnalyticsDashboard.tsx(145,29): error TS2339: Property 'pageViews' does not exist on type '{ refresh: () => Promise<void>; summary?: any; realtime?: any; acquisition?: any; pages?: any; loading: boolean; error?: string | undefined; }'.
+src/hooks/useABTest.ts(4,49): error TS2307: Cannot find module '@/lib/ab-testing' or its corresponding type declarations.
+src/lib/agents/competitive-advantage-agent.ts(199,12): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ 'Keywords Explorer': { job: string; value: string; painPoint: string; limitations: string[]; }; 'Site Explorer': { job: string; value: string; painPoint: string; limitations: string[]; }; 'Content Gap': { job: string; value: string; painPoint: string; limitations: string[]; }; }'.
+src/lib/agents/competitive-advantage-agent.ts(280,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ 'Keywords Explorer': { enhancedFeatureName: string; coreImprovement: string; zenithDifferentiators: string[]; outcomeOriented: boolean; agentDriven: boolean; integrationPoints: string[]; }; 'Site Explorer': { ...; }; 'Content Gap': { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ 'Keywords Explorer': { enhancedFeatureName: string; coreImprovement: string; zenithDifferentiators: string[]; outcomeOriented: boolean; agentDriven: boolean; integrationPoints: string[]; }; 'Site Explorer': { ...; }; 'Content Gap': { ...; }; }'.
+src/lib/agents/competitive-advantage-agent.ts(359,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ 'Predictive Content Strategy Engine': { triggerEvent: string; workflowSteps: { step: number; agent: string; action: string; input: string; output: string; }[]; involvedAgents: string[]; userInteraction: string; finalOutcome: string; }; 'Proactive Digital PR & Outreach System': { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ 'Predictive Content Strategy Engine': { triggerEvent: string; workflowSteps: { step: number; agent: string; action: string; input: string; output: string; }[]; involvedAgents: string[]; userInteraction: string; finalOutcome: string; }; 'Proactive Digital PR & Outreach System': { ...; }; }'.
+src/lib/agents/competitive-advantage-agent.ts(415,12): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ 'Keywords Explorer': string; 'Site Explorer': string; 'Content Gap': string; 'Site Audit': string; }'.
+src/lib/agents/hemingway-agent.ts(409,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ 'Year 5': { maxSentenceLength: number; maxWordsPerSentence: number; maxComplexWords: number; }; 'Year 7-9': { maxSentenceLength: number; maxWordsPerSentence: number; maxComplexWords: number; }; 'Year 10': { ...; }; University: { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ 'Year 5': { maxSentenceLength: number; maxWordsPerSentence: number; maxComplexWords: number; }; 'Year 7-9': { maxSentenceLength: number; maxWordsPerSentence: number; maxComplexWords: number; }; 'Year 10': { ...; }; University: { ...; }; }'.
+src/lib/agents/integration-architect-agent.ts(956,23): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ SIMPLE: number; MODERATE: number; COMPLEX: number; EXPERT: number; }'.
+  No index signature with a parameter of type 'string' was found on type '{ SIMPLE: number; MODERATE: number; COMPLEX: number; EXPERT: number; }'.
+src/lib/agents/search-mastery-agent.ts(333,53): error TS7006: Parameter 'keyword' implicitly has an 'any' type.
+src/lib/agents/socratic-agent.ts(338,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ assumption: string; logic: string; completeness: string; accuracy: string; efficiency: string; creativity: string; }'.
+  No index signature with a parameter of type 'string' was found on type '{ assumption: string; logic: string; completeness: string; accuracy: string; efficiency: string; creativity: string; }'.
+src/lib/agents/training-agent.ts(605,31): error TS7006: Parameter 'keyword' implicitly has an 'any' type.
+src/lib/agents/verification-agent.ts(146,41): error TS18046: 'error' is of type 'unknown'.
+src/lib/agents/verification-agent.ts(196,40): error TS18046: 'error' is of type 'unknown'.
+src/lib/auth.ts(178,26): error TS2339: Property 'id' does not exist on type '{}'.
+src/lib/auth.ts(179,29): error TS2339: Property 'email' does not exist on type '{}'.
+src/lib/auth.ts(180,28): error TS2339: Property 'name' does not exist on type '{}'.
+src/lib/cron-monitoring.ts(33,11): error TS2322: Type '{ type: "crontab" | "interval"; value: string; }' is not assignable to type 'MonitorSchedule'.
+  Property 'unit' is missing in type '{ type: "crontab" | "interval"; value: string; }' but required in type 'IntervalSchedule'.
+src/lib/disaster-recovery/enterprise-disaster-recovery.ts(6,84): error TS2307: Cannot find module '@aws-sdk/client-s3' or its corresponding type declarations.
+src/lib/disaster-recovery/enterprise-disaster-recovery.ts(7,92): error TS2307: Cannot find module '@aws-sdk/client-rds' or its corresponding type declarations.
+src/lib/disaster-recovery/enterprise-disaster-recovery.ts(8,74): error TS2307: Cannot find module '@aws-sdk/client-ecs' or its corresponding type declarations.
+src/lib/disaster-recovery/enterprise-disaster-recovery.ts(9,78): error TS2307: Cannot find module '@aws-sdk/client-cloudformation' or its corresponding type declarations.
+src/lib/disaster-recovery/enterprise-disaster-recovery.ts(697,28): error TS2802: Type 'IterableIterator<BackupConfiguration>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
+src/lib/disaster-recovery/enterprise-disaster-recovery.ts(731,18): error TS18046: 'error' is of type 'unknown'.
+src/lib/email.ts(63,7): error TS2561: Object literal may only specify known properties, but 'reply_to' does not exist in type 'CreateEmailOptions'. Did you mean to write 'replyTo'?
+src/lib/google-analytics.ts(241,13): error TS2461: Type 'Promise<[IProperty, ICreatePropertyRequest | undefined, {} | undefined]> & void' is not an array type.
+src/lib/google-analytics.ts(242,9): error TS2353: Object literal may only specify known properties, and 'parent' does not exist in type 'ICreatePropertyRequest'.
+src/lib/integration/enterprise-webhook-system.ts(8,33): error TS2307: Cannot find module '@/lib/scalability/enterprise-redis-cache' or its corresponding type declarations.
+src/lib/integration/enterprise-webhook-system.ts(198,30): error TS2345: Argument of type 'Omit<WebhookEvent, "id" | "timestamp">' is not assignable to parameter of type 'WebhookEvent'.
+  Type 'Omit<WebhookEvent, "id" | "timestamp">' is missing the following properties from type 'WebhookEvent': id, timestamp
+src/lib/integration/enterprise-webhook-system.ts(375,23): error TS18046: 'error' is of type 'unknown'.
+src/lib/integration/enterprise-webhook-system.ts(549,31): error TS18046: 'error' is of type 'unknown'.
+src/lib/integration/enterprise-webhook-system.ts(626,23): error TS18046: 'error' is of type 'unknown'.
+src/lib/integration/graphql-schema.ts(6,188): error TS2307: Cannot find module 'graphql' or its corresponding type declarations.
+src/lib/integration/graphql-schema.ts(7,46): error TS2307: Cannot find module 'graphql-scalars' or its corresponding type declarations.
+src/lib/integration/graphql-schema.ts(9,28): error TS2307: Cannot find module 'graphql-subscriptions' or its corresponding type declarations.
+src/lib/integration/graphql-schema.ts(10,24): error TS2307: Cannot find module 'graphql-subscriptions' or its corresponding type declarations.
+src/lib/integration/graphql-schema.ts(137,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(145,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(153,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(162,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(162,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(162,37): error TS7006: Parameter 'context' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(182,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(190,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(204,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(204,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(215,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(224,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(224,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(224,37): error TS7006: Parameter 'context' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(230,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(256,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(264,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(274,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(292,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(301,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(309,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(317,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(334,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(342,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(359,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(367,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(386,45): error TS2448: Block-scoped variable 'ActivityLogType' used before its declaration.
+src/lib/integration/graphql-schema.ts(398,44): error TS2448: Block-scoped variable 'VelocityDataType' used before its declaration.
+src/lib/integration/graphql-schema.ts(399,44): error TS2448: Block-scoped variable 'BurndownDataType' used before its declaration.
+src/lib/integration/graphql-schema.ts(412,29): error TS2448: Block-scoped variable 'UsageStatsType' used before its declaration.
+src/lib/integration/graphql-schema.ts(413,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(432,29): error TS2448: Block-scoped variable 'PaymentHistoryType' used before its declaration.
+src/lib/integration/graphql-schema.ts(433,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(525,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(525,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(537,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(537,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(548,13): error TS2322: Type '{ OR: ({ name: { contains: any; mode: string; }; email?: undefined; } | { email: { contains: any; mode: string; }; name?: undefined; })[]; } | { OR?: undefined; }' is not assignable to type 'UserWhereInput | undefined'.
+  Type '{ OR: ({ name: { contains: any; mode: string; }; email?: undefined; } | { email: { contains: any; mode: string; }; name?: undefined; })[]; }' is not assignable to type 'UserWhereInput'.
+    Types of property 'OR' are incompatible.
+      Type '({ name: { contains: any; mode: string; }; email?: undefined; } | { email: { contains: any; mode: string; }; name?: undefined; })[]' is not assignable to type 'UserWhereInput[]'.
+        Type '{ name: { contains: any; mode: string; }; email?: undefined; } | { email: { contains: any; mode: string; }; name?: undefined; }' is not assignable to type 'UserWhereInput'.
+          Type '{ name: { contains: any; mode: string; }; email?: undefined; }' is not assignable to type 'UserWhereInput'.
+            Types of property 'name' are incompatible.
+              Type '{ contains: any; mode: string; }' is not assignable to type 'string | StringNullableFilter<"User"> | null | undefined'.
+                Type '{ contains: any; mode: string; }' is not assignable to type 'StringNullableFilter<"User">'.
+                  Types of property 'mode' are incompatible.
+                    Type 'string' is not assignable to type 'QueryMode | undefined'.
+src/lib/integration/graphql-schema.ts(552,31): error TS2322: Type '{ OR: ({ name: { contains: any; mode: string; }; email?: undefined; } | { email: { contains: any; mode: string; }; name?: undefined; })[]; } | { OR?: undefined; }' is not assignable to type 'UserWhereInput | undefined'.
+src/lib/integration/graphql-schema.ts(568,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(568,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(582,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(582,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(611,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(611,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(630,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(630,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(642,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(642,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(657,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(657,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(669,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(669,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(684,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(684,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(704,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(704,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(723,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(723,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(742,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(742,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(758,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(758,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(771,23): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(771,31): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(797,10): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(797,19): error TS7006: Parameter 'variables' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(807,10): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(807,19): error TS7006: Parameter 'variables' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(820,10): error TS7006: Parameter 'payload' implicitly has an 'any' type.
+src/lib/integration/graphql-schema.ts(820,19): error TS7006: Parameter 'variables' implicitly has an 'any' type.
+src/lib/sentry.ts(41,16): error TS2339: Property 'logger' does not exist on type 'typeof import("/root/node_modules/@sentry/nextjs/types/index.types")'.
+src/lib/services/competitive-analyzer.ts(127,26): error TS18047: 'redis' is possibly 'null'.
+src/lib/services/competitive-analyzer.ts(147,11): error TS18047: 'redis' is possibly 'null'.
+src/lib/services/competitive-analyzer.ts(354,26): error TS18047: 'redis' is possibly 'null'.
+src/lib/services/competitive-analyzer.ts(373,11): error TS18047: 'redis' is possibly 'null'.
+src/lib/services/competitive-analyzer.ts(398,24): error TS7053: Element implicitly has an 'any' type because expression of type '"security" | "seo" | "accessibility"' can't be used to index type '{ performance: number; technicalSEO: number; onPageSEO: number; security: number; accessibility: number; }'.
+  Property 'seo' does not exist on type '{ performance: number; technicalSEO: number; onPageSEO: number; security: number; accessibility: number; }'.
+src/lib/services/competitive-analyzer.ts(402,14): error TS7053: Element implicitly has an 'any' type because expression of type '"security" | "seo" | "performance" | "accessibility"' can't be used to index type '{ performance: number; technicalSEO: number; onPageSEO: number; security: number; accessibility: number; }'.
+  Property 'seo' does not exist on type '{ performance: number; technicalSEO: number; onPageSEO: number; security: number; accessibility: number; }'.
+src/middleware.ts(28,12): error TS2554: Expected 2 arguments, but got 1.
+src/middleware/analytics.ts(1,49): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/middleware/rate-limit.ts(1,23): error TS2307: Cannot find module 'express-rate-limit' or its corresponding type declarations.
+src/middleware/rate-limit.ts(2,35): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/middleware/roles.ts(1,49): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/middleware/upload.ts(1,20): error TS2307: Cannot find module 'multer' or its corresponding type declarations.
+src/middleware/upload.ts(3,49): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/middleware/upload.ts(4,30): error TS7016: Could not find a declaration file for module 'uuid'. '/root/node_modules/uuid/dist/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/uuid` if it exists or add a new declaration (.d.ts) file containing `declare module 'uuid';`
+src/middleware/upload.ts(8,42): error TS7006: Parameter 'cb' implicitly has an 'any' type.
+src/middleware/upload.ts(11,39): error TS7006: Parameter 'cb' implicitly has an 'any' type.
+src/pages/team/[id].tsx(19,13): error TS2322: Type '{ children: Element[]; defaultValue: string; }' is not assignable to type 'IntrinsicAttributes & TabsProps'.
+  Property 'defaultValue' does not exist on type 'IntrinsicAttributes & TabsProps'.
+tests/e2e/team.spec.ts(1,30): error TS2307: Cannot find module '@playwright/test' or its corresponding type declarations.
+tests/e2e/team.spec.ts(4,28): error TS7031: Binding element 'page' implicitly has an 'any' type.
+tests/e2e/team.spec.ts(13,45): error TS7031: Binding element 'page' implicitly has an 'any' type.
+tests/e2e/team.spec.ts(21,48): error TS7031: Binding element 'page' implicitly has an 'any' type.
+tests/e2e/team.spec.ts(28,47): error TS7031: Binding element 'page' implicitly has an 'any' type.
+tests/e2e/team.spec.ts(41,47): error TS7031: Binding element 'page' implicitly has an 'any' type.
+tests/e2e/team.spec.ts(52,47): error TS7031: Binding element 'page' implicitly has an 'any' type.
+vite.config.ts(1,30): error TS2307: Cannot find module 'vite' or its corresponding type declarations.
+vite.config.ts(2,19): error TS2307: Cannot find module '@vitejs/plugin-react' or its corresponding type declarations.
+TypeScript exit code: 2

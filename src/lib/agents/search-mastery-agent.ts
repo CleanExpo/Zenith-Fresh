@@ -330,7 +330,7 @@ export class SearchMasteryAgent {
 
     // Check keyword alignment
     const targetKeywords = clientProfile.targetKeywords || [];
-    const hasRelevantKeywords = targetKeywords.some(keyword => 
+    const hasRelevantKeywords = targetKeywords.some((keyword: string) => 
       opportunity.anchorText.toLowerCase().includes(keyword.toLowerCase()) ||
       opportunity.pageUrl.toLowerCase().includes(keyword.toLowerCase())
     );
