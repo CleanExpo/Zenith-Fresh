@@ -96,8 +96,7 @@ export async function POST(request: NextRequest) {
           name: `${validatedData.website} Health Analysis`,
           description: `Automated health analysis for ${validatedData.website}`,
           status: 'ACTIVE',
-          teamId: user.id, // Using user ID as team ID for now
-          createdById: user.id,
+          userId: user.id,
         },
       });
 
