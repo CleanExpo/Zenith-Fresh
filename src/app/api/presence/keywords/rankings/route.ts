@@ -3,6 +3,13 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redis } from '@/lib/redis';
 
+// Live keyword ranking data fetcher
+async function getLiveKeywordRankings(userId: string) {
+  // In production, this would integrate with DataForSEO, SEMrush, or other SEO APIs
+  // For now, return null to indicate no data available until APIs are connected
+  return null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -24,17 +31,17 @@ export async function GET(request: NextRequest) {
       console.error('Redis error:', error);
     }
 
-    // Demo data for dashboard - in production this would come from DataForSEO
-    const responseData = [
-      { keyword: 'best plumber ipswich', position: 3, volume: 480, difficulty: 'Medium', change: 2 },
-      { keyword: 'emergency plumber near me', position: 5, volume: 1200, difficulty: 'High', change: -1 },
-      { keyword: 'plumbing services', position: 8, volume: 3600, difficulty: 'High', change: 0 },
-      { keyword: 'licensed plumber', position: 12, volume: 720, difficulty: 'Medium', change: 3 },
-      { keyword: 'drain cleaning service', position: 6, volume: 890, difficulty: 'Low', change: 1 },
-      { keyword: 'residential plumber', position: 15, volume: 340, difficulty: 'Low', change: -2 },
-      { keyword: 'commercial plumbing', position: 9, volume: 560, difficulty: 'Medium', change: 4 },
-      { keyword: 'water heater repair', position: 7, volume: 780, difficulty: 'Medium', change: 1 }
-    ];
+    // Get live keyword ranking data from DataForSEO or other SEO APIs
+    const responseData = await getLiveKeywordRankings(session.user.id);
+    
+    // If no live data available, return empty state
+    if (!responseData || responseData.length === 0) {
+      return NextResponse.json({
+        error: 'No keyword tracking configured',
+        message: 'Please set up keyword tracking to view rankings',
+        data: []
+      }, { status: 200 });
+    }
 
     // Cache for 10 minutes
     try {

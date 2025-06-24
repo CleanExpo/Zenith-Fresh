@@ -3,6 +3,13 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redis } from '@/lib/redis';
 
+// Live social media data fetcher
+async function getLiveSocialMediaData(userId: string) {
+  // In production, this would integrate with actual social media APIs
+  // For now, return null to indicate no data available until APIs are connected
+  return null;
+}
+
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,33 +32,22 @@ export async function GET(request: Request) {
       console.error('Redis error:', error);
     }
 
-    // Format data to match dashboard interface
-    const socialData = {
-      facebook: {
-        followers: 1234,
-        engagement: 5.2,
-        locked: false,
-        lastUpdated: new Date().toISOString()
-      },
-      instagram: {
-        followers: 892,
-        engagement: 7.8,
-        locked: false,
-        lastUpdated: new Date().toISOString()
-      },
-      x: {
-        followers: 567,
-        engagement: 3.4,
-        locked: false,
-        lastUpdated: new Date().toISOString()
-      },
-      linkedin: {
-        followers: 0,
-        engagement: 0,
-        locked: true,
-        lastUpdated: null
-      }
-    };
+    // Get live social media data - no mock data in production
+    const socialData = await getLiveSocialMediaData(session.user.id);
+    
+    // Fallback structure if no data connected
+    if (!socialData || Object.keys(socialData).length === 0) {
+      return NextResponse.json({
+        error: 'No social media accounts connected',
+        message: 'Please connect your social media accounts to view analytics',
+        platforms: {
+          facebook: { locked: true, requiresAuth: true },
+          instagram: { locked: true, requiresAuth: true },
+          x: { locked: true, requiresAuth: true },
+          linkedin: { locked: true, requiresAuth: true }
+        }
+      }, { status: 200 });
+    }
 
     // Calculate summary stats
     const connectedPlatforms = Object.values(socialData).filter(p => !p.locked);
