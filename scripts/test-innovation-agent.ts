@@ -106,7 +106,7 @@ class InnovationAgentTester {
           await this.delay(500);
           return 'News scraping simulation completed';
         } catch (error) {
-          throw new Error(`News scraping failed: ${error.message}`);
+          throw new Error(`News scraping failed: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
     );
