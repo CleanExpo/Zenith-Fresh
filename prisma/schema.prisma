@@ -1677,31 +1677,7 @@ model TechnologyTrend {
   @@map("technology_trends")
 }
 
-model CompetitorProfile {
-  id              String               @id @default(cuid())
-  name            String
-  domain          String               @unique
-  category        String               // direct, indirect, adjacent
-  productsTracked String[]
-  trackingUrls    Json                 // {features, pricing, changelog, blog, docs}
-  checkFrequency  String               // daily, weekly, realtime
-  lastChecked     DateTime?
-  isActive        Boolean              @default(true)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  teamId          String?
-  team            Team?                @relation(fields: [teamId], references: [id])
-  
-  // Relations
-  featureDetections FeatureDetection[]
-  pricingChanges    PricingChange[]
-  snapshots         CompetitorSnapshot[]
-  alerts            CompetitorAlert[]
-  
-  @@index([domain])
-  @@index([isActive, checkFrequency])
-  @@map("competitor_profiles")
-}
+// Duplicate CompetitorProfile model removed - already defined above
 
 model FeatureDetection {
   id              String             @id @default(cuid())
