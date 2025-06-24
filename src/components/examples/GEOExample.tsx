@@ -335,7 +335,7 @@ A: Yes, many AI SEO tools offer scalable solutions that can benefit businesses o
           <h3 className="text-2xl font-bold">Ready to Future-Proof Your Content?</h3>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Start your AI-Future Proofing journey today. Implement GEO strategies to stay ahead 
-            of the search evolution and maximize your content's visibility across all AI platforms.
+            of the search evolution and maximize your content&apos;s visibility across all AI platforms.
           </p>
           <div className="flex items-center justify-center gap-4">
             <Button size="lg" className="bg-blue-600 hover:bg-blue-700">

@@ -197,7 +197,7 @@ const FeedbackWidget = () => {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Thank you!</h3>
             <p className="text-gray-600">
-              Your feedback has been submitted. We'll review it and get back to you if needed.
+              Your feedback has been submitted. We&apos;ll review it and get back to you if needed.
             </p>
           </div>
         ) : (
@@ -281,7 +281,7 @@ const FeedbackWidget = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  We'll only use this to follow up on your feedback
+                  We&apos;ll only use this to follow up on your feedback
                 </p>
               </div>
 

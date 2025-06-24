@@ -551,7 +551,7 @@ export default function AIReadinessScoring({
           <AlertTitle>Real-time Monitoring Active</AlertTitle>
           <AlertDescription>
             Your AI readiness score is being monitored continuously. 
-            You'll receive alerts when optimization opportunities are detected.
+            You&apos;ll receive alerts when optimization opportunities are detected.
           </AlertDescription>
         </Alert>
       )}

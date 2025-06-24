@@ -122,7 +122,7 @@ export default function TermsOfService() {
               <ul className="list-disc pl-6 mb-4">
                 <li>Violate any laws, regulations, or third-party rights</li>
                 <li>Transmit harmful, offensive, or illegal content</li>
-                <li>Attempt to gain unauthorized access to our systems or other users' data</li>
+                <li>Attempt to gain unauthorized access to our systems or other users&apos; data</li>
                 <li>Reverse engineer, decompile, or disassemble our software</li>
                 <li>Use our Services for competitive intelligence against us</li>
                 <li>Spam, phish, or engage in other deceptive practices</li>
@@ -209,7 +209,7 @@ export default function TermsOfService() {
 
               <h3 className="text-xl font-medium text-gray-800 mb-3">6.3 Your Content</h3>
               <p className="mb-4">
-                You retain ownership of all content, data, and materials you upload to our Services ("Your Content"). 
+                You retain ownership of all content, data, and materials you upload to our Services (&quot;Your Content&quot;). 
                 You grant us a limited license to use Your Content to provide the Services, including processing, 
                 storing, and displaying Your Content as necessary.
               </p>
@@ -327,7 +327,7 @@ export default function TermsOfService() {
               
               <h3 className="text-xl font-medium text-gray-800 mb-3">10.1 Disclaimer of Warranties</h3>
               <p className="mb-4">
-                OUR SERVICES ARE PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, 
+                OUR SERVICES ARE PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, 
                 WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, 
                 FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
               </p>
