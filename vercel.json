@@ -1,18 +1,20 @@
 {
   "version": 2,
-  "buildCommand": "npm ci && npm run build",
+  "buildCommand": "npm ci && npm run vercel-build",
   "devCommand": "npm run dev",
   "installCommand": "npm ci",
   "framework": "nextjs",
   "regions": ["iad1"],
   "env": {
     "NODE_ENV": "production",
-    "FORCE_BUILD": "true"
+    "FORCE_BUILD": "true",
+    "CACHE_BUST": "20250624-224500"
   },
   "build": {
     "env": {
       "NODE_ENV": "production",
-      "FORCE_BUILD": "true"
+      "FORCE_BUILD": "true",
+      "CACHE_BUST": "20250624-224500"
     }
   },
   "functions": {
