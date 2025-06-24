@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { withAuth } from 'next-auth/middleware';
-import { rateLimiter } from '@/lib/security/rate-limiter';
-import { 
-  securityHardeningMiddleware,
-  apiSecurityMiddleware,
-  fileUploadSecurityMiddleware,
-  csrfProtectionMiddleware
-} from '@/middleware/security-hardening';
+// TEMPORARILY DISABLED: Edge Runtime incompatible imports
+// import { rateLimiter } from '@/lib/security/rate-limiter';
+// import { 
+//   securityHardeningMiddleware,
+//   apiSecurityMiddleware,
+//   fileUploadSecurityMiddleware,
+//   csrfProtectionMiddleware
+// } from '@/middleware/security-hardening';
 
 /**
  * ZENITH ENTERPRISE SECURITY MIDDLEWARE
@@ -121,35 +122,14 @@ function validateInput(request: NextRequest): boolean {
   return true;
 }
 
-// Main middleware function
+// Main middleware function  
 async function securityMiddleware(request: NextRequest) {
-  // Apply comprehensive security hardening first
-  const hardenedResponse = await securityHardeningMiddleware(request);
-  if (hardenedResponse.status !== 200) {
-    return hardenedResponse;
-  }
-
-  // Apply API-specific security
-  if (request.nextUrl.pathname.startsWith('/api/')) {
-    const apiSecurityResponse = await apiSecurityMiddleware(request);
-    if (apiSecurityResponse.status !== 200) {
-      return apiSecurityResponse;
-    }
-  }
-
-  // Apply file upload security
-  if (request.method === 'POST' && request.headers.get('content-type')?.includes('multipart/form-data')) {
-    const fileSecurityResponse = await fileUploadSecurityMiddleware(request);
-    if (fileSecurityResponse.status !== 200) {
-      return fileSecurityResponse;
-    }
-  }
-
-  // Apply CSRF protection
-  const csrfResponse = await csrfProtectionMiddleware(request);
-  if (csrfResponse.status !== 200) {
-    return csrfResponse;
-  }
+  // TEMPORARILY DISABLED: Edge Runtime incompatible security middleware
+  // TODO: Refactor security middleware to be Edge Runtime compatible
+  // const hardenedResponse = await securityHardeningMiddleware(request);
+  // const apiSecurityResponse = await apiSecurityMiddleware(request);
+  // const fileSecurityResponse = await fileUploadSecurityMiddleware(request);
+  // const csrfResponse = await csrfProtectionMiddleware(request);
 
   const response = NextResponse.next();
   const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
