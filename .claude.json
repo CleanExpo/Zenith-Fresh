@@ -13,6 +13,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "pusha dn commit all changes to the github repo and then push to production in vercel",
+          "pastedContents": {}
+        },
+        {
           "display": "ok, lets continue where we left off: No-BS Production Framework\n  implementation",
           "pastedContents": {}
         },
