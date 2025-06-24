@@ -181,7 +181,7 @@ export default function PrivacyPolicy() {
               <ul className="list-disc pl-6 mb-4">
                 <li><strong>Email:</strong> privacy@zenith.engineer</li>
                 <li><strong>Data Protection Officer:</strong> dpo@zenith.engineer</li>
-                <li><strong>In-App:</strong> Account Settings > Privacy Controls</li>
+                <li><strong>In-App:</strong> Account Settings &gt; Privacy Controls</li>
               </ul>
               <p className="mb-4">
                 We will respond to your request within 30 days (GDPR) or 45 days (CCPA) and may require 

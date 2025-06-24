@@ -24,9 +24,9 @@ export default function TermsOfService() {
               
               <h3 className="text-xl font-medium text-gray-800 mb-3">1.1 Binding Agreement</h3>
               <p className="mb-4">
-                These Terms of Service ("Terms") constitute a legally binding agreement between you ("Customer," "you," or "your") 
-                and Zenith Platform, Inc. ("Zenith," "we," "us," or "our") governing your use of the Zenith Platform and all 
-                related services, software, APIs, and documentation (collectively, the "Services").
+                These Terms of Service (&quot;Terms&quot;) constitute a legally binding agreement between you (&quot;Customer,&quot; &quot;you,&quot; or &quot;your&quot;) 
+                and Zenith Platform, Inc. (&quot;Zenith,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) governing your use of the Zenith Platform and all 
+                related services, software, APIs, and documentation (collectively, the &quot;Services&quot;).
               </p>
 
               <h3 className="text-xl font-medium text-gray-800 mb-3">1.2 Acceptance of Terms</h3>
