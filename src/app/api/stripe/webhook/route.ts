@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
         break;
 
       case 'invoice.payment_succeeded':
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object as any;
         if (invoice.subscription) {
           const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
           const team = await prisma.team.findFirst({
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         break;
 
       case 'invoice.payment_failed':
-        const failedInvoice = event.data.object as Stripe.Invoice;
+        const failedInvoice = event.data.object as any;
         if (failedInvoice.subscription) {
           const subscription = await stripe.subscriptions.retrieve(failedInvoice.subscription as string);
           const team = await prisma.team.findFirst({
@@ -88,8 +88,67 @@ export async function POST(req: NextRequest) {
             where: { id: team.id },
             data: { 
               subscriptionStatus: 'canceled',
-              stripeSubscriptionId: null,
+              subscriptionEndDate: new Date(),
             },
+          });
+        }
+        break;
+
+      case 'customer.subscription.updated':
+        const updatedSubscription = event.data.object as Stripe.Subscription;
+        const updatedTeam = await prisma.team.findFirst({
+          where: { stripeSubscriptionId: updatedSubscription.id },
+        });
+        
+        if (updatedTeam) {
+          await prisma.team.update({
+            where: { id: updatedTeam.id },
+            data: { 
+              subscriptionStatus: updatedSubscription.status,
+              subscriptionEndDate: updatedSubscription.current_period_end 
+                ? new Date(updatedSubscription.current_period_end * 1000) 
+                : null,
+              scheduledCancellationDate: updatedSubscription.cancel_at 
+                ? new Date(updatedSubscription.cancel_at * 1000) 
+                : null,
+            },
+          });
+        }
+        break;
+
+      case 'customer.subscription.trial_will_end':
+        const trialEndingSubscription = event.data.object as Stripe.Subscription;
+        const trialTeam = await prisma.team.findFirst({
+          where: { stripeSubscriptionId: trialEndingSubscription.id },
+        });
+        
+        if (trialTeam) {
+          // TODO: Send trial ending notification email
+          console.log(`Trial ending soon for team ${trialTeam.id}`);
+        }
+        break;
+
+      case 'invoice.payment_action_required':
+        const actionRequiredInvoice = event.data.object as any;
+        if (actionRequiredInvoice.subscription) {
+          const subscription = await stripe.subscriptions.retrieve(actionRequiredInvoice.subscription as string);
+          const paymentTeam = await prisma.team.findFirst({
+            where: { stripeSubscriptionId: subscription.id },
+          });
+          
+          if (paymentTeam) {
+            // TODO: Send payment action required email
+            console.log(`Payment action required for team ${paymentTeam.id}`);
+          }
+        }
+        break;
+
+      case 'customer.created':
+        const customer = event.data.object as Stripe.Customer;
+        if (customer.metadata?.teamId) {
+          await prisma.team.update({
+            where: { id: customer.metadata.teamId },
+            data: { stripeCustomerId: customer.id },
           });
         }
         break;

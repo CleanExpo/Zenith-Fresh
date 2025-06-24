@@ -953,7 +953,7 @@ export function transformData(rawData: any) {
     };
 
     const priorityMultiplier = request.priority === 'URGENT' ? 0.5 : 1;
-    return Math.round(baseTime[complexity] * priorityMultiplier);
+    return Math.round(baseTime[complexity as keyof typeof baseTime] * priorityMultiplier);
   }
 
   private generateCredentialForm(authPlan: AuthenticationPlan): string {

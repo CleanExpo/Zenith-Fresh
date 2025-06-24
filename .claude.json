@@ -2,14 +2,72 @@
   "numStartups": 2,
   "tipsHistory": {
     "new-user-warmup": 1,
-    "prompt-queue": 2
+    "prompt-queue": 2,
+    "memory-command": 2
   },
+  "memoryUsageCount": 1,
   "promptQueueUseCount": 12,
   "userID": "468b1b912da1854ab06a89a6231c73c8443717687b52e5812ce2485b79f327fb",
   "projects": {
     "/root": {
       "allowedTools": [],
       "history": [
+        {
+          "display": "we dont have 6months, we are attempting to do this in record time by putting the long hours and having 30+ agents operate all at once with the conductor orchestrating the team. Lets push on with getting through everything laid out.",
+          "pastedContents": {}
+        },
+        {
+          "display": "Ok, whats now left to complete in the No BS Roadmap?",
+          "pastedContents": {}
+        },
+        {
+          "display": "great, lets keep working the the phases",
+          "pastedContents": {}
+        },
+        {
+          "display": "Lets continue with the NB roadmap",
+          "pastedContents": {}
+        },
+        {
+          "display": "lets continue",
+          "pastedContents": {}
+        },
+        {
+          "display": "Lets look at the reamaining tasks in the No BS roadmap to continue. Lets use all the available agents to continue",
+          "pastedContents": {}
+        },
+        {
+          "display": "Are you using multiple agents or just one agent. Use multiple agents",
+          "pastedContents": {}
+        },
+        {
+          "display": "Lets continue to the next stage",
+          "pastedContents": {}
+        },
+        {
+          "display": "lets continue",
+          "pastedContents": {}
+        },
+        {
+          "display": "#please continue",
+          "pastedContents": {}
+        },
+        {
+          "display": "Using the method we have created, lets keep working through the remaining stages",
+          "pastedContents": {}
+        },
+        {
+          "display": "lets enact the power of the built in agents to do the next stage of the No B-S roadmap",
+          "pastedContents": {}
+        },
+        {
+          "display": "lets return to the last task we were performing",
+          "pastedContents": {}
+        },
+        {
+          "display": "/login ",
+          "pastedContents": {}
+        },
         {
           "display": "# No-BS Framework Summary\n## How to Actually Deploy Safely\n\n### 🎯 The Complete System\n\nYou now have four interconnected components that work together:\n\n### 1. **The No-BS Production Deployment Framework**\n- Brutal honesty about what's actually broken\n- Refuses to deploy if critical issues exist\n- Tests real-world scenarios, not happy paths\n- Saves progress constantly to prevent work loss\n\n### 2. **The Git Workflow That Saves Everything**\n- Auto-saves every 5 minutes\n- Structured branching prevents conflicts\n- Every change is tracked and reversible\n- Protected main branch prevents disasters\n\n### 3. **The Testing Framework That Finds Real Problems**\n- Tests what users actually do\n- Chaos engineering to break things on purpose\n- Performance testing under realistic conditions\n- Security testing that attackers would attempt\n\n### 4. **The Integration System**\n- Tests if components actually work together\n- Catches issues between frontend/backend/database\n- Validates third-party service integration\n- Ensures deployment compatibility\n\n---\n\n## 🚀 How to Use This System\n\n### Day 1: The Honest Audit\n```bash\n# Start with the truth\nclaude \"Run the No-BS Production Deployment Framework on [GitHub URL].\nBe brutally honest about what's broken.\nSet up auto-save immediately.\nCreate the full branch structure.\"\n```\n\n### Day 2-X: Fix What's Actually Broken\n```bash\n# For each issue found\nclaude \"Create a fix branch for [specific issue].\nImplement the fix with proper tests.\nTest it actually works.\nMerge only when verified.\"\n```\n\n### Day X+1: Integration Testing\n```bash\n# When fixes are complete\nclaude \"Run the full integration test suite.\nTest all components together.\nFind integration issues.\nFix before proceeding.\"\n```\n\n### Day X+2: Staged Deployment\n```bash\n# Only when integration passes\nclaude \"Deploy to staging environment.\nRun the chaos engineering tests.\nMonitor for 24 hours.\nFix any issues found.\"\n```\n\n### Day X+3: Production (Maybe)\n```bash\n# Only if staging is perfect\nclaude \"Run final production checklist.\nDeploy with canary rollout.\nMonitor every metric.\nBe ready to rollback.\"\n```\n\n---\n\n## 🛑 The New Rules\n\n### 1. **No Deployment Without Passing Tests**\n- If critical tests fail, deployment stops\n- No overrides, no exceptions\n- Fix the issues or don't deploy\n\n### 2. **Save Everything, Always**\n- Auto-save runs continuously\n- Every change is in a branch\n- Nothing gets lost\n\n### 3. **Test Reality, Not Fantasy**\n- Test what users actually do\n- Test what actually breaks\n- Test with real data volumes\n\n### 4. **Integration Is Not Optional**\n- Components must work together\n- Test the connections\n- Verify data flow\n\n### 5. **Monitoring Tells Truth**\n- Real metrics, not vanity numbers\n- Alerts on actual problems\n- No false positives\n\n---\n\n## 📊 Success Metrics\n\nYour deployment is ready when:\n\n### Technical Health\n- ✅ All critical tests pass (not skipped)\n- ✅ Integration tests verify components work together\n- ✅ Performance meets actual user needs\n- ✅ Security withstands real attack attempts\n- ✅ Rollback tested and takes < 5 minutes\n\n### Operational Health\n- ✅ Monitoring catches issues before users\n- ✅ Backups restore successfully (tested)\n- ✅ Documentation matches reality\n- ✅ Team can deploy without you\n- ✅ Costs are predictable and controlled\n\n### Business Health\n- ✅ Users can sign up and pay\n- ✅ Data integrity is guaranteed\n- ✅ Uptime meets business needs\n- ✅ Support can handle issues\n- ✅ You can sleep at night\n\n---\n\n## 🚨 When Things Go Wrong\n\n### The Emergency Protocol\n1. **Don't Panic** - The system has your back\n2. **Check Auto-Saves** - Your work is preserved\n3. **Run Emergency Tests** - Find what's actually broken\n4. **Use Fix Branches** - Isolate the solution\n5. **Test Before Merging** - Verify the fix works\n6. **Deploy Carefully** - Staging first, always\n\n### The Rollback Process\n```bash\n# It's already set up\ngit checkout last-known-good-tag\n./deploy-rollback.sh\n# You're back in business\n```\n\n---\n\n## 💡 Final Thoughts\n\nThis framework is different because it:\n- **Assumes things will break** (and prepares for it)\n- **Tests what actually matters** (not what's easy)\n- **Saves constantly** (because work loss is unacceptable)\n- **Reports honestly** (even when it hurts)\n- **Deploys safely** (because your business depends on it)\n\nThe old way: Hope everything works, panic when it doesn't.\nThe new way: Know what's broken, fix it properly, deploy with confidence.\n\n---\n\n## 🎯 Your Next Step\n\nRun this command right now:\n\n```bash\nclaude \"I'm ready for the truth about my SaaS.\nGitHub: [your-url]\nRun the No-BS framework.\nSet up auto-saves.\nTell me what's really broken.\nLet's fix this properly.\"\n```\n\nNo more bullshit. No more lies. Just real testing, real results, and real deployments that actually work.\n\n**Welcome to professional SaaS deployment.** 🚀",
           "pastedContents": {}
@@ -334,14 +392,6 @@
     }
   },
   "firstStartTime": "2025-06-20T02:54:33.809Z",
-  "oauthAccount": {
-    "accountUuid": "f5e2fd2e-9558-427d-9b7b-15446448e75b",
-    "emailAddress": "phill.mcgurk@gmail.com",
-    "organizationUuid": "9fa17115-06c2-4263-a39f-8d4f91840f11",
-    "organizationRole": "admin",
-    "workspaceRole": null,
-    "organizationName": "Phillip McGurk"
-  },
   "hasCompletedOnboarding": true,
   "lastOnboardingVersion": "1.0.30",
   "subscriptionNoticeCount": 0,
@@ -349,5 +399,14 @@
   "cachedChangelog": "# Changelog\n\n## 1.0.27\n\n- Streamable HTTP MCP servers are now supported\n- Remote MCP servers (SSE and HTTP) now support OAuth\n- MCP resources can now be @-mentioned\n\n## 1.0.25\n\n- Slash commands: moved \"project\" and \"user\" prefixes to descriptions\n- Slash commands: improved reliability for command discovery\n- Improved support for Ghostty\n- Improved web search reliability\n\n## 1.0.24\n\n- Improved /mcp output\n- Fixed a bug where settings arrays got overwritten instead of merged\n\n## 1.0.23\n\n- Released TypeScript SDK: import @anthropic-ai/claude-code to get started\n- Released Python SDK: pip install claude-code-sdk to get started\n\n## 1.0.22\n\n- SDK: Renamed `total_cost` to `total_cost_usd`\n\n## 1.0.21\n\n- Improved editing of files with tab-based indentation\n- Fix for tool_use without matching tool_result errors\n- Fixed a bug where stdio MCP server processes would linger after quitting Claude Code\n\n## 1.0.18\n\n- Added --add-dir CLI argument for specifying additional working directories\n- Added streaming input support without require -p flag\n- Improved startup performance and session storage performance\n- Added CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR environment variable to freeze working directory for bash commands\n- Added detailed MCP server tools display (/mcp)\n- MCP authentication and permission improvements\n- Added auto-reconnection for MCP SSE connections on disconnect\n- Fixed issue where pasted content was lost when dialogs appeared\n\n## 1.0.17\n\n- We now emit messages from sub-tasks in -p mode (look for the parent_tool_use_id property)\n- Fixed crashes when the VS Code diff tool is invoked multiple times quickly\n- MCP server list UI improvements\n- Update Claude Code process title to display \"claude\" instead of \"node\"\n\n## 1.0.11\n\n- Claude Code can now also be used with a Claude Pro subscription\n- Added /upgrade for smoother switching to Claude Max plans\n- Improved UI for authentication from API keys and Bedrock/Vertex/external auth tokens\n- Improved shell configuration error handling\n- Improved todo list handling during compaction\n\n## 1.0.10\n\n- Added markdown table support\n- Improved streaming performance\n\n## 1.0.8\n\n- Fixed Vertex AI region fallback when using CLOUD_ML_REGION\n- Increased default otel interval from 1s -> 5s\n- Fixed edge cases where MCP_TIMEOUT and MCP_TOOL_TIMEOUT weren't being respected\n- Fixed a regression where search tools unnecessarily asked for permissions\n- Added support for triggering thinking non-English languages\n- Improved compacting UI\n\n## 1.0.7\n\n- Renamed /allowed-tools -> /permissions\n- Migrated allowedTools and ignorePatterns from .claude.json -> settings.json\n- Deprecated claude config commands in favor of editing settings.json\n- Fixed a bug where --dangerously-skip-permissions sometimes didn't work in --print mode\n- Improved error handling for /install-github-app\n- Bugfixes, UI polish, and tool reliability improvements\n\n## 1.0.6\n\n- Improved edit reliability for tab-indented files\n- Respect CLAUDE_CONFIG_DIR everywhere\n- Reduced unnecessary tool permission prompts\n- Added support for symlinks in @file typeahead\n- Bugfixes, UI polish, and tool reliability improvements\n\n## 1.0.4\n\n- Fixed a bug where MCP tool errors weren't being parsed correctly\n\n## 1.0.1\n\n- Added `DISABLE_INTERLEAVED_THINKING` to give users the option to opt out of interleaved thinking.\n- Improved model references to show provider-specific names (Sonnet 3.7 for Bedrock, Sonnet 4 for Console)\n- Updated documentation links and OAuth process descriptions\n\n## 1.0.0\n\n- Claude Code is now generally available\n- Introducing Sonnet 4 and Opus 4 models\n\n## 0.2.125\n\n- Breaking change: Bedrock ARN passed to `ANTHROPIC_MODEL` or `ANTHROPIC_SMALL_FAST_MODEL` should no longer contain an escaped slash (specify `/` instead of `%2F`)\n- Removed `DEBUG=true` in favor of `ANTHROPIC_LOG=debug`, to log all requests\n\n## 0.2.117\n\n- Breaking change: --print JSON output now returns nested message objects, for forwards-compatibility as we introduce new metadata fields\n- Introduced settings.cleanupPeriodDays\n- Introduced CLAUDE_CODE_API_KEY_HELPER_TTL_MS env var\n- Introduced --debug mode\n\n## 0.2.108\n\n- You can now send messages to Claude while it works to steer Claude in real-time\n- Introduced BASH_DEFAULT_TIMEOUT_MS and BASH_MAX_TIMEOUT_MS env vars\n- Fixed a bug where thinking was not working in -p mode\n- Fixed a regression in /cost reporting\n- Deprecated MCP wizard interface in favor of other MCP commands\n- Lots of other bugfixes and improvements\n\n## 0.2.107\n\n- CLAUDE.md files can now import other files. Add @path/to/file.md to ./CLAUDE.md to load additional files on launch\n\n## 0.2.106\n\n- MCP SSE server configs can now specify custom headers\n- Fixed a bug where MCP permission prompt didn't always show correctly\n\n## 0.2.105\n\n- Claude can now search the web\n- Moved system & account status to /status\n- Added word movement keybindings for Vim\n- Improved latency for startup, todo tool, and file edits\n\n## 0.2.102\n\n- Improved thinking triggering reliability\n- Improved @mention reliability for images and folders\n- You can now paste multiple large chunks into one prompt\n\n## 0.2.100\n\n- Fixed a crash caused by a stack overflow error\n- Made db storage optional; missing db support disables --continue and --resume\n\n## 0.2.98\n\n- Fixed an issue where auto-compact was running twice\n\n## 0.2.96\n\n- Claude Code can now also be used with a Claude Max subscription (https://claude.ai/upgrade)\n\n## 0.2.93\n\n- Resume conversations from where you left off from with \"claude --continue\" and \"claude --resume\"\n- Claude now has access to a Todo list that helps it stay on track and be more organized\n\n## 0.2.82\n\n- Added support for --disallowedTools\n- Renamed tools for consistency: LSTool -> LS, View -> Read, etc.\n\n## 0.2.75\n\n- Hit Enter to queue up additional messages while Claude is working\n- Drag in or copy/paste image files directly into the prompt\n- @-mention files to directly add them to context\n- Run one-off MCP servers with `claude --mcp-config <path-to-file>`\n- Improved performance for filename auto-complete\n\n## 0.2.74\n\n- Added support for refreshing dynamically generated API keys (via apiKeyHelper), with a 5 minute TTL\n- Task tool can now perform writes and run bash commands\n\n## 0.2.72\n\n- Updated spinner to indicate tokens loaded and tool usage\n\n## 0.2.70\n\n- Network commands like curl are now available for Claude to use\n- Claude can now run multiple web queries in parallel\n- Pressing ESC once immediately interrupts Claude in Auto-accept mode\n\n## 0.2.69\n\n- Fixed UI glitches with improved Select component behavior\n- Enhanced terminal output display with better text truncation logic\n\n## 0.2.67\n\n- Shared project permission rules can be saved in .claude/settings.json\n\n## 0.2.66\n\n- Print mode (-p) now supports streaming output via --output-format=stream-json\n- Fixed issue where pasting could trigger memory or bash mode unexpectedly\n\n## 0.2.63\n\n- Fixed an issue where MCP tools were loaded twice, which caused tool call errors\n\n## 0.2.61\n\n- Navigate menus with vim-style keys (j/k) or bash/emacs shortcuts (Ctrl+n/p) for faster interaction\n- Enhanced image detection for more reliable clipboard paste functionality\n- Fixed an issue where ESC key could crash the conversation history selector\n\n## 0.2.59\n\n- Copy+paste images directly into your prompt\n- Improved progress indicators for bash and fetch tools\n- Bugfixes for non-interactive mode (-p)\n\n## 0.2.54\n\n- Quickly add to Memory by starting your message with '#'\n- Press ctrl+r to see full output for long tool results\n- Added support for MCP SSE transport\n\n## 0.2.53\n\n- New web fetch tool lets Claude view URLs that you paste in\n- Fixed a bug with JPEG detection\n\n## 0.2.50\n\n- New MCP \"project\" scope now allows you to add MCP servers to .mcp.json files and commit them to your repository\n\n## 0.2.49\n\n- Previous MCP server scopes have been renamed: previous \"project\" scope is now \"local\" and \"global\" scope is now \"user\"\n\n## 0.2.47\n\n- Press Tab to auto-complete file and folder names\n- Press Shift + Tab to toggle auto-accept for file edits\n- Automatic conversation compaction for infinite conversation length (toggle with /config)\n\n## 0.2.44\n\n- Ask Claude to make a plan with thinking mode: just say 'think' or 'think harder' or even 'ultrathink'\n\n## 0.2.41\n\n- MCP server startup timeout can now be configured via MCP_TIMEOUT environment variable\n- MCP server startup no longer blocks the app from starting up\n\n## 0.2.37\n\n- New /release-notes command lets you view release notes at any time\n- `claude config add/remove` commands now accept multiple values separated by commas or spaces\n\n## 0.2.36\n\n- Import MCP servers from Claude Desktop with `claude mcp add-from-claude-desktop`\n- Add MCP servers as JSON strings with `claude mcp add-json <n> <json>`\n\n## 0.2.34\n\n- Vim bindings for text input - enable with /vim or /config\n\n## 0.2.32\n\n- Interactive MCP setup wizard: Run \"claude mcp add\" to add MCP servers with a step-by-step interface\n- Fix for some PersistentShell issues\n\n## 0.2.31\n\n- Custom slash commands: Markdown files in .claude/commands/ directories now appear as custom slash commands to insert prompts into your conversation\n- MCP debug mode: Run with --mcp-debug flag to get more information about MCP server errors\n\n## 0.2.30\n\n- Added ANSI color theme for better terminal compatibility\n- Fixed issue where slash command arguments weren't being sent properly\n- (Mac-only) API keys are now stored in macOS Keychain\n\n## 0.2.26\n\n- New /approved-tools command for managing tool permissions\n- Word-level diff display for improved code readability\n- Fuzzy matching for slash commands\n\n## 0.2.21\n\n- Fuzzy matching for /commands\n",
   "changelogLastFetched": 1750559357413,
   "fallbackAvailableWarningThreshold": 0.2,
-  "lastReleaseNotesSeen": "1.0.31"
+  "lastReleaseNotesSeen": "1.0.31",
+  "recommendedSubscription": "",
+  "oauthAccount": {
+    "accountUuid": "f5e2fd2e-9558-427d-9b7b-15446448e75b",
+    "emailAddress": "phill.mcgurk@gmail.com",
+    "organizationUuid": "9fa17115-06c2-4263-a39f-8d4f91840f11",
+    "organizationRole": "admin",
+    "workspaceRole": null,
+    "organizationName": "Phillip McGurk"
+  }
 }

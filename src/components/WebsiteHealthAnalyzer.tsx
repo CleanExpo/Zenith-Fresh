@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
@@ -44,7 +44,7 @@ interface WebsiteHealthAnalyzerProps {
   initialUrl?: string;
 }
 
-export default function WebsiteHealthAnalyzer({ isOpen, onClose, initialUrl = '' }: WebsiteHealthAnalyzerProps) {
+const WebsiteHealthAnalyzer = memo(function WebsiteHealthAnalyzer({ isOpen, onClose, initialUrl = '' }: WebsiteHealthAnalyzerProps) {
   const [url, setUrl] = useState(initialUrl);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<HealthScore | null>(null);
@@ -80,14 +80,14 @@ export default function WebsiteHealthAnalyzer({ isOpen, onClose, initialUrl = ''
     }
   }, [isAnalyzing]);
 
-  const validateUrl = (input: string): boolean => {
+  const validateUrl = useCallback((input: string): boolean => {
     try {
       const urlObject = new URL(input);
       return urlObject.protocol === 'http:' || urlObject.protocol === 'https:';
     } catch {
       return false;
     }
-  };
+  }, []);
 
   const analyzeWebsite = async () => {
     if (!url || !validateUrl(url)) {
@@ -164,25 +164,25 @@ export default function WebsiteHealthAnalyzer({ isOpen, onClose, initialUrl = ''
     }
   };
 
-  const getScoreColor = (score: number) => {
+  const getScoreColor = useCallback((score: number) => {
     if (score >= 80) return 'text-green-400';
     if (score >= 60) return 'text-yellow-400';
     return 'text-red-400';
-  };
+  }, []);
 
-  const getScoreIcon = (score: number) => {
+  const getScoreIcon = useCallback((score: number) => {
     if (score >= 80) return <CheckCircle2 className="w-5 h-5 text-green-400" />;
     if (score >= 60) return <AlertTriangle className="w-5 h-5 text-yellow-400" />;
     return <X className="w-5 h-5 text-red-400" />;
-  };
+  }, []);
 
-  const pillarNames = {
+  const pillarNames = useMemo(() => ({
     performance: 'Performance',
     technicalSEO: 'Technical SEO',
     onPageSEO: 'On-Page SEO',
     security: 'Security',
     accessibility: 'Accessibility'
-  };
+  }), []);
 
   if (!isOpen) return null;
 
@@ -263,7 +263,7 @@ export default function WebsiteHealthAnalyzer({ isOpen, onClose, initialUrl = ''
                 </div>
 
                 <div className="bg-white/5 rounded-2xl p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">What You'll Get:</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">What You&apos;ll Get:</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     {[
                       { icon: <Zap className="w-5 h-5" />, text: 'Performance Analysis', color: 'text-yellow-400' },
@@ -498,4 +498,6 @@ export default function WebsiteHealthAnalyzer({ isOpen, onClose, initialUrl = ''
       </motion.div>
     </AnimatePresence>
   );
-}
+});
+
+export default WebsiteHealthAnalyzer;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { TeamAnalytics } from '../../components/TeamAnalytics';
 import { TeamBilling } from '../../components/TeamBilling';
@@ -9,6 +9,7 @@ import { Card } from '../../components/ui/card';
 export default function TeamPage() {
   const router = useRouter();
   const { id } = router.query;
+  const [activeTab, setActiveTab] = useState("analytics");
 
   if (!id || typeof id !== 'string') {
     return <div>Loading...</div>;
@@ -16,7 +17,7 @@ export default function TeamPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <Tabs defaultValue="analytics">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-8">
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>

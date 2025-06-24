@@ -12,7 +12,7 @@ export function GoogleAnalytics() {
   useEffect(() => {
     if (!GA_MEASUREMENT_ID) return;
 
-    const url = pathname + searchParams.toString();
+    const url = pathname + (searchParams?.toString() || '');
     trackPageView(url);
   }, [pathname, searchParams]);
 
