@@ -13,6 +13,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "Lets fix the Google OAuth issue. I think you have the env. variables",
+          "pastedContents": {}
+        },
+        {
           "display": "[Pasted text #1 +608 lines]",
           "pastedContents": {
             "1": {
@@ -578,10 +582,6 @@
         },
         {
           "display": "how do we ensure there are no further placeholder/pages missing and the site will push through? It is still not updating so there is something missing",
-          "pastedContents": {}
-        },
-        {
-          "display": "Not sure what just happened. We are working in Zenith-Fresh and i am getting production issues we need to deal with. Lets recall the last work",
           "pastedContents": {}
         }
       ],
