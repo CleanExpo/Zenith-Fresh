@@ -13,6 +13,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "An error occurred during registration",
+          "pastedContents": {}
+        },
+        {
           "display": "push and commit all changes and then push to vercel deployment",
           "pastedContents": {}
         },
