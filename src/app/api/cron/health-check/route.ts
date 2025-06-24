@@ -20,9 +20,14 @@ export async function GET(req: NextRequest) {
       await cache.get('health-check');
       
       // Check external API connectivity (example)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch('https://api.github.com/status', {
-        timeout: 5000,
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         throw new Error(`External API check failed: ${response.status}`);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { googleAnalytics } from '@/lib/google-analytics';
 import * as Sentry from '@sentry/nextjs';
 
@@ -56,10 +56,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      success: true,
       type,
-      data: result.data,
-      summary: result.summary,
       ...result,
     });
   } catch (error) {
@@ -122,7 +119,6 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      success: true,
       action,
       ...result,
     });

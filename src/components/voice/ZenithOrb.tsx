@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { Mic, MicOff, Volume2, VolumeX, MessageCircle, Sparkles } from 'lucide-react';
 
 /**
@@ -30,7 +30,7 @@ interface ZenithOrbProps {
   className?: string;
 }
 
-export default function ZenithOrb({ 
+const ZenithOrb = memo(function ZenithOrb({ 
   onConversationUpdate, 
   defaultLanguage = 'en-US',
   className = ''
@@ -118,8 +118,56 @@ export default function ZenithOrb({
     };
   }, [defaultLanguage]);
 
+  // Speak agent response using TTS
+  const speakAgentResponse = useCallback(async (message: string): Promise<void> => {
+    return new Promise((resolve) => {
+      if (!synthRef.current) {
+        resolve();
+        return;
+      }
+
+      const agentTurn: ConversationTurn = {
+        speaker: 'agent',
+        message,
+        timestamp: new Date(),
+        language: defaultLanguage
+      };
+
+      const newConversation = [...conversation, agentTurn];
+      setConversation(newConversation);
+      onConversationUpdate?.(newConversation);
+
+      // Create speech utterance
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.lang = defaultLanguage;
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.volume = 0.8;
+
+      utterance.onstart = () => {
+        console.log('🤖 Agent speaking:', message);
+        setIsSpeaking(true);
+      };
+
+      utterance.onend = () => {
+        console.log('🤖 Agent finished speaking');
+        setIsSpeaking(false);
+        resolve();
+      };
+
+      utterance.onerror = (event) => {
+        console.error('🚨 Speech synthesis error:', event.error);
+        setIsSpeaking(false);
+        resolve();
+      };
+
+      lastUtteranceRef.current = utterance;
+      synthRef.current.speak(utterance);
+    });
+  }, [conversation, defaultLanguage, onConversationUpdate]);
+
   // Handle user speech input
-  const handleUserSpeech = async (message: string, confidence: number) => {
+  const handleUserSpeech = useCallback(async (message: string, confidence: number) => {
     console.log('👤 User said:', message, `(confidence: ${confidence})`);
     
     const userTurn: ConversationTurn = {
@@ -174,7 +222,7 @@ export default function ZenithOrb({
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [conversation, defaultLanguage, onConversationUpdate, speakAgentResponse]);
 
   // Generate contextual agent response
   const generateAgentResponse = async (analysis: any): Promise<string> => {
@@ -190,56 +238,9 @@ export default function ZenithOrb({
     }
   };
 
-  // Speak agent response using TTS
-  const speakAgentResponse = async (message: string): Promise<void> => {
-    return new Promise((resolve) => {
-      if (!synthRef.current) {
-        resolve();
-        return;
-      }
-
-      const agentTurn: ConversationTurn = {
-        speaker: 'agent',
-        message,
-        timestamp: new Date(),
-        language: defaultLanguage
-      };
-
-      const newConversation = [...conversation, agentTurn];
-      setConversation(newConversation);
-      onConversationUpdate?.(newConversation);
-
-      // Create speech utterance
-      const utterance = new SpeechSynthesisUtterance(message);
-      utterance.lang = defaultLanguage;
-      utterance.rate = 0.9;
-      utterance.pitch = 1.0;
-      utterance.volume = 0.8;
-
-      utterance.onstart = () => {
-        console.log('🤖 Agent speaking:', message);
-        setIsSpeaking(true);
-      };
-
-      utterance.onend = () => {
-        console.log('🤖 Agent finished speaking');
-        setIsSpeaking(false);
-        resolve();
-      };
-
-      utterance.onerror = (event) => {
-        console.error('🚨 Speech synthesis error:', event.error);
-        setIsSpeaking(false);
-        resolve();
-      };
-
-      lastUtteranceRef.current = utterance;
-      synthRef.current.speak(utterance);
-    });
-  };
 
   // Toggle listening state
-  const toggleListening = () => {
+  const toggleListening = useCallback(() => {
     if (!speechSupported || !recognitionRef.current) {
       setError('Speech recognition not available');
       return;
@@ -253,23 +254,23 @@ export default function ZenithOrb({
       recognitionRef.current.start();
       setIsListening(true);
     }
-  };
+  }, [speechSupported, isListening]);
 
   // Stop speaking
-  const stopSpeaking = () => {
+  const stopSpeaking = useCallback(() => {
     if (synthRef.current && isSpeaking) {
       synthRef.current.cancel();
       setIsSpeaking(false);
     }
-  };
+  }, [isSpeaking]);
 
   // Get orb state styling
-  const getOrbState = () => {
+  const getOrbState = useCallback(() => {
     if (isProcessing) return 'processing';
     if (isSpeaking) return 'speaking';
     if (isListening) return 'listening';
     return 'idle';
-  };
+  }, [isProcessing, isSpeaking, isListening]);
 
   const orbState = getOrbState();
 
@@ -390,7 +391,9 @@ export default function ZenithOrb({
       )}
     </div>
   );
-}
+});
+
+export default ZenithOrb;
 
 // TypeScript declarations for Web Speech API
 interface SpeechRecognitionEvent extends Event {

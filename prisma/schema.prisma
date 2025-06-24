@@ -26,6 +26,7 @@ model User {
   tasks         Task[]
   files         File[]
   analytics     Analytics[]
+  analyticsEvents AnalyticsEvent[]
   notifications Notification[]
   preferences   UserPreferences?
   activityLogs  ActivityLog[]
@@ -266,6 +267,18 @@ model Team {
   id          String    @id @default(cuid())
   name        String
   description String?
+  
+  // Stripe subscription fields
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  subscriptionStatus   String?
+  subscriptionPlan     String?   @default("freemium")
+  subscriptionStartDate DateTime?
+  subscriptionEndDate  DateTime?
+  scheduledCancellationDate DateTime?
+  cancellationReason   String?
+  lastPaymentFailure   DateTime?
+  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   members     TeamMember[]
@@ -275,6 +288,23 @@ model Team {
   billing     TeamBilling?
   settings    TeamSettings?
   integrations TeamIntegration[]
+  
+  // New relations for subscription features
+  websiteScans         WebsiteScan[]
+  competitiveReports   CompetitiveReport[]
+  
+  // Competitive Intelligence relations
+  competitiveAnalyses  CompetitiveAnalysis[]
+  
+  // Innovation Agent relations
+  technologyTrends     TechnologyTrend[]
+  competitorProfiles   CompetitorProfile[]
+  researchPapers       ResearchPaper[]
+  githubTrends         GitHubTrend[]
+  innovationBriefs     InnovationBrief[]
+  innovationAlerts     InnovationAlert[]
+  competitorAlerts     CompetitorAlert[]
+  monitoringSources    MonitoringSource[]
 }
 
 model TeamMember {
@@ -1237,4 +1267,635 @@ enum EmailSendStatus {
   BOUNCED
   FAILED
   UNSUBSCRIBED
+}
+
+
+// Subscription Usage Tracking Models
+model WebsiteScan {
+  id          String    @id @default(cuid())
+  teamId      String
+  team        Team      @relation(fields: [teamId], references: [id])
+  url         String
+  status      String    @default("pending")
+  healthScore Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([teamId, createdAt])
+}
+
+model CompetitiveReport {
+  id          String    @id @default(cuid())
+  teamId      String
+  team        Team      @relation(fields: [teamId], references: [id])
+  targetDomain String
+  competitors  Json?
+  status      String    @default("pending")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([teamId, createdAt])
+}
+
+// Competitive Intelligence Platform Models
+model CompetitorProfile {
+  id              String   @id @default(cuid())
+  domain          String   @unique
+  name            String?
+  description     String?
+  industry        String?
+  traffic         Int?
+  authorityScore  Float?
+  lastAnalyzed    DateTime?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  analyses        CompetitiveAnalysis[] @relation("TargetCompetitor")
+  competitorIn    CompetitiveAnalysis[] @relation("AnalysisCompetitors")
+  keywordGaps     KeywordGap[]
+  backlinkGaps    BacklinkGap[]
+  contentGaps     ContentGap[]
+  
+  @@map("competitor_profiles")
+}
+
+model CompetitiveAnalysis {
+  id               String            @id @default(cuid())
+  targetDomain     String
+  targetCompetitor CompetitorProfile @relation("TargetCompetitor", fields: [targetDomain], references: [domain])
+  competitors      CompetitorProfile[] @relation("AnalysisCompetitors")
+  teamId           String
+  team             Team              @relation(fields: [teamId], references: [id])
+  
+  // Analysis Results
+  marketPosition   Json              // rank, percentile, total analyzed
+  opportunities    Json              // array of opportunity objects
+  strengths        Json              // array of strength strings
+  weaknesses       Json              // array of weakness strings  
+  recommendations  Json              // array of recommendation objects
+  benchmarkData    Json              // average, top performer, median scores
+  
+  status           CompetitiveAnalysisStatus @default(PENDING)
+  completedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relations
+  keywordGaps      KeywordGap[]
+  backlinkGaps     BacklinkGap[]
+  contentGaps      ContentGap[]
+  alerts           CompetitiveAlert[]
+  
+  @@index([teamId, createdAt])
+  @@map("competitive_analyses")
+}
+
+model KeywordGap {
+  id              String            @id @default(cuid())
+  analysisId      String?
+  analysis        CompetitiveAnalysis? @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  targetDomain    String
+  targetCompetitor CompetitorProfile @relation(fields: [targetDomain], references: [domain])
+  
+  keyword         String
+  searchVolume    Int
+  difficulty      Float
+  targetPosition  Int?              // Target domain position (null if not ranking)
+  competitorData  Json              // Array of competitor positions
+  
+  // Gap Analysis
+  gapType         KeywordGapType
+  opportunityScore Float            // volume × difficulty × gap score
+  priority        KeywordPriority   @default(MEDIUM)
+  
+  // Categorization
+  cluster         String?           // Keyword cluster/theme
+  intent          SearchIntent      @default(INFORMATIONAL)
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@index([targetDomain, opportunityScore])
+  @@index([gapType, priority])
+  @@map("keyword_gaps")
+}
+
+model BacklinkGap {
+  id               String            @id @default(cuid())
+  analysisId       String?
+  analysis         CompetitiveAnalysis? @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  targetDomain     String
+  targetCompetitor CompetitorProfile @relation(fields: [targetDomain], references: [domain])
+  
+  // Linking Domain Info
+  linkingDomain    String
+  domainAuthority  Int
+  pageAuthority    Int
+  linkUrl          String
+  anchorText       String?
+  linkType         LinkType          @default(DOFOLLOW)
+  
+  // Gap Analysis
+  competitorsLinking Json            // Which competitors have this link
+  linkValue         Float            // Calculated value score
+  priority          BacklinkPriority @default(MEDIUM)
+  
+  // Outreach Status
+  outreachStatus    OutreachStatus   @default(NOT_STARTED)
+  contactEmail      String?
+  lastContactDate   DateTime?
+  
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  @@index([targetDomain, linkValue])
+  @@index([outreachStatus])
+  @@map("backlink_gaps")
+}
+
+model ContentGap {
+  id               String            @id @default(cuid())
+  analysisId       String?
+  analysis         CompetitiveAnalysis? @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  targetDomain     String
+  targetCompetitor CompetitorProfile @relation(fields: [targetDomain], references: [domain])
+  
+  // Content Info
+  topic            String
+  contentType      ContentType       @default(BLOG_POST)
+  competitorUrl    String
+  competitorDomain String
+  
+  // Performance Metrics
+  estimatedTraffic Int?
+  backlinks        Int?
+  socialShares     Int?
+  wordCount        Int?
+  
+  // Gap Analysis
+  gapReason        String            // Why this is a gap
+  opportunityScore Float
+  priority         ContentPriority   @default(MEDIUM)
+  
+  // Content Strategy
+  suggestedTitle   String?
+  suggestedOutline Json?             // Array of heading suggestions
+  targetKeywords   Json?             // Array of keywords to target
+  
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  @@index([targetDomain, opportunityScore])
+  @@index([contentType, priority])
+  @@map("content_gaps")
+}
+
+model CompetitiveAlert {
+  id               String            @id @default(cuid())
+  analysisId       String
+  analysis         CompetitiveAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  teamId           String
+  
+  alertType        CompetitiveAlertType
+  severity         AlertSeverity     @default(MEDIUM)
+  title            String
+  description      String
+  data             Json              // Alert-specific data
+  
+  isRead           Boolean           @default(false)
+  isActionable     Boolean           @default(true)
+  actionTaken      String?
+  
+  createdAt        DateTime          @default(now())
+  readAt           DateTime?
+  
+  @@index([teamId, isRead])
+  @@index([alertType, severity])
+  @@map("competitive_alerts")
+}
+
+model CompetitorTracking {
+  id               String            @id @default(cuid())
+  teamId           String
+  targetDomain     String
+  competitorDomain String
+  
+  // Tracking Settings
+  isActive         Boolean           @default(true)
+  frequency        TrackingFrequency @default(WEEKLY)
+  alertThreshold   Float             @default(5.0) // % change to trigger alert
+  
+  // Metrics to Track
+  trackKeywords    Boolean           @default(true)
+  trackBacklinks   Boolean           @default(true)
+  trackContent     Boolean           @default(true)
+  trackTraffic     Boolean           @default(false)
+  
+  lastChecked      DateTime?
+  nextCheck        DateTime?
+  
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relations
+  metrics          CompetitorMetric[]
+  
+  @@unique([teamId, targetDomain, competitorDomain])
+  @@index([isActive, nextCheck])
+  @@map("competitor_tracking")
+}
+
+model CompetitorMetric {
+  id               String            @id @default(cuid())
+  trackingId       String
+  tracking         CompetitorTracking @relation(fields: [trackingId], references: [id], onDelete: Cascade)
+  
+  metricType       CompetitorMetricType
+  value            Float
+  previousValue    Float?
+  changePercent    Float?
+  
+  // Context Data
+  metadata         Json?             // Additional metric context
+  
+  recordedAt       DateTime          @default(now())
+  
+  @@index([trackingId, metricType, recordedAt])
+  @@map("competitor_metrics")
+}
+
+// Competitive Intelligence Enums
+enum CompetitiveAnalysisStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum KeywordGapType {
+  MISSING           // Target not ranking, competitors are
+  UNDERPERFORMING   // Target ranking lower than competitors
+  OPPORTUNITY       // High volume, low competition
+  CONTENT_GAP       // Need content for keyword cluster
+}
+
+enum KeywordPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum SearchIntent {
+  INFORMATIONAL
+  NAVIGATIONAL
+  TRANSACTIONAL
+  COMMERCIAL
+}
+
+enum LinkType {
+  DOFOLLOW
+  NOFOLLOW
+  SPONSORED
+  UGC
+}
+
+enum BacklinkPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum OutreachStatus {
+  NOT_STARTED
+  RESEARCHING
+  CONTACTED
+  FOLLOW_UP
+  RESPONDED
+  LINK_ACQUIRED
+  REJECTED
+  ABANDONED
+}
+
+enum ContentType {
+  BLOG_POST
+  LANDING_PAGE
+  GUIDE
+  TUTORIAL
+  CASE_STUDY
+  TOOL
+  INFOGRAPHIC
+  VIDEO
+  PODCAST
+}
+
+enum ContentPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum CompetitiveAlertType {
+  NEW_COMPETITOR
+  RANKING_CHANGE
+  BACKLINK_GAIN
+  BACKLINK_LOSS
+  CONTENT_PUBLISHED
+  TRAFFIC_CHANGE
+  KEYWORD_OPPORTUNITY
+  TECHNICAL_CHANGE
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TrackingFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum CompetitorMetricType {
+  KEYWORD_RANKINGS
+  BACKLINK_COUNT
+  DOMAIN_AUTHORITY
+  TRAFFIC_ESTIMATE
+  CONTENT_COUNT
+  TECHNICAL_SCORE
+}
+
+// Analytics and Conversion Tracking Models
+model AnalyticsEvent {
+  id          String    @id @default(cuid())
+  event       String
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+  sessionId   String
+  timestamp   DateTime  @default(now())
+  properties  Json
+  value       Float?
+  currency    String?   @default("USD")
+  createdAt   DateTime  @default(now())
+  
+  @@index([event, timestamp])
+  @@index([userId, timestamp])
+  @@index([sessionId, timestamp])
+  @@map("analytics_events")
+}
+
+// Innovation Agent Models
+model TechnologyTrend {
+  id               String    @id @default(cuid())
+  name             String
+  category         String    // ai, web, mobile, cloud, security, blockchain, iot, other
+  description      String
+  relevanceScore   Float
+  adoptionRate     Float
+  maturityLevel    String    // emerging, growing, mature, declining
+  impactPotential  String    // low, medium, high, transformative
+  timeToMainstream Int       // months
+  keyPlayers       String[]
+  useCases         String[]
+  risks            String[]
+  opportunities    String[]
+  firstDetected    DateTime  @default(now())
+  lastUpdated      DateTime  @updatedAt
+  teamId           String?
+  team             Team?     @relation(fields: [teamId], references: [id])
+  
+  @@index([category, relevanceScore])
+  @@index([firstDetected])
+  @@map("technology_trends")
+}
+
+model CompetitorProfile {
+  id              String               @id @default(cuid())
+  name            String
+  domain          String               @unique
+  category        String               // direct, indirect, adjacent
+  productsTracked String[]
+  trackingUrls    Json                 // {features, pricing, changelog, blog, docs}
+  checkFrequency  String               // daily, weekly, realtime
+  lastChecked     DateTime?
+  isActive        Boolean              @default(true)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  teamId          String?
+  team            Team?                @relation(fields: [teamId], references: [id])
+  
+  // Relations
+  featureDetections FeatureDetection[]
+  pricingChanges    PricingChange[]
+  snapshots         CompetitorSnapshot[]
+  alerts            CompetitorAlert[]
+  
+  @@index([domain])
+  @@index([isActive, checkFrequency])
+  @@map("competitor_profiles")
+}
+
+model FeatureDetection {
+  id              String             @id @default(cuid())
+  competitorId    String
+  competitor      CompetitorProfile  @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  featureName     String
+  category        String             // core, addon, integration, performance, ui, api, pricing
+  description     String
+  detectedDate    DateTime           @default(now())
+  launchDate      DateTime?
+  screenshots     String[]
+  technicalDetails Json              // {stack, apis, integrations, performance}
+  pricingImpact   Json?              // {type, oldPrice, newPrice, details}
+  marketAnalysis  Json               // {targetAudience, uniqueValue, competitiveAdvantage, estimatedDevelopmentTime, threatLevel}
+  userReaction    Json?              // {sentiment, feedback, adoptionSignals}
+  responseStatus  String             @default("pending") // pending, planned, in_progress, completed, dismissed
+  responsePlan    String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  @@index([competitorId, detectedDate])
+  @@index([category, detectedDate])
+  @@map("feature_detections")
+}
+
+model PricingChange {
+  id                String             @id @default(cuid())
+  competitorId      String
+  competitor        CompetitorProfile  @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  changeType        String             // increase, decrease, new_plan, plan_removal, feature_change
+  oldPricing        Json
+  newPricing        Json
+  affectedPlans     String[]
+  percentageChange  Float?
+  effectiveDate     DateTime
+  detectedDate      DateTime           @default(now())
+  marketImpact      String
+  recommendedResponse String
+  createdAt         DateTime           @default(now())
+  
+  @@index([competitorId, detectedDate])
+  @@index([changeType, detectedDate])
+  @@map("pricing_changes")
+}
+
+model CompetitorSnapshot {
+  id            String             @id @default(cuid())
+  competitorId  String
+  competitor    CompetitorProfile  @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  timestamp     DateTime           @default(now())
+  features      Json               // Array of features at time of snapshot
+  pricing       Json               // Pricing structure at time of snapshot
+  marketPosition Json             // Market position data
+  featureCount  Int                @default(0)
+  changes       Json?              // {newFeatures, removedFeatures, priceChanges, otherChanges}
+  
+  @@index([competitorId, timestamp])
+  @@map("competitor_snapshots")
+}
+
+model CompetitorAlert {
+  id                String             @id @default(cuid())
+  competitorId      String?
+  competitor        CompetitorProfile? @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  type              String             // feature_launch, pricing_change, market_move, strategic_shift
+  severity          String             // low, medium, high, critical
+  title             String
+  description       String
+  recommendedAction String?
+  isRead            Boolean            @default(false)
+  readAt            DateTime?
+  readBy            String?
+  teamId            String?
+  team              Team?              @relation(fields: [teamId], references: [id])
+  createdAt         DateTime           @default(now())
+  
+  @@index([isRead, severity])
+  @@index([teamId, createdAt])
+  @@map("competitor_alerts")
+}
+
+model ResearchPaper {
+  id                    String    @id @default(cuid())
+  title                 String
+  authors               String[]
+  source                String    // arxiv, google_research, openai, anthropic, other
+  abstract              String
+  keyFindings           String[]
+  technologies          String[]
+  applicationPotential  Float     // 0-100
+  businessImpact        String
+  implementationComplexity String // low, medium, high
+  relevanceToProduct    Float     // 0-100
+  publishedDate         DateTime
+  url                   String
+  arxivId               String?
+  doi                   String?
+  categories            String[]
+  pdfUrl                String?
+  createdAt             DateTime  @default(now())
+  teamId                String?
+  team                  Team?     @relation(fields: [teamId], references: [id])
+  
+  @@index([source, publishedDate])
+  @@index([applicationPotential])
+  @@map("research_papers")
+}
+
+model GitHubTrend {
+  id                   String    @id @default(cuid())
+  repository           String
+  owner                String
+  description          String
+  language             String
+  stars                Int
+  starsGrowth          Int       // last 7 days
+  forks                Int
+  topics               String[]
+  lastCommit           DateTime
+  trendingReason       String
+  businessRelevance    Float     // 0-100
+  integrationPotential String
+  competitorUsage      String[]  // competitors using this
+  trendingScore        Float
+  detectedAt           DateTime  @default(now())
+  teamId               String?
+  team                 Team?     @relation(fields: [teamId], references: [id])
+  
+  @@unique([repository, owner])
+  @@index([trendingScore, detectedAt])
+  @@map("github_trends")
+}
+
+model InnovationBrief {
+  id                       String    @id @default(cuid())
+  weekEnding               DateTime
+  executiveSummary         String
+  keyFindings              Json      // {technologyTrends, competitorMoves, researchBreakthroughs, marketOpportunities}
+  strategicRecommendations Json      // Array of StrategicRecommendation
+  threatAssessment         Json      // Array of ThreatAssessment
+  innovationOpportunities  Json      // Array of InnovationOpportunity
+  implementationRoadmap    Json      // Array of RoadmapItem
+  metrics                  Json      // {trendsAnalyzed, competitorsMonitored, papersReviewed, alertsGenerated, averageRelevanceScore}
+  confidence               Float     // AI confidence in recommendations
+  nextActions              Json      // Array of ActionItem
+  isArchived               Boolean   @default(false)
+  feedback                 String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  teamId                   String?
+  team                     Team?     @relation(fields: [teamId], references: [id])
+  
+  @@index([weekEnding, teamId])
+  @@index([createdAt])
+  @@map("innovation_briefs")
+}
+
+model InnovationAlert {
+  id            String    @id @default(cuid())
+  type          String    // critical_innovation, competitive_threat, technology_breakthrough, market_opportunity
+  title         String
+  description   String
+  severity      String    // low, medium, high, critical
+  data          Json      // Raw data related to the alert
+  requiresAction Boolean  @default(false)
+  isRead        Boolean   @default(false)
+  readAt        DateTime?
+  actionTaken   String?
+  actionDate    DateTime?
+  teamId        String?
+  team          Team?     @relation(fields: [teamId], references: [id])
+  createdAt     DateTime  @default(now())
+  
+  @@index([isRead, severity])
+  @@index([teamId, createdAt])
+  @@map("innovation_alerts")
+}
+
+model MonitoringSource {
+  id           String    @id @default(cuid())
+  type         String    // news, github, conference, competitor, research
+  name         String
+  url          String
+  frequency    String    // realtime, hourly, daily, weekly
+  lastChecked  DateTime?
+  nextCheck    DateTime?
+  isActive     Boolean   @default(true)
+  configuration Json     // Source-specific configuration
+  teamId       String?
+  team         Team?     @relation(fields: [teamId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  @@index([type, isActive])
+  @@index([nextCheck])
+  @@map("monitoring_sources")
 }

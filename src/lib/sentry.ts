@@ -37,8 +37,13 @@ export function addBreadcrumb(breadcrumb: { message: string; category?: string; 
   Sentry.addBreadcrumb(breadcrumb);
 }
 
-// Export Sentry logger for structured logging
-export const { logger } = Sentry;
+// Export simple logger for structured logging
+export const logger = {
+  info: (message: string, extra?: any) => console.log(message, extra),
+  warn: (message: string, extra?: any) => console.warn(message, extra),
+  error: (message: string, extra?: any) => console.error(message, extra),
+  debug: (message: string, extra?: any) => console.debug(message, extra),
+};
 
 // Export Sentry for span instrumentation
 export { Sentry };
