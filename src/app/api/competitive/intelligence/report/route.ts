@@ -198,67 +198,6 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-
-  // Helper method to calculate competitive score
-  calculateCompetitiveScore(report: any): number {
-    const marketPositionScore = report.marketPosition.percentile;
-    const opportunityScore = Math.min(
-      (report.keywordGaps.filter((k: any) => k.priority === 'urgent').length * 10 +
-       report.backlinkGaps.filter((b: any) => b.priority === 'urgent').length * 15 +
-       report.contentGaps.filter((c: any) => c.priority === 'urgent').length * 5), 100
-    );
-    
-    return Math.round((marketPositionScore * 0.6 + opportunityScore * 0.4));
-  }
-
-  // Helper method to generate executive summary
-  generateExecutiveSummary(report: any, competitiveScore: number): string {
-    const position = report.marketPosition.rank <= 3 ? 'leading' : 
-                    report.marketPosition.rank <= 10 ? 'strong' : 'developing';
-    
-    const urgentOpportunities = report.opportunities.filter((o: any) => o.impact === 'high').length;
-    
-    return `Your domain ranks #${report.marketPosition.rank} out of ${report.marketPosition.totalAnalyzed} analyzed competitors (${report.marketPosition.percentile}th percentile), indicating a ${position} market position. We identified ${urgentOpportunities} high-impact opportunities across keyword gaps, backlink acquisition, and content development. Your competitive intelligence score is ${competitiveScore}/100, with immediate potential for improvement through the recommended strategic initiatives.`;
-  }
-
-  // Helper method to generate action plan
-  generateActionPlan(report: any): any {
-    const urgentKeywords = report.keywordGaps.filter((k: any) => k.priority === 'urgent').length;
-    const urgentBacklinks = report.backlinkGaps.filter((b: any) => b.priority === 'urgent').length;
-    const urgentContent = report.contentGaps.filter((c: any) => c.priority === 'urgent').length;
-
-    return {
-      immediate: {
-        duration: '0-30 days',
-        priority: 'urgent',
-        actions: [
-          urgentKeywords > 0 && `Target ${Math.min(urgentKeywords, 5)} high-opportunity keywords`,
-          urgentBacklinks > 0 && `Initiate outreach for ${Math.min(urgentBacklinks, 3)} premium backlinks`,
-          urgentContent > 0 && `Create ${Math.min(urgentContent, 2)} high-impact content pieces`
-        ].filter(Boolean)
-      },
-      shortTerm: {
-        duration: '1-3 months',
-        priority: 'high',
-        actions: [
-          'Expand content calendar based on competitor gaps',
-          'Execute systematic backlink acquisition program',
-          'Optimize existing content for identified keyword opportunities',
-          'Monitor competitor changes and new opportunities'
-        ]
-      },
-      longTerm: {
-        duration: '3-12 months',
-        priority: 'strategic',
-        actions: [
-          'Develop content hub around top-performing competitor topics',
-          'Build domain authority through consistent link acquisition',
-          'Establish thought leadership in identified content gaps',
-          'Automate competitive monitoring and alerting'
-        ]
-      }
-    };
-  }
 }
 
 export async function GET(request: NextRequest) {
