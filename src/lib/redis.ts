@@ -1,12 +1,14 @@
-import { createClient } from 'redis';
+import Redis from 'ioredis';
 import * as Sentry from '@sentry/nextjs';
 
 // Create Redis client only if REDIS_URL is configured
-const redisClient = process.env.REDIS_URL ? createClient({
-  url: process.env.REDIS_URL,
-  socket: {
-    connectTimeout: 5000, // 5 second timeout
-    reconnectStrategy: (retries) => Math.min(retries * 100, 3000)
+const redisClient = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: 3,
+  enableReadyCheck: true,
+  connectTimeout: 5000,
+  retryStrategy: (times) => {
+    if (times > 3) return null;
+    return Math.min(times * 100, 3000);
   }
 }) : null;
 
@@ -42,8 +44,18 @@ export class Cache {
     if (!this.client) return;
     
     try {
-      await this.client.connect();
-      this.connected = true;
+      // ioredis auto-connects, just check if ready
+      if (this.client.status === 'ready') {
+        this.connected = true;
+      } else {
+        // Wait for ready event
+        await new Promise((resolve) => {
+          this.client!.once('ready', () => {
+            this.connected = true;
+            resolve(true);
+          });
+        });
+      }
     } catch (error) {
       console.warn('Redis connection failed, operating without cache:', (error as Error).message);
       Sentry.captureException(error as Error, { extra: { context: 'redis-connect' } });
@@ -70,9 +82,7 @@ export class Cache {
     }
     
     try {
-      await this.client.set(key, JSON.stringify(value), {
-        EX: ttl,
-      });
+      await this.client.setex(key, ttl, JSON.stringify(value));
     } catch (error) {
       Sentry.captureException(error as Error, { extra: { context: 'redis-set', key } });
     }
@@ -96,7 +106,7 @@ export class Cache {
     }
     
     try {
-      await this.client.flushAll();
+      await this.client.flushall();
     } catch (error) {
       Sentry.captureException(error as Error, { extra: { context: 'redis-flush' } });
     }

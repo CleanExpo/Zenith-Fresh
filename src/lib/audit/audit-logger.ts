@@ -66,6 +66,12 @@ export class AuditLogger {
     entityType: AuditEntityType = AuditEntityType.SYSTEM
   ): Promise<void> {
     try {
+      // Skip audit logging if no userId provided (system operations)
+      if (!data.userId) {
+        console.log(`System audit log skipped: ${action} on ${entityType}`);
+        return;
+      }
+      
       await prisma.auditLog.create({
         data: {
           action,
@@ -186,8 +192,14 @@ export class AuditLogger {
     metadata?: any,
     userId?: string
   ): Promise<void> {
+    // Only log if userId is provided, skip pure system events
+    if (!userId) {
+      console.log(`System event not logged (no user context): ${action}`);
+      return;
+    }
+    
     return this.log(action, {
-      userId: userId || 'system',
+      userId,
       metadata,
     }, AuditEntityType.SYSTEM);
   }
