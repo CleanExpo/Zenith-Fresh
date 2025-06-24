@@ -143,7 +143,7 @@ export class VerificationAgent {
 
     } catch (error) {
       console.error('VerificationAgent: Verification failed:', error);
-      return this.generateFailureReport(error.message);
+      return this.generateFailureReport(error instanceof Error ? error.message : 'Unknown error');
     }
   }
 
@@ -193,7 +193,7 @@ export class VerificationAgent {
         verified: false,
         confidence: 0,
         sources: [],
-        notes: `Verification failed: ${error.message}`
+        notes: `Verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }

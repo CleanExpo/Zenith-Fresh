@@ -30,7 +30,7 @@ export class CronMonitor {
           status: 'in_progress',
         },
         {
-          schedule: this.config.schedule,
+          schedule: this.config.schedule as any,
           checkinMargin: this.config.checkinMargin || 1,
           maxRuntime: this.config.maxRuntime || 5,
           timezone: this.config.timezone || 'UTC',

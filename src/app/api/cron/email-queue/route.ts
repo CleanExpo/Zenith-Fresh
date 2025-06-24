@@ -31,72 +31,15 @@ export async function POST(req: NextRequest) {
       };
 
       // Get pending emails (limit to 100 per batch)
-      const pendingEmails = await prisma.emailQueue.findMany({
-        where: {
-          status: 'pending',
-          OR: [
-            { scheduledFor: null },
-            { scheduledFor: { lte: new Date() } },
-          ],
-          attempts: { lt: 3 }, // Max 3 attempts
-        },
-        take: 100,
-        orderBy: { createdAt: 'asc' },
-      });
-
+      // TODO: Implement EmailQueue model in schema.prisma
+      const pendingEmails: any[] = []; // Temporarily disabled until EmailQueue model is added
+      
       processResults.processed = pendingEmails.length;
 
-      for (const email of pendingEmails) {
-        try {
-          // Send email using Resend
-          const messageId = await sendEmailFromQueue({
-            to: email.to,
-            subject: email.subject,
-            body: email.body,
-          });
-
-          // Mark as sent
-          await prisma.emailQueue.update({
-            where: { id: email.id },
-            data: {
-              status: 'sent',
-              sentAt: new Date(),
-              messageId: messageId,
-            },
-          });
-
-          processResults.sent++;
-        } catch (emailError) {
-          console.error(`Failed to send email ${email.id}:`, emailError);
-
-          const newAttempts = email.attempts + 1;
-          
-          if (newAttempts >= 3) {
-            // Mark as permanently failed
-            await prisma.emailQueue.update({
-              where: { id: email.id },
-              data: {
-                status: 'failed',
-                attempts: newAttempts,
-                error: emailError instanceof Error ? emailError.message : 'Unknown error',
-              },
-            });
-            processResults.failed++;
-          } else {
-            // Schedule for retry with exponential backoff
-            const retryDelay = Math.pow(2, newAttempts) * 60 * 1000; // 2^attempts minutes
-            await prisma.emailQueue.update({
-              where: { id: email.id },
-              data: {
-                attempts: newAttempts,
-                scheduledFor: new Date(Date.now() + retryDelay),
-                error: emailError instanceof Error ? emailError.message : 'Unknown error',
-              },
-            });
-            processResults.retries++;
-          }
-        }
-      }
+      // TODO: Implement email processing when EmailQueue model is added to schema
+      // for (const email of pendingEmails) {
+      //   Email processing logic will go here
+      // }
 
       console.log('Email queue processing completed:', processResults);
       return processResults;

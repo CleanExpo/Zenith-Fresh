@@ -158,10 +158,10 @@ export default async function SettingsPage() {
                   <p className="text-sm text-gray-500 dark:text-gray-400">Receive email updates about your projects</p>
                 </div>
                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  preferences?.emailUpdates ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                  preferences?.emailNotifications ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
                   'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
                 }`}>
-                  {preferences?.emailUpdates ? 'Enabled' : 'Disabled'}
+                  {preferences?.emailNotifications ? 'Enabled' : 'Disabled'}
                 </div>
               </div>
 
@@ -171,10 +171,10 @@ export default async function SettingsPage() {
                   <p className="text-sm text-gray-500 dark:text-gray-400">Receive push notifications for important updates</p>
                 </div>
                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  preferences?.notifications ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                  preferences?.pushNotifications ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
                   'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
                 }`}>
-                  {preferences?.notifications ? 'Enabled' : 'Disabled'}
+                  {preferences?.pushNotifications ? 'Enabled' : 'Disabled'}
                 </div>
               </div>
             </div>

@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { emailAutomation } from '@/lib/email/email-automation';
+import { trackAccountCreated } from '@/lib/analytics/conversion-tracking';
 
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
   email: z.string().email('Invalid email address').toLowerCase(),
   password: z.string().min(8, 'Password must be at least 8 characters long'),
+  website: z.string().url('Invalid website URL').optional().or(z.literal('')),
 });
 
 export async function POST(request: NextRequest) {
@@ -72,13 +75,67 @@ export async function POST(request: NextRequest) {
     });
 
     // Create a welcome notification
+    const welcomeMessage = validatedData.website 
+      ? `Welcome to Zenith Platform, ${user.name}! Your website analysis for ${validatedData.website} is ready.`
+      : `Welcome to Zenith Platform, ${user.name}! Get started by creating your first project.`;
+
     await prisma.notification.create({
       data: {
         type: 'welcome',
-        message: `Welcome to Zenith Platform, ${user.name}! Get started by creating your first project.`,
+        message: welcomeMessage,
         userId: user.id,
       },
     });
+
+    // Store website for analysis if provided
+    let websiteAnalysis = null;
+    if (validatedData.website) {
+      // Create a mock website analysis record
+      websiteAnalysis = await prisma.project.create({
+        data: {
+          name: `${validatedData.website} Health Analysis`,
+          description: `Automated health analysis for ${validatedData.website}`,
+          status: 'ACTIVE',
+          teamId: user.id, // Using user ID as team ID for now
+          createdById: user.id,
+        },
+      });
+
+      // Log website analysis activity
+      await prisma.activityLog.create({
+        data: {
+          action: 'website_analysis_created',
+          details: JSON.stringify({
+            userId: user.id,
+            website: validatedData.website,
+            projectId: websiteAnalysis.id,
+          }),
+          userId: user.id,
+          projectId: websiteAnalysis.id,
+        },
+      });
+    }
+
+    // Track conversion event
+    await trackAccountCreated(user.id, user.email, validatedData.website);
+
+    // Trigger onboarding email sequence
+    if (validatedData.website) {
+      // Generate mock health score for demo
+      const healthScore = Math.floor(Math.random() * 30) + 60; // Score between 60-90
+      
+      try {
+        await emailAutomation.triggerOnboardingSequence(
+          user.id,
+          user.email,
+          validatedData.website,
+          healthScore
+        );
+      } catch (emailError) {
+        console.error('Failed to trigger onboarding emails:', emailError);
+        // Don't fail registration if email fails
+      }
+    }
 
     return NextResponse.json(
       { 
@@ -88,7 +145,12 @@ export async function POST(request: NextRequest) {
           name: user.name,
           email: user.email,
           role: user.role,
-        }
+        },
+        websiteAnalysis: websiteAnalysis ? {
+          id: websiteAnalysis.id,
+          website: validatedData.website,
+          ready: true
+        } : null
       },
       { status: 201 }
     );

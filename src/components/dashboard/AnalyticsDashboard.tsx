@@ -138,11 +138,11 @@ export function AnalyticsDashboard() {
           <div className="flex items-center space-x-4">
             <div className="flex items-center">
               <div className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-              <span className="text-2xl font-bold text-gray-900">{realtimeData.activeUsers}</span>
+              <span className="text-2xl font-bold text-gray-900">{realtimeData?.realtime?.activeUsers || 0}</span>
               <span className="text-sm text-gray-500 ml-2">users online</span>
             </div>
             <div className="text-sm text-gray-500">
-              {realtimeData.pageViews} page views in last 30 minutes
+              {realtimeData?.realtime?.pageViews || 0} page views in last 30 minutes
             </div>
           </div>
         </Card>

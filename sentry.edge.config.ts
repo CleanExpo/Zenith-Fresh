@@ -22,6 +22,6 @@ Sentry.init({
   // Enhanced integrations with console logging
   integrations: [
     // Send console.log, console.error, and console.warn calls as logs to Sentry
-    Sentry.consoleLoggingIntegration({ levels: ['log', 'error', 'warn'] }),
+    Sentry.consoleIntegration(),
   ],
 });
