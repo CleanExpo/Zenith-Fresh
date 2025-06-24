@@ -157,7 +157,7 @@ model Analytics {
   id          String    @id @default(cuid())
   type        String    // e.g., 'page_view', 'api_call', 'error'
   action      String    // e.g., 'view_dashboard', 'create_project'
-  metadata    String?   // Additional data about the event (JSON string)
+  metadata    Json?     // Additional data about the event (JSON object)
   createdAt   DateTime  @default(now())
   userId      String?
   user        User?     @relation(fields: [userId], references: [id])
@@ -170,7 +170,7 @@ model SystemMetrics {
   type        String    // e.g., 'cpu_usage', 'memory_usage', 'api_latency'
   value       Float
   timestamp   DateTime  @default(now())
-  metadata    String?   // Additional metrics data (JSON string)
+  metadata    Json?     // Additional metrics data (JSON object)
 }
 
 model Notification {
@@ -228,7 +228,7 @@ model AuditLog {
   entityId    String?
   oldValue    String?   // Previous state (JSON string)
   newValue    String?   // New state (JSON string)
-  metadata    String?   // Additional audit data (JSON string)
+  metadata    Json?     // Additional audit data (JSON object)
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime  @default(now())
@@ -247,7 +247,7 @@ model DataExport {
   completedAt DateTime?
   userId      String
   user        User      @relation(fields: [userId], references: [id])
-  metadata    String?   // Export configuration (JSON string)
+  metadata    Json?     // Export configuration (JSON object)
 }
 
 model ProjectMember {
