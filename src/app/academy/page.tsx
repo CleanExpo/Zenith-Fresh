@@ -11,6 +11,7 @@ const Header = () => (
             <div className="flex lg:flex-1">
                 <Link href="/" className="-m-1.5 p-1.5">
                     <span className="sr-only">Zenith</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img className="h-8 w-auto invert" src="https://i.imgur.com/gC3v66I.png" alt="Zenith Logo" />
                 </Link>
             </div>
@@ -39,13 +40,20 @@ const Footer = () => (
     </footer>
 );
 
-const Icon = ({ path, className = "w-6 h-6" }) => (
+const Icon = ({ path, className = "w-6 h-6" }: { path: React.ReactNode; className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
         {path}
     </svg>
 );
 
-const CourseCard = ({ title, description, level, duration, modules, isLocked = false }) => (
+const CourseCard = ({ title, description, level, duration, modules, isLocked = false }: {
+  title: string;
+  description: string;
+  level: string;
+  duration: string;
+  modules: number;
+  isLocked?: boolean;
+}) => (
     <div className={`rounded-2xl p-8 ring-1 ${isLocked ? 'bg-gray-800/50 ring-white/5' : 'bg-white/5 ring-white/10'}`}>
         <h3 className={`text-lg font-semibold leading-7 ${isLocked ? 'text-gray-400' : 'text-white'}`}>{title}</h3>
         <div className="mt-2 flex items-center gap-x-2">

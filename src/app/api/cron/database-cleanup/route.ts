@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       cleanupResults.expiredSessions = expiredSessionsResult.count;
 
       // Clean up old activity logs (older than 90 days)
-      const oldLogsResult = await prisma.activity.deleteMany({
+      const oldLogsResult = await prisma.activityLog.deleteMany({
         where: {
           createdAt: {
             lt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // 90 days ago

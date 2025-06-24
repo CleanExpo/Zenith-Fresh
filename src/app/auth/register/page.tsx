@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock, AlertCircle, Loader2, User, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, AlertCircle, Loader2, User, CheckCircle, Globe, Zap } from 'lucide-react';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -12,6 +12,7 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
+    website: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -19,6 +20,15 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Get website URL from query parameters
+  useEffect(() => {
+    const websiteParam = searchParams?.get('website');
+    if (websiteParam) {
+      setFormData(prev => ({ ...prev, website: websiteParam }));
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +58,7 @@ export default function RegisterPage() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
+          website: formData.website,
         }),
       });
 
@@ -108,7 +119,10 @@ export default function RegisterPage() {
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Account Created!</h2>
             <p className="text-gray-300 mb-4">
-              Welcome to Zenith Platform. You&apos;re being redirected to your dashboard...
+              {formData.website 
+                ? `Your website analysis is ready! You're being redirected to view your ${formData.website} health report...`
+                : "Welcome to Zenith Platform. You're being redirected to your dashboard..."
+              }
             </p>
             <div className="flex items-center justify-center gap-2 text-blue-400">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -125,8 +139,21 @@ export default function RegisterPage() {
       <div className="max-w-md w-full space-y-8">
         {/* Logo/Brand */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">Zenith Platform</h1>
-          <p className="text-gray-300">Create your account</p>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Zap className="h-8 w-8 text-blue-400" />
+            <h1 className="text-3xl font-bold text-white">Zenith</h1>
+          </div>
+          {formData.website ? (
+            <div className="mb-4">
+              <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-2">
+                <Globe className="w-4 h-4 text-blue-400" />
+                <span className="text-blue-300 text-sm">Analyzing: {formData.website}</span>
+              </div>
+              <p className="text-gray-300">Create your account to see your website health report</p>
+            </div>
+          ) : (
+            <p className="text-gray-300">Get your free website health analysis</p>
+          )}
         </div>
 
         {/* Register Form */}
@@ -160,6 +187,27 @@ export default function RegisterPage() {
                 />
               </div>
             </div>
+
+            {/* Website Field - Only show if not passed as parameter */}
+            {!searchParams?.get('website') && (
+              <div>
+                <label htmlFor="website" className="block text-sm font-medium text-gray-200 mb-2">
+                  Website URL (Optional)
+                </label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    id="website"
+                    name="website"
+                    type="url"
+                    value={formData.website}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="https://yourwebsite.com"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Email Field */}
             <div>
@@ -251,7 +299,7 @@ export default function RegisterPage() {
                   Creating account...
                 </div>
               ) : (
-                'Create Account'
+                formData.website ? 'Get My Website Report' : 'Start Free Analysis'
               )}
             </button>
 

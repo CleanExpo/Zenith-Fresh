@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { trackEvent, trackConversion, trackPurchase, trackSignUp, trackLogin, setUserId } from '@/lib/google-analytics';
 
 interface AnalyticsData {
@@ -15,11 +15,7 @@ interface AnalyticsData {
 export function useAnalytics(type: string = 'summary', dateRange?: { startDate: string; endDate: string }) {
   const [data, setData] = useState<AnalyticsData>({ loading: true });
 
-  useEffect(() => {
-    fetchAnalyticsData();
-  }, [type, dateRange]);
-
-  const fetchAnalyticsData = async () => {
+  const fetchAnalyticsData = useCallback(async () => {
     setData(prev => ({ ...prev, loading: true, error: undefined }));
     
     try {
@@ -47,7 +43,11 @@ export function useAnalytics(type: string = 'summary', dateRange?: { startDate: 
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-  };
+  }, [type, dateRange]);
+
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, [fetchAnalyticsData]);
 
   return {
     ...data,

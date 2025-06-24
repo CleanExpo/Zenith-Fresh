@@ -146,7 +146,7 @@ async function handleExecuteIntegration(params: any) {
   } catch (error) {
     console.error('Error executing integration:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to execute integration' },
+      { error: error instanceof Error ? error.message : 'Failed to execute integration' },
       { status: 500 }
     );
   }
@@ -172,7 +172,7 @@ async function handleGetStatus(params: any) {
   } catch (error) {
     console.error('Error getting status:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to get integration status' },
+      { error: error instanceof Error ? error.message : 'Failed to get integration status' },
       { status: 500 }
     );
   }

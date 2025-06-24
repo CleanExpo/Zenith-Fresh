@@ -194,13 +194,13 @@ class EnterpriseWebhookSystem {
       const matchingEndpoints = Array.from(this.endpoints.values())
         .filter(endpoint => 
           endpoint.enabled && 
-          endpoint.events.includes(event.type) &&
-          this.matchesFilter(event, endpoint.filterExpression)
+          endpoint.events.includes(webhookEvent.type) &&
+          this.matchesFilter(webhookEvent, endpoint.filterExpression)
         )
         .map(endpoint => endpoint.id);
 
       if (matchingEndpoints.length === 0) {
-        console.log(`No matching endpoints for event type: ${event.type}`);
+        console.log(`No matching endpoints for event type: ${webhookEvent.type}`);
         return;
       }
 
@@ -372,7 +372,7 @@ class EnterpriseWebhookSystem {
       return {
         success: false,
         responseTime: 0,
-        errorMessage: error.message
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }
@@ -546,7 +546,7 @@ class EnterpriseWebhookSystem {
     } catch (error) {
       console.error('Failed to process delivery:', error);
       delivery.status = 'failed';
-      delivery.errorMessage = error.message;
+      delivery.errorMessage = error instanceof Error ? error.message : 'Unknown error';
     }
   }
 
@@ -623,7 +623,7 @@ class EnterpriseWebhookSystem {
       return {
         status: 'failed',
         duration,
-        errorMessage: error.message
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }

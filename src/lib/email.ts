@@ -54,18 +54,24 @@ export async function sendEmail(params: EmailParams): Promise<EmailResponse> {
     }
 
     // Send email using Resend
-    const response = await resend.emails.send({
+    const emailPayload: any = {
       from: params.from || DEFAULT_FROM,
       to: Array.isArray(params.to) ? params.to : [params.to],
       subject: params.subject,
-      html: params.html,
-      text: params.text,
-      reply_to: params.replyTo,
-      cc: params.cc ? (Array.isArray(params.cc) ? params.cc : [params.cc]) : undefined,
-      bcc: params.bcc ? (Array.isArray(params.bcc) ? params.bcc : [params.bcc]) : undefined,
-      attachments: params.attachments,
-      tags: params.tags,
-    });
+    };
+
+    // Add content (html or text - at least one required)
+    if (params.html) emailPayload.html = params.html;
+    if (params.text) emailPayload.text = params.text;
+
+    // Add optional fields only if they exist
+    if (params.replyTo) emailPayload.replyTo = params.replyTo;
+    if (params.cc) emailPayload.cc = Array.isArray(params.cc) ? params.cc : [params.cc];
+    if (params.bcc) emailPayload.bcc = Array.isArray(params.bcc) ? params.bcc : [params.bcc];
+    if (params.attachments) emailPayload.attachments = params.attachments;
+    if (params.tags) emailPayload.tags = params.tags;
+
+    const response = await resend.emails.send(emailPayload);
 
     if (response.error) {
       throw new Error(`Resend API error: ${response.error.message}`);

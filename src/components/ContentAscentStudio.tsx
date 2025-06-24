@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { 
   FileText, 
   Target, 
@@ -65,12 +65,12 @@ const mockContentBriefs = [
   }
 ];
 
-const ContentAscentStudio = () => {
+const ContentAscentStudio = memo(() => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedBrief, setSelectedBrief] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'draft': return 'bg-gray-100 text-gray-800';
       case 'in-progress': return 'bg-blue-100 text-blue-800';
@@ -78,17 +78,19 @@ const ContentAscentStudio = () => {
       case 'approved': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
-  };
+  }, []);
 
-  const getProgressColor = (percentage: number) => {
+  const getProgressColor = useCallback((percentage: number) => {
     if (percentage >= 80) return 'bg-green-500';
     if (percentage >= 60) return 'bg-yellow-500';
     return 'bg-red-500';
-  };
+  }, []);
 
-  const filteredBriefs = filterStatus === 'all' 
-    ? mockContentBriefs 
-    : mockContentBriefs.filter(brief => brief.status === filterStatus);
+  const filteredBriefs = useMemo(() => {
+    return filterStatus === 'all' 
+      ? mockContentBriefs 
+      : mockContentBriefs.filter(brief => brief.status === filterStatus);
+  }, [filterStatus]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -233,7 +235,7 @@ const ContentAscentStudio = () => {
                       <div>
                         <p className="text-sm font-medium text-purple-900">Trending Topic Opportunity</p>
                         <p className="text-xs text-purple-700 mt-1">
-                          "AI content optimization" is trending +45% this week. Consider creating content around this topic.
+                          &quot;AI content optimization&quot; is trending +45% this week. Consider creating content around this topic.
                         </p>
                       </div>
                     </div>
@@ -381,6 +383,8 @@ const ContentAscentStudio = () => {
       </div>
     </div>
   );
-};
+});
+
+ContentAscentStudio.displayName = 'ContentAscentStudio';
 
 export default ContentAscentStudio;
