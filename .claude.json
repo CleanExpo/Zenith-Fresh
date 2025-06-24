@@ -6,12 +6,16 @@
     "memory-command": 2
   },
   "memoryUsageCount": 1,
-  "promptQueueUseCount": 15,
+  "promptQueueUseCount": 18,
   "userID": "468b1b912da1854ab06a89a6231c73c8443717687b52e5812ce2485b79f327fb",
   "projects": {
     "/root": {
       "allowedTools": [],
       "history": [
+        {
+          "display": "time to go back to the No BS roadmap and create a new one i think. We are mising and not connected to the majority of the contents within the site. Both frontend and backend issues. Lets go back through and do another deep dive into the frontend and backend, look at eh claude.md and the NS bullshit deployment.md and see what has been missed",
+          "pastedContents": {}
+        },
         {
           "display": "push and commit all changes to the github repo and then force a new vercel production",
           "pastedContents": {}
