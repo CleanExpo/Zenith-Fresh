@@ -41,7 +41,7 @@ export async function GET() {
   }
 }
 
-// Mock endpoint for demo purposes - returns sample data
+// Sync reviews with Google My Business API
 export async function POST(request: Request) {
   try {
     const session = await auth();
@@ -50,56 +50,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // In production, this would sync with Google My Business API
-    // For now, return mock data
-    const mockReviews = [
-      {
-        id: '1',
-        platform: 'GMB',
-        platformId: 'gmb_review_1',
-        author: 'Sarah Mitchell',
-        rating: 5,
-        text: 'Excellent service! The team was professional and efficient. Highly recommend!',
-        replied: false,
-        reviewUrl: 'https://g.page/r/review/1',
-        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
-      },
-      {
-        id: '2',
-        platform: 'GMB',
-        platformId: 'gmb_review_2',
-        author: 'John Davidson',
-        rating: 4,
-        text: 'Good experience overall. Quick response time and fair pricing.',
-        replied: true,
-        reviewUrl: 'https://g.page/r/review/2',
-        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      },
-      {
-        id: '3',
-        platform: 'GMB',
-        platformId: 'gmb_review_3',
-        author: 'Emily Chen',
-        rating: 5,
-        text: 'Amazing! They went above and beyond my expectations.',
-        replied: false,
-        reviewUrl: 'https://g.page/r/review/3',
-        createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-      }
-    ];
+    // Force refresh reviews from GMB API
+    const reviews = await getGmbReviews();
+    
+    if ('error' in reviews) {
+      return NextResponse.json({ 
+        error: 'Failed to sync reviews',
+        message: reviews.error 
+      }, { status: 500 });
+    }
 
     return NextResponse.json({
-      reviews: mockReviews,
-      summary: {
-        total: mockReviews.length,
-        averageRating: 4.7,
-        unreplied: 2
-      }
+      success: true,
+      message: 'Reviews synced successfully',
+      count: reviews.length
     });
   } catch (error) {
-    console.error('GMB Reviews Mock Error:', error);
+    console.error('GMB Reviews Sync Error:', error);
     return NextResponse.json(
-      { error: 'Failed to generate mock reviews' },
+      { error: 'Failed to sync reviews' },
       { status: 500 }
     );
   }

@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hash } from 'bcryptjs';
 
-// This endpoint ensures demo data exists for production demonstrations
+// This endpoint is disabled in production - no mock data allowed
 export async function POST(request: NextRequest) {
+  // Completely disabled in production environment
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ 
+      error: 'Demo data endpoint disabled in production',
+      message: 'This endpoint is only available in development environments'
+    }, { status: 403 });
+  }
+
   try {
     // Check for admin secret
     const body = await request.json();
