@@ -83,7 +83,7 @@ class InnovationAgentTester {
           await this.delay(1000);
           return 'Monitoring pipeline executed successfully';
         } catch (error) {
-          throw new Error(`Pipeline execution failed: ${error.message}`);
+          throw new Error(`Pipeline execution failed: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
     );
