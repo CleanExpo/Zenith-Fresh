@@ -21,9 +21,9 @@ export default function PrivacyPolicy() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Introduction</h2>
               <p className="mb-4">
-                Zenith Platform ("we," "our," or "us") is committed to protecting your privacy and personal data. 
+                Zenith Platform (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy and personal data. 
                 This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you 
-                use our enterprise SaaS platform and related services (collectively, the "Services").
+                use our enterprise SaaS platform and related services (collectively, the &quot;Services&quot;).
               </p>
               <p className="mb-4">
                 This policy complies with the General Data Protection Regulation (GDPR), California Consumer Privacy Act (CCPA), 
@@ -173,7 +173,7 @@ export default function PrivacyPolicy() {
                 <li><strong>Right to Know:</strong> Information about data collection and use</li>
                 <li><strong>Right to Delete:</strong> Request deletion of personal information</li>
                 <li><strong>Right to Non-Discrimination:</strong> Equal service regardless of privacy choices</li>
-                <li><strong>Right to Opt-Out:</strong> Opt-out of data sales (though we don't sell data)</li>
+                <li><strong>Right to Opt-Out:</strong> Opt-out of data sales (though we don&apos;t sell data)</li>
               </ul>
 
               <h3 className="text-xl font-medium text-gray-800 mb-3">6.3 How to Exercise Your Rights</h3>
@@ -249,7 +249,7 @@ export default function PrivacyPolicy() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">10. Children's Privacy</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">10. Children&apos;s Privacy</h2>
               <p className="mb-4">
                 Our services are not intended for children under 16 years of age. We do not knowingly collect 
                 personal information from children under 16. If we discover that we have collected information 
