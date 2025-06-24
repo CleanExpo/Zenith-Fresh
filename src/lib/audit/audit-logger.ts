@@ -193,4 +193,5 @@ export class AuditLogger {
   }
 }
 
+export const auditLogger = AuditLogger;
 export default AuditLogger;

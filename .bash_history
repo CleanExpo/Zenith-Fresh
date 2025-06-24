@@ -14,3 +14,7 @@ claude
      ☐ PHASE 4: Automated maintenance and growth optimization
 claude
 claude
+2. Install Claude Code Globally
+Once Node.js and npm are installed, install the Claude CLI globally:
+bash
+claude

@@ -15,9 +15,11 @@ export async function GET(request: Request) {
     
     // Check cache first
     try {
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        return NextResponse.json(JSON.parse(cached));
+      if (redis) {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          return NextResponse.json(JSON.parse(cached));
+        }
       }
     } catch (error) {
       console.error('Redis error:', error);
@@ -75,7 +77,9 @@ export async function GET(request: Request) {
 
     // Cache for 15 minutes
     try {
-      await redis.setex(cacheKey, 900, JSON.stringify(responseData));
+      if (redis) {
+        await redis.setex(cacheKey, 900, JSON.stringify(responseData));
+      }
     } catch (error) {
       console.error('Redis set error:', error);
     }

@@ -75,11 +75,42 @@ declare module 'next-auth' {
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
+    maxAge: 15 * 60, // 15 minutes for high security
+    updateAge: 5 * 60, // Refresh session every 5 minutes
   },
   pages: {
     signIn: '/auth/signin',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-production',
+  secret: process.env.NEXTAUTH_SECRET!,
+  cookies: {
+    sessionToken: {
+      name: 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'strict',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 15 * 60, // 15 minutes
+      },
+    },
+    callbackUrl: {
+      name: 'next-auth.callback-url',
+      options: {
+        sameSite: 'strict',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+    csrfToken: {
+      name: 'next-auth.csrf-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'strict',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -175,9 +206,9 @@ export const authOptions: NextAuthOptions = {
       // Send properties to the client
       if (token && token.user) {
         session.user = {
-          id: token.user.id,
-          email: token.user.email,
-          name: token.user.name,
+          id: (token.user as any).id,
+          email: (token.user as any).email,
+          name: (token.user as any).name,
         };
       }
       

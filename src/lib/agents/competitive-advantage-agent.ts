@@ -196,7 +196,7 @@ export class CompetitiveAdvantageAgent {
       }
     };
 
-    return jobAnalysis[feature.name] || {
+    return jobAnalysis[feature.name as keyof typeof jobAnalysis] || {
       job: 'Unknown job to be analyzed',
       value: 'Unknown value',
       painPoint: 'Unknown pain point',
@@ -277,7 +277,7 @@ export class CompetitiveAdvantageAgent {
       }
     };
 
-    return enhancements[feature.featureName] || {
+    return enhancements[feature.featureName as keyof typeof enhancements] || {
       enhancedFeatureName: `Enhanced ${feature.featureName}`,
       coreImprovement: 'Convert data provision into outcome generation',
       zenithDifferentiators: ['Agent-driven automation', 'Outcome-focused results'],
@@ -356,13 +356,13 @@ export class CompetitiveAdvantageAgent {
       }
     };
 
-    return workflows[enhancement.enhancedFeatureName] || {
+    return (workflows[enhancement.enhancedFeatureName as keyof typeof workflows] || {
       triggerEvent: 'User initiates feature',
       workflowSteps: [],
       involvedAgents: [],
       userInteraction: 'configuration',
       finalOutcome: 'Enhanced outcome delivered'
-    };
+    }) as AgenticWorkflow;
   }
 
   // ==================== CONTINUOUS MONITORING ====================
@@ -412,7 +412,7 @@ export class CompetitiveAdvantageAgent {
       'Site Audit': 'low'          // Existing audit capabilities
     };
     
-    return complexityMap[feature.name] || 'medium';
+    return (complexityMap[feature.name as keyof typeof complexityMap] || 'medium') as 'high' | 'medium' | 'low';
   }
 
   private identifyCompetitiveAdvantages(enhancement: ZenithEnhancement): string[] {
