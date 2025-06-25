@@ -335,6 +335,10 @@ model Team {
   analyticsMetrics     AnalyticsMetric[]
   analyticsInsights    AnalyticsInsight[]
   dataExportJobs       DataExportJob[]
+  
+  // AI Automation Hub relations - Weeks 7-8
+  workflows            Workflow[]
+  aiAgents             AIAgent[]
 }
 
 model TeamMember {
@@ -2566,4 +2570,674 @@ model CustomDomain {
   
   @@index([tenantId])
   @@map("custom_domains")
+}
+
+// ===================================
+// AI AUTOMATION HUB MODELS - WEEKS 7-8
+// ===================================
+
+// Workflow System
+model Workflow {
+  id           String         @id @default(cuid())
+  name         String
+  description  String?
+  category     WorkflowCategory @default(GENERAL)
+  version      String         @default("1.0")
+  isTemplate   Boolean        @default(false)
+  isPublic     Boolean        @default(false)
+  isActive     Boolean        @default(true)
+  
+  // Workflow Definition
+  nodes        Json           // Flow nodes and connections
+  edges        Json           // Flow connections
+  config       Json           // Workflow configuration
+  variables    Json?          // Global variables
+  
+  // Metadata
+  tags         String[]
+  complexity   WorkflowComplexity @default(SIMPLE)
+  estimatedRuntime Int?       // Estimated runtime in seconds
+  
+  // Access Control
+  teamId       String
+  team         Team           @relation(fields: [teamId], references: [id])
+  createdBy    String
+  updatedBy    String?
+  
+  // Timestamps
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  lastRunAt    DateTime?
+  
+  // Relations
+  executions   WorkflowExecution[]
+  schedules    WorkflowSchedule[]
+  triggers     WorkflowTrigger[]
+  versions     WorkflowVersion[]
+  
+  @@index([teamId, isActive])
+  @@index([category, isPublic])
+  @@index([isTemplate, isPublic])
+  @@map("workflows")
+}
+
+model WorkflowVersion {
+  id           String    @id @default(cuid())
+  workflowId   String
+  workflow     Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  version      String
+  nodes        Json
+  edges        Json
+  config       Json
+  changelog    String?
+  createdBy    String
+  createdAt    DateTime  @default(now())
+  
+  @@unique([workflowId, version])
+  @@map("workflow_versions")
+}
+
+model WorkflowExecution {
+  id           String            @id @default(cuid())
+  workflowId   String
+  workflow     Workflow          @relation(fields: [workflowId], references: [id])
+  version      String
+  status       ExecutionStatus   @default(PENDING)
+  triggeredBy  ExecutionTrigger  @default(MANUAL)
+  
+  // Execution Context
+  input        Json?             // Input parameters
+  output       Json?             // Final output
+  variables    Json?             // Runtime variables
+  context      Json?             // Execution context
+  
+  // Performance Metrics
+  startedAt    DateTime?
+  completedAt  DateTime?
+  duration     Int?              // Duration in milliseconds
+  nodeCount    Int               @default(0)
+  errorCount   Int               @default(0)
+  
+  // Error Handling
+  error        String?
+  errorNode    String?
+  retryCount   Int               @default(0)
+  maxRetries   Int               @default(3)
+  
+  // Metadata
+  teamId       String
+  userId       String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  
+  // Relations
+  logs         WorkflowLog[]
+  nodeExecutions NodeExecution[]
+  
+  @@index([workflowId, status])
+  @@index([teamId, createdAt])
+  @@index([status, startedAt])
+  @@map("workflow_executions")
+}
+
+model NodeExecution {
+  id           String            @id @default(cuid())
+  executionId  String
+  execution    WorkflowExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  nodeId       String
+  nodeType     String
+  status       ExecutionStatus   @default(PENDING)
+  
+  // Node Data
+  input        Json?
+  output       Json?
+  config       Json?
+  
+  // Performance
+  startedAt    DateTime?
+  completedAt  DateTime?
+  duration     Int?              // Duration in milliseconds
+  
+  // Error Handling
+  error        String?
+  retryCount   Int               @default(0)
+  
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  
+  @@index([executionId, nodeId])
+  @@index([status])
+  @@map("node_executions")
+}
+
+model WorkflowLog {
+  id           String            @id @default(cuid())
+  executionId  String
+  execution    WorkflowExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  level        LogLevel          @default(INFO)
+  message      String
+  data         Json?
+  nodeId       String?
+  timestamp    DateTime          @default(now())
+  
+  @@index([executionId, timestamp])
+  @@index([level, timestamp])
+  @@map("workflow_logs")
+}
+
+model WorkflowSchedule {
+  id           String       @id @default(cuid())
+  workflowId   String
+  workflow     Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  
+  // Schedule Configuration
+  scheduleType ScheduleType @default(CRON)
+  cronExpression String?
+  interval     Int?         // Interval in seconds
+  timezone     String       @default("UTC")
+  
+  // Schedule State
+  isActive     Boolean      @default(true)
+  lastRunAt    DateTime?
+  nextRunAt    DateTime?
+  runCount     Int          @default(0)
+  
+  // Input Data
+  input        Json?
+  
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  
+  @@index([isActive, nextRunAt])
+  @@map("workflow_schedules")
+}
+
+model WorkflowTrigger {
+  id           String      @id @default(cuid())
+  workflowId   String
+  workflow     Workflow    @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  name         String
+  type         TriggerType @default(WEBHOOK)
+  
+  // Trigger Configuration
+  config       Json        // Trigger-specific configuration
+  conditions   Json?       // Trigger conditions
+  
+  // State
+  isActive     Boolean     @default(true)
+  lastTriggered DateTime?
+  triggerCount Int         @default(0)
+  
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  @@index([type, isActive])
+  @@map("workflow_triggers")
+}
+
+// AI Agent System
+model AIAgent {
+  id           String       @id @default(cuid())
+  name         String
+  type         AgentType
+  description  String?
+  avatar       String?
+  
+  // Agent Configuration
+  model        String       // GPT-4, Claude, Gemini, etc.
+  provider     String       // openai, anthropic, google
+  config       Json         // Model-specific configuration
+  systemPrompt String
+  temperature  Float        @default(0.7)
+  maxTokens    Int          @default(4000)
+  
+  // Capabilities
+  capabilities String[]     // Array of capability strings
+  tools        Json?        // Available tools and functions
+  
+  // State Management
+  isActive     Boolean      @default(true)
+  version      String       @default("1.0")
+  
+  // Performance Metrics
+  totalInteractions Int     @default(0)
+  averageResponseTime Int?  // Milliseconds
+  successRate      Float?   // 0-100
+  
+  // Access Control
+  teamId       String
+  team         Team         @relation(fields: [teamId], references: [id])
+  createdBy    String
+  
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  
+  // Relations
+  conversations AgentConversation[]
+  executions   AgentExecution[]
+  
+  @@index([teamId, type])
+  @@index([isActive, type])
+  @@map("ai_agents")
+}
+
+model AgentConversation {
+  id           String    @id @default(cuid())
+  agentId      String
+  agent        AIAgent   @relation(fields: [agentId], references: [id])
+  userId       String?
+  sessionId    String
+  
+  // Conversation Metadata
+  title        String?
+  context      Json?     // Conversation context
+  metadata     Json?     // Additional metadata
+  
+  // State
+  isActive     Boolean   @default(true)
+  messageCount Int       @default(0)
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relations
+  messages     AgentMessage[]
+  
+  @@index([agentId, sessionId])
+  @@index([userId, createdAt])
+  @@map("agent_conversations")
+}
+
+model AgentMessage {
+  id             String            @id @default(cuid())
+  conversationId String
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  // Message Content
+  role           MessageRole       @default(USER)
+  content        String
+  contentType    String            @default("text") // text, image, file
+  
+  // Metadata
+  tokens         Int?
+  responseTime   Int?              // Milliseconds
+  model          String?
+  cost           Float?            // Cost in cents
+  
+  // Message State
+  isError        Boolean           @default(false)
+  error          String?
+  
+  createdAt      DateTime          @default(now())
+  
+  @@index([conversationId, createdAt])
+  @@map("agent_messages")
+}
+
+model AgentExecution {
+  id           String          @id @default(cuid())
+  agentId      String
+  agent        AIAgent         @relation(fields: [agentId], references: [id])
+  
+  // Execution Context
+  task         String
+  input        Json
+  output       Json?
+  status       ExecutionStatus @default(PENDING)
+  
+  // Performance
+  startedAt    DateTime?
+  completedAt  DateTime?
+  duration     Int?            // Milliseconds
+  tokens       Int?
+  cost         Float?          // Cost in cents
+  
+  // Error Handling
+  error        String?
+  retryCount   Int             @default(0)
+  
+  // Metadata
+  userId       String?
+  workflowExecutionId String?
+  
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  
+  @@index([agentId, status])
+  @@index([startedAt])
+  @@map("agent_executions")
+}
+
+// Process Intelligence
+model ProcessMonitor {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  
+  // Monitor Configuration
+  type         MonitorType @default(WORKFLOW)
+  targetId     String    // Workflow ID, Agent ID, etc.
+  config       Json      // Monitor-specific configuration
+  
+  // Thresholds
+  thresholds   Json      // Performance thresholds
+  
+  // State
+  isActive     Boolean   @default(true)
+  lastCheck    DateTime?
+  
+  // Metrics
+  checkCount   Int       @default(0)
+  alertCount   Int       @default(0)
+  
+  teamId       String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relations
+  alerts       ProcessAlert[]
+  metrics      ProcessMetric[]
+  
+  @@index([teamId, type])
+  @@map("process_monitors")
+}
+
+model ProcessMetric {
+  id           String         @id @default(cuid())
+  monitorId    String
+  monitor      ProcessMonitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  
+  // Metric Data
+  name         String
+  value        Float
+  unit         String?
+  category     MetricCategory @default(PERFORMANCE)
+  
+  // Context
+  metadata     Json?
+  timestamp    DateTime       @default(now())
+  
+  @@index([monitorId, timestamp])
+  @@index([name, timestamp])
+  @@map("process_metrics")
+}
+
+model ProcessAlert {
+  id           String         @id @default(cuid())
+  monitorId    String
+  monitor      ProcessMonitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  
+  // Alert Details
+  severity     AlertSeverity  @default(MEDIUM)
+  title        String
+  description  String
+  data         Json?
+  
+  // Alert State
+  isRead       Boolean        @default(false)
+  isResolved   Boolean        @default(false)
+  resolvedAt   DateTime?
+  resolvedBy   String?
+  
+  createdAt    DateTime       @default(now())
+  
+  @@index([monitorId, isRead])
+  @@index([severity, createdAt])
+  @@map("process_alerts")
+}
+
+// Integration Framework
+model Connector {
+  id           String     @id @default(cuid())
+  name         String
+  description  String?
+  category     ConnectorCategory @default(API)
+  provider     String     // slack, zapier, hubspot, etc.
+  
+  // Connector Definition
+  definition   Json       // Connector schema and configuration
+  authType     AuthType   @default(API_KEY)
+  authConfig   Json       // Authentication configuration
+  
+  // Metadata
+  version      String     @default("1.0")
+  isPublic     Boolean    @default(false)
+  isVerified   Boolean    @default(false)
+  
+  // Usage Statistics
+  installCount Int        @default(0)
+  rating       Float?     // 0-5 stars
+  
+  createdBy    String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  // Relations
+  connections  Connection[]
+  
+  @@index([category, isPublic])
+  @@index([provider])
+  @@map("connectors")
+}
+
+model Connection {
+  id           String    @id @default(cuid())
+  connectorId  String
+  connector    Connector @relation(fields: [connectorId], references: [id])
+  
+  // Connection Details
+  name         String
+  config       Json      // Connection-specific configuration
+  authData     Json      // Encrypted authentication data
+  
+  // State
+  isActive     Boolean   @default(true)
+  lastUsed     DateTime?
+  testStatus   ConnectionStatus @default(PENDING)
+  
+  // Access Control
+  teamId       String
+  createdBy    String
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relations
+  events       IntegrationEvent[]
+  
+  @@index([teamId, isActive])
+  @@index([connectorId])
+  @@map("connections")
+}
+
+model IntegrationEvent {
+  id           String      @id @default(cuid())
+  connectionId String
+  connection   Connection  @relation(fields: [connectionId], references: [id])
+  
+  // Event Details
+  eventType    String
+  eventData    Json
+  direction    EventDirection @default(INBOUND)
+  
+  // Processing
+  status       ProcessingStatus @default(PENDING)
+  processedAt  DateTime?
+  error        String?
+  retryCount   Int         @default(0)
+  
+  // Metadata
+  sourceId     String?     // External system ID
+  workflowExecutionId String?
+  
+  createdAt    DateTime    @default(now())
+  
+  @@index([connectionId, status])
+  @@index([eventType, createdAt])
+  @@map("integration_events")
+}
+
+// Automation Analytics
+model AutomationMetric {
+  id           String    @id @default(cuid())
+  teamId       String
+  
+  // Metric Details
+  category     MetricCategory @default(PERFORMANCE)
+  name         String
+  value        Float
+  unit         String?
+  
+  // Context
+  resourceType String?   // workflow, agent, connector
+  resourceId   String?
+  metadata     Json?
+  
+  timestamp    DateTime  @default(now())
+  
+  @@index([teamId, category, timestamp])
+  @@index([resourceType, resourceId])
+  @@map("automation_metrics")
+}
+
+// Enums for Automation Hub
+enum WorkflowCategory {
+  GENERAL
+  MARKETING
+  SALES
+  SUPPORT
+  DEVELOPMENT
+  ANALYTICS
+  INTEGRATION
+  CONTENT
+  FINANCE
+}
+
+enum WorkflowComplexity {
+  SIMPLE
+  MEDIUM
+  COMPLEX
+  ENTERPRISE
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  PAUSED
+  RETRYING
+}
+
+enum ExecutionTrigger {
+  MANUAL
+  SCHEDULED
+  WEBHOOK
+  EVENT
+  API
+}
+
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+  FATAL
+}
+
+enum ScheduleType {
+  CRON
+  INTERVAL
+  ONE_TIME
+}
+
+enum TriggerType {
+  WEBHOOK
+  SCHEDULE
+  EVENT
+  MANUAL
+  API_CALL
+  FILE_UPLOAD
+  DATA_CHANGE
+}
+
+enum AgentType {
+  CONTENT_CREATOR
+  DATA_ANALYST
+  RESEARCH_ASSISTANT
+  CUSTOMER_SUPPORT
+  MARKETING_SPECIALIST
+  SALES_ASSISTANT
+  DEVELOPER_HELPER
+  PROJECT_MANAGER
+  CUSTOM
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  FUNCTION
+}
+
+enum MonitorType {
+  WORKFLOW
+  AGENT
+  CONNECTOR
+  SYSTEM
+}
+
+enum MetricCategory {
+  PERFORMANCE
+  USAGE
+  COST
+  QUALITY
+  RELIABILITY
+  EFFICIENCY
+}
+
+enum AuthType {
+  API_KEY
+  OAUTH2
+  BASIC_AUTH
+  JWT
+  CUSTOM
+}
+
+enum ConnectorCategory {
+  API
+  DATABASE
+  FILE_SYSTEM
+  MESSAGING
+  CRM
+  MARKETING
+  ANALYTICS
+  PRODUCTIVITY
+  COMMUNICATION
+  CUSTOM
+}
+
+enum ConnectionStatus {
+  PENDING
+  CONNECTED
+  FAILED
+  EXPIRED
+  REVOKED
+}
+
+enum EventDirection {
+  INBOUND
+  OUTBOUND
+  BIDIRECTIONAL
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  SKIPPED
 }
