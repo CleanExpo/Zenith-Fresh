@@ -1,0 +1,2084 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?   // For email/password authentication
+  role          String    @default("user")
+  tier          String    @default("free") // free, pro, enterprise
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Stripe customer information
+  stripeCustomerId String?  @unique
+  
+  accounts Account[]
+  sessions Session[]
+  projects Project[]
+  auditLogs AuditLog[]
+  
+  // Security relations
+  apiKeys          APIKey[]
+  securityEvents   SecurityEvent[]
+  ipWhitelists     IPWhitelist[]
+  rateLimitConfigs RateLimitConfig[]
+  
+  // Team relations
+  teamMemberships TeamMember[]
+  teamProjects    TeamProject[]
+  sentInvitations TeamInvitation[]
+  teamActivities  TeamActivity[]
+  
+  // Notification relations
+  notificationPreferences NotificationPreference?
+  
+  // Competitive Intelligence relations
+  competitiveReports      CompetitiveReport[]
+  competitorMonitoring    CompetitorMonitoring[]
+  
+  // Billing relations
+  subscriptions       Subscription[]
+  invoices           Invoice[]
+  paymentMethods     PaymentMethod[]
+  billingAddress     BillingAddress?
+  usageRecords       UsageRecord[]
+  quotes             Quote[]
+  contracts          Contract[]
+  billingEvents      BillingEvent[]
+  
+  // AI Orchestration relations
+  aiAgents     AIAgent[]
+  aiConversations AIConversation[]
+  aiBudgets    AIBudget[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  description String?
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Team relations
+  teamProjects TeamProject[]
+  
+  // Historical analysis relations
+  websiteAnalyses     WebsiteAnalysis[]
+  performanceTrends   PerformanceTrend[]
+  competitorAnalyses  CompetitorAnalysis[]
+  websiteScans        WebsiteScan[]
+  scheduledScans      ScheduledScan[]
+  
+  // Competitive Intelligence relations
+  competitiveAnalysisResults CompetitiveAnalysisResult[]
+  competitiveReports         CompetitiveReport[]
+  competitorMonitoring       CompetitorMonitoring[]
+
+  @@map("projects")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   Json?
+  userId    String?  // Made optional for system actions
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+// Historical Website Analysis Models
+model WebsiteAnalysis {
+  id                    String   @id @default(cuid())
+  projectId             String
+  url                   String
+  analysisType          String   @default("full") // full, quick, scheduled
+  status                String   @default("pending") // pending, running, completed, failed
+  overallScore          Int?     @default(0)
+  createdAt             DateTime @default(now())
+  completedAt           DateTime?
+  duration              Int?     // Analysis duration in milliseconds
+  
+  // Relationships
+  project               Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  performanceMetrics    PerformanceMetrics?
+  coreWebVitals         CoreWebVitals?
+  technicalChecks       TechnicalChecks?
+  analysisAlerts        AnalysisAlert[]
+  
+  // Indexing for historical queries
+  @@index([projectId, createdAt])
+  @@index([url, createdAt])
+  @@index([overallScore, createdAt])
+  @@map("website_analyses")
+}
+
+model PerformanceMetrics {
+  id                    String   @id @default(cuid())
+  websiteAnalysisId     String   @unique
+  
+  // Load Time Metrics
+  pageLoadTime          Int?     // milliseconds
+  timeToFirstByte       Int?     // milliseconds
+  domContentLoaded      Int?     // milliseconds
+  
+  // Resource Metrics
+  totalPageSize         Int?     // bytes
+  totalRequests         Int?     // number of HTTP requests
+  cssFileCount          Int?     @default(0)
+  jsFileCount           Int?     @default(0)
+  imageFileCount        Int?     @default(0)
+  
+  // Estimated Sizes
+  estimatedCssSize      Int?     @default(0)
+  estimatedJsSize       Int?     @default(0)
+  estimatedImageSize    Int?     @default(0)
+  
+  // Optimization Scores (0-100)
+  cacheScore            Int?     @default(0)
+  compressionScore      Int?     @default(0)
+  imageOptimizationScore Int?    @default(0)
+  jsOptimizationScore   Int?     @default(0)
+  cssOptimizationScore  Int?     @default(0)
+  fontOptimizationScore Int?     @default(0)
+  
+  createdAt             DateTime @default(now())
+  
+  websiteAnalysis       WebsiteAnalysis @relation(fields: [websiteAnalysisId], references: [id], onDelete: Cascade)
+  
+  @@map("performance_metrics")
+}
+
+model CoreWebVitals {
+  id                    String   @id @default(cuid())
+  websiteAnalysisId     String   @unique
+  
+  // Core Web Vitals
+  largestContentfulPaint Float?  // seconds
+  firstInputDelay       Float?   // milliseconds
+  cumulativeLayoutShift Float?   // score
+  
+  // Additional Performance Metrics
+  firstContentfulPaint  Float?   // seconds
+  timeToInteractive     Float?   // seconds
+  totalBlockingTime     Float?   // milliseconds
+  speedIndex            Float?   // score
+  
+  // Thresholds (good/needs improvement/poor)
+  lcpStatus             String?  // "good", "needs-improvement", "poor"
+  fidStatus             String?  // "good", "needs-improvement", "poor"
+  clsStatus             String?  // "good", "needs-improvement", "poor"
+  
+  // Overall Web Vitals Score (0-100)
+  webVitalsScore        Int?     @default(0)
+  
+  createdAt             DateTime @default(now())
+  
+  websiteAnalysis       WebsiteAnalysis @relation(fields: [websiteAnalysisId], references: [id], onDelete: Cascade)
+  
+  @@map("core_web_vitals")
+}
+
+model TechnicalChecks {
+  id                    String   @id @default(cuid())
+  websiteAnalysisId     String   @unique
+  
+  // Security & Headers
+  hasSSL                Boolean  @default(false)
+  hasSecurityHeaders    Boolean  @default(false)
+  hasRobotsTxt          Boolean  @default(false)
+  hasSitemap            Boolean  @default(false)
+  
+  // SEO Technical
+  hasMetaDescription    Boolean  @default(false)
+  hasH1Tag              Boolean  @default(false)
+  hasStructuredData     Boolean  @default(false)
+  hasCanonicalTag       Boolean  @default(false)
+  
+  // Performance Technical
+  hasGzipCompression    Boolean  @default(false)
+  hasBrotliCompression  Boolean  @default(false)
+  hasCacheHeaders       Boolean  @default(false)
+  hasLazyLoading        Boolean  @default(false)
+  
+  // Accessibility
+  hasAltTags            Boolean  @default(false)
+  hasAriaLabels         Boolean  @default(false)
+  colorContrastPass     Boolean  @default(false)
+  
+  // Mobile & Modern
+  isMobileFriendly      Boolean  @default(false)
+  hasViewportMeta       Boolean  @default(false)
+  usesModernImageFormats Boolean  @default(false)
+  
+  // Scores (0-100)
+  securityScore         Int?     @default(0)
+  seoScore              Int?     @default(0)
+  accessibilityScore    Int?     @default(0)
+  mobileScore           Int?     @default(0)
+  
+  createdAt             DateTime @default(now())
+  
+  websiteAnalysis       WebsiteAnalysis @relation(fields: [websiteAnalysisId], references: [id], onDelete: Cascade)
+  
+  @@map("technical_checks")
+}
+
+model AnalysisAlert {
+  id                    String   @id @default(cuid())
+  websiteAnalysisId     String
+  
+  alertType             String   // "performance_degradation", "score_drop", "new_issue", "improvement"
+  severity              String   // "low", "medium", "high", "critical"
+  category              String   // "performance", "seo", "security", "accessibility"
+  title                 String
+  description           String
+  currentValue          Float?
+  previousValue         Float?
+  threshold             Float?
+  
+  isResolved            Boolean  @default(false)
+  resolvedAt            DateTime?
+  
+  createdAt             DateTime @default(now())
+  
+  websiteAnalysis       WebsiteAnalysis @relation(fields: [websiteAnalysisId], references: [id], onDelete: Cascade)
+  
+  @@index([websiteAnalysisId, alertType])
+  @@index([severity, isResolved])
+  @@map("analysis_alerts")
+}
+
+// Trend Analysis Models
+model PerformanceTrend {
+  id                    String   @id @default(cuid())
+  projectId             String
+  url                   String
+  metricName            String   // "overall_score", "load_time", "lcp", "fid", "cls", etc.
+  
+  // Time periods
+  daily                 Json?    // Array of daily values for last 30 days
+  weekly                Json?    // Array of weekly values for last 12 weeks
+  monthly               Json?    // Array of monthly values for last 12 months
+  
+  // Trend indicators
+  trendDirection        String?  // "improving", "declining", "stable", "volatile"
+  trendStrength         Float?   // -1 to 1, negative is declining, positive is improving
+  
+  // Statistical measures
+  currentValue          Float?
+  averageValue          Float?
+  bestValue             Float?
+  worstValue            Float?
+  
+  lastCalculated        DateTime @default(now())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  project               Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, url, metricName])
+  @@index([projectId, url])
+  @@map("performance_trends")
+}
+
+// Competitor Comparison
+model CompetitorAnalysis {
+  id                    String   @id @default(cuid())
+  projectId             String
+  competitorUrl         String
+  competitorName        String?
+  
+  overallScore          Int?     @default(0)
+  loadTime              Int?
+  coreWebVitalsScore    Int?     @default(0)
+  
+  // Comparison metrics vs project
+  scoreDifference       Int?     // positive means competitor is better
+  loadTimeDifference    Int?     // positive means competitor is faster
+  
+  analysisDate          DateTime @default(now())
+  
+  project               Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@index([projectId, analysisDate])
+  @@map("competitor_analyses")
+}
+
+model WebsiteScan {
+  id               String   @id @default(cuid())
+  projectId        String
+  url              String
+  scanType         String   // 'manual', 'scheduled'
+  status           String   // 'pending', 'running', 'completed', 'failed'
+  results          Json?    // Lighthouse and custom metrics
+  performanceScore Int?
+  accessibilityScore Int?
+  bestPracticesScore Int?
+  seoScore         Int?
+  errorMessage     String?
+  scanDuration     Int?     // Duration in milliseconds
+  triggeredBy      String?  // 'user', 'schedule', 'webhook'
+  createdAt        DateTime @default(now())
+  completedAt      DateTime?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  alerts  ScanAlert[]
+
+  @@map("website_scans")
+}
+
+model ScheduledScan {
+  id              String   @id @default(cuid())
+  projectId       String
+  name            String
+  schedule        String   // Cron expression
+  isActive        Boolean  @default(true)
+  scanConfig      Json?    // Additional scan configuration
+  alertThresholds Json?    // Performance thresholds for alerts
+  lastRun         DateTime?
+  nextRun         DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("scheduled_scans")
+}
+
+model NotificationPreference {
+  id               String   @id @default(cuid())
+  userId           String
+  email            Boolean  @default(true)
+  slack            Boolean  @default(false)
+  discord          Boolean  @default(false)
+  webhook          Boolean  @default(false)
+  emailAddress     String?
+  slackWebhookUrl  String?
+  discordWebhookUrl String?
+  webhookUrl       String?
+  alertTypes       Json?    // Which types of alerts to receive
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  @@map("notification_preferences")
+}
+
+model ScanAlert {
+  id           String   @id @default(cuid())
+  scanId       String
+  alertType    String   // 'performance_drop', 'error_increase', 'threshold_breach'
+  severity     String   // 'low', 'medium', 'high', 'critical'
+  title        String
+  description  String
+  currentValue Float?
+  previousValue Float?
+  threshold    Float?
+  isResolved   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  resolvedAt   DateTime?
+
+  scan WebsiteScan @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  notifications AlertNotification[]
+
+  @@map("scan_alerts")
+}
+
+model AlertNotification {
+  id        String   @id @default(cuid())
+  alertId   String
+  channel   String   // 'email', 'slack', 'discord', 'webhook'
+  status    String   // 'pending', 'sent', 'failed'
+  sentAt    DateTime?
+  errorMessage String?
+  createdAt DateTime @default(now())
+
+  alert ScanAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@map("alert_notifications")
+}
+
+// Security Models
+model APIKey {
+  id          String   @id @default(cuid())
+  name        String
+  keyHash     String   @unique // Hashed API key for security
+  keyPreview  String   // First 8 characters for identification (ak_12345678...)
+  userId      String
+  scopes      String[] // Array of permissions/scopes
+  rateLimit   Int      @default(1000) // Requests per hour
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  securityEvents SecurityEvent[]
+  
+  @@map("api_keys")
+}
+
+model SecurityEvent {
+  id          String   @id @default(cuid())
+  type        String   // RATE_LIMIT, SUSPICIOUS_ACTIVITY, BLOCKED_IP, etc.
+  severity    String   // LOW, MEDIUM, HIGH, CRITICAL
+  sourceIp    String
+  userAgent   String?
+  userId      String?
+  apiKeyId    String?
+  details     Json?
+  blocked     Boolean  @default(false)
+  resolved    Boolean  @default(false)
+  resolvedBy  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  apiKey APIKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+
+  @@index([type, createdAt])
+  @@index([sourceIp, createdAt])
+  @@index([severity, resolved])
+  @@map("security_events")
+}
+
+model IPWhitelist {
+  id          String   @id @default(cuid())
+  ipAddress   String   @unique
+  ipRange     String?  // CIDR notation for ranges
+  description String?
+  userId      String?  // Associated user (optional)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  expiresAt   DateTime?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("ip_whitelist")
+}
+
+model IPBlacklist {
+  id          String   @id @default(cuid())
+  ipAddress   String   @unique
+  ipRange     String?  // CIDR notation for ranges
+  reason      String
+  severity    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  autoBlocked Boolean  @default(false) // True if blocked by automated system
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  expiresAt   DateTime?
+
+  @@index([ipAddress, isActive])
+  @@map("ip_blacklist")
+}
+
+model RateLimitConfig {
+  id         String   @id @default(cuid())
+  userId     String?  // User-specific limits (null for global)
+  tier       String   @default("free") // free, pro, enterprise
+  endpoint   String?  // Specific endpoint (null for global)
+  requests   Int      // Number of requests
+  window     Int      // Time window in seconds
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, endpoint])
+  @@map("rate_limit_configs")
+}
+
+model ThreatPattern {
+  id          String   @id @default(cuid())
+  name        String
+  pattern     String   // Regex or JSON pattern definition
+  type        String   // USER_AGENT, REQUEST_PATTERN, IP_PATTERN, etc.
+  severity    String   @default("MEDIUM")
+  action      String   @default("LOG") // LOG, BLOCK, RATE_LIMIT
+  isActive    Boolean  @default(true)
+  matchCount  Int      @default(0)
+  lastMatch   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("threat_patterns")
+}
+
+// Team Management Models
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  avatar      String?
+  settings    Json?    // Team preferences and configuration
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members     TeamMember[]
+  projects    TeamProject[]
+  invitations TeamInvitation[]
+  activities  TeamActivity[]
+  
+  // AI Orchestration relations
+  aiAgents    AIAgent[]
+  aiBudgets   AIBudget[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id        String     @id @default(cuid())
+  teamId    String
+  userId    String
+  role      TeamRole   @default(MEMBER)
+  joinedAt  DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model TeamProject {
+  id        String   @id @default(cuid())
+  teamId    String
+  projectId String
+  createdAt DateTime @default(now())
+  createdBy String
+
+  // Relations
+  team    Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator User    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, projectId])
+  @@map("team_projects")
+}
+
+model TeamInvitation {
+  id         String            @id @default(cuid())
+  teamId     String
+  email      String
+  role       TeamRole          @default(MEMBER)
+  token      String            @unique
+  status     InvitationStatus  @default(PENDING)
+  invitedBy  String
+  expiresAt  DateTime
+  createdAt  DateTime          @default(now())
+  acceptedAt DateTime?
+
+  // Relations
+  team    Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  inviter User @relation(fields: [invitedBy], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, email])
+  @@map("team_invitations")
+}
+
+model TeamActivity {
+  id        String   @id @default(cuid())
+  teamId    String
+  userId    String?
+  action    String
+  details   Json?
+  metadata  Json?    // Additional context like IP, user agent, etc.
+  createdAt DateTime @default(now())
+
+  // Relations
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("team_activities")
+}
+
+// Enums
+enum TeamRole {
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+// ================================
+// BILLING & SUBSCRIPTION MODELS
+// ================================
+
+// Subscription Plans
+model Plan {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  stripePriceId     String   @unique
+  stripeProductId   String
+  tier              PlanTier
+  billingInterval   BillingInterval
+  amount            Int      // Amount in cents
+  currency          String   @default("usd")
+  
+  // Feature limits
+  features          Json     // Feature configuration and limits
+  maxProjects       Int?
+  maxTeamMembers    Int?
+  maxAPIRequests    Int?
+  maxMonitoringChecks Int?
+  
+  // Usage-based pricing
+  meteringEnabled   Boolean  @default(false)
+  usageType         UsageType?
+  unitAmount        Int?     // Per-unit pricing in cents
+  
+  // Enterprise features
+  customPricing     Boolean  @default(false)
+  requiresApproval  Boolean  @default(false)
+  
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  subscriptions     Subscription[]
+  quotes           Quote[]
+
+  @@map("plans")
+}
+
+// User Subscriptions
+model Subscription {
+  id                    String            @id @default(cuid())
+  userId                String
+  planId                String
+  stripeSubscriptionId  String            @unique
+  status                SubscriptionStatus
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  cancelAtPeriodEnd     Boolean           @default(false)
+  canceledAt            DateTime?
+  trialStart            DateTime?
+  trialEnd              DateTime?
+  
+  // Enterprise features
+  contractId            String?
+  customPricing         Json?             // Custom pricing overrides
+  billingContact        String?           // Enterprise billing contact
+  purchaseOrder         String?           // PO number for enterprise
+  
+  // Usage tracking
+  currentUsage          Json?             // Current period usage metrics
+  usageLimit            Json?             // Usage limits for this subscription
+  
+  // Payment and billing
+  latestInvoiceId       String?
+  defaultPaymentMethodId String?
+  
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                  Plan              @relation(fields: [planId], references: [id])
+  contract              Contract?         @relation(fields: [contractId], references: [id])
+  invoices              Invoice[]
+  usageRecords          UsageRecord[]
+  subscriptionItems     SubscriptionItem[]
+  billingEvents         BillingEvent[]
+
+  @@map("subscriptions")
+}
+
+// Subscription Items (for complex billing)
+model SubscriptionItem {
+  id                    String   @id @default(cuid())
+  subscriptionId        String
+  stripePriceId         String
+  stripeSubscriptionItemId String @unique
+  quantity              Int      @default(1)
+  
+  // Usage-based billing
+  usageType             UsageType?
+  unitAmount            Int?     // Price per unit in cents
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  subscription          Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  usageRecords          UsageRecord[]
+
+  @@map("subscription_items")
+}
+
+// Usage-based billing records
+model UsageRecord {
+  id                    String   @id @default(cuid())
+  userId                String
+  subscriptionId        String?
+  subscriptionItemId    String?
+  
+  // Usage metrics
+  metricName            String   // e.g., "api_requests", "monitoring_checks", "team_members"
+  quantity              Int
+  timestamp             DateTime
+  
+  // Billing period
+  billingPeriodStart    DateTime
+  billingPeriodEnd      DateTime
+  
+  // Stripe reporting
+  stripeUsageRecordId   String?  @unique
+  reportedToStripe      Boolean  @default(false)
+  reportedAt            DateTime?
+  
+  // Metadata
+  source                String?  // Where the usage originated
+  metadata              Json?    // Additional context
+  
+  createdAt             DateTime @default(now())
+
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription          Subscription?     @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  subscriptionItem      SubscriptionItem? @relation(fields: [subscriptionItemId], references: [id], onDelete: SetNull)
+
+  @@index([userId, metricName, timestamp])
+  @@index([subscriptionId, billingPeriodStart, billingPeriodEnd])
+  @@map("usage_records")
+}
+
+// Invoices
+model Invoice {
+  id                    String        @id @default(cuid())
+  userId                String
+  subscriptionId        String?
+  stripeInvoiceId       String        @unique
+  stripePaymentIntentId String?
+  
+  // Invoice details
+  number                String?       // Invoice number
+  amount                Int           // Total amount in cents
+  currency              String        @default("usd")
+  status                InvoiceStatus
+  
+  // Dates
+  createdAt             DateTime      @default(now())
+  dueDate               DateTime?
+  paidAt                DateTime?
+  
+  // Tax and compliance
+  taxAmount             Int?          // Tax amount in cents
+  taxRate               Float?        // Tax rate percentage
+  taxIds                Json?         // Tax identification numbers
+  
+  // Enterprise features
+  purchaseOrder         String?       // PO number
+  billingContact        String?       // Enterprise billing contact
+  customFields          Json?         // Custom invoice fields
+  
+  // PDF and delivery
+  invoicePdfUrl         String?
+  hostedInvoiceUrl      String?
+  emailedAt             DateTime?
+  
+  // Payment tracking
+  paymentMethod         String?       // Payment method used
+  paymentMethodId       String?
+  
+  // Collections and dunning
+  attemptCount          Int           @default(0)
+  nextPaymentAttempt    DateTime?
+
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription          Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  lineItems             InvoiceLineItem[]
+  paymentAttempts       PaymentAttempt[]
+
+  @@index([userId, status])
+  @@index([stripeInvoiceId])
+  @@map("invoices")
+}
+
+// Invoice Line Items
+model InvoiceLineItem {
+  id                String   @id @default(cuid())
+  invoiceId         String
+  stripePriceId     String?
+  
+  // Line item details
+  description       String
+  quantity          Int      @default(1)
+  unitAmount        Int      // Amount per unit in cents
+  amount            Int      // Total line item amount in cents
+  
+  // Period for usage-based items
+  periodStart       DateTime?
+  periodEnd         DateTime?
+  
+  // Metadata
+  metadata          Json?
+  
+  createdAt         DateTime @default(now())
+
+  invoice           Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_line_items")
+}
+
+// Payment Methods
+model PaymentMethod {
+  id                    String   @id @default(cuid())
+  userId                String
+  stripePaymentMethodId String   @unique
+  
+  // Payment method details
+  type                  String   // card, bank_account, etc.
+  last4                 String?  // Last 4 digits for display
+  brand                 String?  // Visa, Mastercard, etc.
+  expiryMonth           Int?
+  expiryYear            Int?
+  
+  // Status
+  isDefault             Boolean  @default(false)
+  isActive              Boolean  @default(true)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payment_methods")
+}
+
+// Payment Attempts (for dunning management)
+model PaymentAttempt {
+  id                String           @id @default(cuid())
+  invoiceId         String
+  stripePaymentIntentId String?
+  
+  // Attempt details
+  amount            Int              // Amount attempted in cents
+  currency          String           @default("usd")
+  status            PaymentStatus
+  failureCode       String?          // Stripe failure code
+  failureMessage    String?          // Human-readable failure reason
+  
+  // Timing
+  attemptedAt       DateTime         @default(now())
+  nextRetryAt       DateTime?
+  
+  // Payment method used
+  paymentMethodId   String?
+  paymentMethodType String?
+
+  invoice           Invoice          @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("payment_attempts")
+}
+
+// Billing Addresses
+model BillingAddress {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  
+  // Address details
+  line1         String
+  line2         String?
+  city          String
+  state         String?
+  postalCode    String
+  country       String
+  
+  // Business details for enterprise
+  companyName   String?
+  vatNumber     String?   // VAT/Tax ID
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("billing_addresses")
+}
+
+// Enterprise Quotes
+model Quote {
+  id                String      @id @default(cuid())
+  userId            String
+  planId            String?
+  
+  // Quote details
+  quoteNumber       String      @unique
+  title             String
+  description       String?
+  status            QuoteStatus @default(DRAFT)
+  
+  // Pricing
+  subtotal          Int         // Subtotal in cents
+  taxAmount         Int?        // Tax amount in cents
+  totalAmount       Int         // Total amount in cents
+  currency          String      @default("usd")
+  
+  // Validity
+  validUntil        DateTime
+  
+  // Terms and conditions
+  terms             String?
+  notes             String?
+  
+  // Approval workflow
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  rejectionReason   String?
+  
+  // PDF and delivery
+  quotePdfUrl       String?
+  emailedAt         DateTime?
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan              Plan?       @relation(fields: [planId], references: [id])
+  lineItems         QuoteLineItem[]
+  contract          Contract?   // If accepted, links to contract
+
+  @@map("quotes")
+}
+
+// Quote Line Items
+model QuoteLineItem {
+  id            String   @id @default(cuid())
+  quoteId       String
+  
+  // Line item details
+  description   String
+  quantity      Int      @default(1)
+  unitPrice     Int      // Unit price in cents
+  totalPrice    Int      // Total line price in cents
+  
+  // Billing terms
+  billingInterval String? // monthly, yearly, one-time
+  
+  createdAt     DateTime @default(now())
+
+  quote         Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@map("quote_line_items")
+}
+
+// Enterprise Contracts
+model Contract {
+  id                String         @id @default(cuid())
+  userId            String
+  quoteId           String?        @unique
+  
+  // Contract details
+  contractNumber    String         @unique
+  title             String
+  description       String?
+  status            ContractStatus @default(DRAFT)
+  
+  // Contract terms
+  startDate         DateTime
+  endDate           DateTime?      // NULL for evergreen contracts
+  autoRenew         Boolean        @default(false)
+  renewalTermMonths Int?           // Renewal term length
+  
+  // Pricing
+  totalValue        Int            // Total contract value in cents
+  currency          String         @default("usd")
+  billingInterval   BillingInterval
+  
+  // Legal
+  terms             String?        // Terms and conditions
+  signedAt          DateTime?
+  signedByCustomer  String?        // Customer signatory
+  signedByVendor    String?        // Vendor signatory
+  contractPdfUrl    String?
+  
+  // Compliance
+  dataProcessingAddendum Boolean    @default(false)
+  businessAssociateAgreement Boolean @default(false)
+  
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quote             Quote?         @relation(fields: [quoteId], references: [id])
+  subscriptions     Subscription[]
+
+  @@map("contracts")
+}
+
+// Billing Events (comprehensive audit trail)
+model BillingEvent {
+  id                String     @id @default(cuid())
+  userId            String?
+  subscriptionId    String?
+  invoiceId         String?
+  
+  // Event details
+  eventType         String     // subscription_created, payment_succeeded, etc.
+  stripeEventId     String?    @unique // Stripe webhook event ID
+  
+  // Event data
+  data              Json       // Full event payload
+  processed         Boolean    @default(false)
+  processedAt       DateTime?
+  
+  // Error handling
+  processingError   String?
+  retryCount        Int        @default(0)
+  
+  createdAt         DateTime   @default(now())
+
+  user              User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([eventType, createdAt])
+  @@index([stripeEventId])
+  @@map("billing_events")
+}
+
+// Revenue Analytics
+model RevenueMetric {
+  id                String   @id @default(cuid())
+  
+  // Time period
+  periodType        String   // daily, weekly, monthly, yearly
+  periodStart       DateTime
+  periodEnd         DateTime
+  
+  // Revenue metrics
+  totalRevenue      Int      // Total revenue in cents
+  recurringRevenue  Int      // MRR/ARR in cents
+  oneTimeRevenue    Int      // One-time payments in cents
+  
+  // Customer metrics
+  newCustomers      Int      @default(0)
+  churnedCustomers  Int      @default(0)
+  totalCustomers    Int      @default(0)
+  
+  // Subscription metrics
+  newSubscriptions  Int      @default(0)
+  canceledSubscriptions Int  @default(0)
+  totalSubscriptions Int     @default(0)
+  
+  // Plan breakdown
+  planMetrics       Json?    // Revenue by plan
+  
+  // Calculated metrics
+  averageRevenuePerUser Int? // ARPU in cents
+  customerLifetimeValue Int? // CLV in cents
+  churnRate         Float?   // Churn rate percentage
+  
+  calculatedAt      DateTime @default(now())
+
+  @@unique([periodType, periodStart])
+  @@map("revenue_metrics")
+}
+
+// Tax Configuration
+model TaxRate {
+  id                String   @id @default(cuid())
+  stripeTaxRateId   String   @unique
+  
+  // Tax details
+  displayName       String   // e.g., "VAT", "Sales Tax"
+  description       String?
+  jurisdiction      String   // Country/state code
+  percentage        Float    // Tax rate percentage
+  
+  // Tax type
+  type              String   // vat, sales_tax, gst, etc.
+  inclusive         Boolean  @default(false) // Tax-inclusive pricing
+  
+  // Applicability
+  active            Boolean  @default(true)
+  country           String?
+  state             String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("tax_rates")
+}
+
+// Dunning Management
+model DunningCampaign {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  
+  // Campaign configuration
+  isActive          Boolean  @default(true)
+  steps             Json     // Dunning steps configuration
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  dunningAttempts   DunningAttempt[]
+
+  @@map("dunning_campaigns")
+}
+
+model DunningAttempt {
+  id                String         @id @default(cuid())
+  campaignId        String
+  invoiceId         String
+  
+  // Attempt details
+  stepNumber        Int            // Which step in the campaign
+  attemptType       String         // email, webhook, manual_action
+  status            DunningStatus
+  
+  // Scheduling
+  scheduledAt       DateTime
+  executedAt        DateTime?
+  
+  // Results
+  success           Boolean?
+  errorMessage      String?
+  
+  createdAt         DateTime       @default(now())
+
+  campaign          DunningCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("dunning_attempts")
+}
+
+// ENUMS
+enum PlanTier {
+  FREEMIUM
+  STARTER
+  PROFESSIONAL
+  BUSINESS
+  ENTERPRISE
+  CUSTOM
+}
+
+enum BillingInterval {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  ONE_TIME
+}
+
+enum UsageType {
+  API_REQUESTS
+  MONITORING_CHECKS
+  TEAM_MEMBERS
+  PROJECTS
+  STORAGE_GB
+  BANDWIDTH_GB
+  CUSTOM
+}
+
+enum SubscriptionStatus {
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  PAUSED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  OPEN
+  PAID
+  VOID
+  UNCOLLECTIBLE
+}
+
+enum PaymentStatus {
+  SUCCEEDED
+  PENDING
+  FAILED
+  CANCELED
+  REQUIRES_ACTION
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum ContractStatus {
+  DRAFT
+  PENDING_SIGNATURE
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum DunningStatus {
+  SCHEDULED
+  EXECUTING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
+// AI Orchestration Models
+model AIAgent {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  type          String   // 'conversational', 'analytical', 'workflow', 'custom'
+  status        String   @default("inactive") // 'active', 'inactive', 'training', 'error'
+  version       String   @default("1.0.0")
+  configuration Json?    // Agent-specific configuration
+  capabilities  String[] // Array of capabilities
+  userId        String
+  teamId        String?
+  isPublic      Boolean  @default(false)
+  
+  // Performance metrics
+  totalInteractions    Int @default(0)
+  successRate         Float @default(0.0)
+  averageResponseTime Int @default(0) // milliseconds
+  costPerInteraction  Float @default(0.0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team                Team?          @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  deployments         AIDeployment[]
+  conversations       AIConversation[]
+  workflows           AIWorkflow[]
+  abTests             AIABTest[]
+  trainingJobs        AITrainingJob[]
+  performanceMetrics  AIPerformanceMetric[]
+  
+  @@map("ai_agents")
+}
+
+model AIModel {
+  id              String   @id @default(cuid())
+  name            String
+  provider        String   // 'openai', 'anthropic', 'google', 'local', 'custom'
+  modelId         String   // Provider-specific model ID
+  version         String?
+  capabilities    String[] // 'text', 'code', 'image', 'reasoning', 'function-calling'
+  contextLength   Int      @default(4096)
+  costPer1kTokens Float    @default(0.0)
+  isAvailable     Boolean  @default(true)
+  configuration   Json?    // Model-specific settings
+  
+  // Performance characteristics
+  averageLatency     Int   @default(0) // milliseconds
+  reliability        Float @default(0.0) // 0-1 score
+  qualityScore       Float @default(0.0) // 0-1 score
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  deployments         AIDeployment[]
+  conversations       AIConversation[]
+  abTestVariants      AIABTestVariant[]
+  performanceMetrics  AIPerformanceMetric[]
+  
+  @@unique([provider, modelId])
+  @@map("ai_models")
+}
+
+model AIDeployment {
+  id              String   @id @default(cuid())
+  agentId         String
+  modelId         String
+  name            String
+  environment     String   @default("staging") // 'development', 'staging', 'production'
+  status          String   @default("deploying") // 'deploying', 'active', 'inactive', 'failed'
+  endpoint        String?  // API endpoint for the deployment
+  configuration   Json?    // Deployment-specific configuration
+  
+  // Resource allocation
+  instanceType    String?  @default("standard")
+  autoScaling     Boolean  @default(true)
+  minInstances    Int      @default(1)
+  maxInstances    Int      @default(10)
+  
+  // Health and monitoring
+  healthStatus    String   @default("unknown") // 'healthy', 'degraded', 'unhealthy', 'unknown'
+  lastHealthCheck DateTime?
+  
+  deployedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relations
+  agent           AIAgent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  model           AIModel     @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  healthChecks    AIHealthCheck[]
+  
+  @@map("ai_deployments")
+}
+
+model AIConversation {
+  id              String   @id @default(cuid())
+  agentId         String
+  modelId         String
+  userId          String?
+  sessionId       String
+  title           String?
+  status          String   @default("active") // 'active', 'archived', 'error'
+  
+  // Context management
+  contextLength   Int      @default(0)
+  maxContextLength Int     @default(4096)
+  contextStrategy String   @default("sliding") // 'sliding', 'summary', 'truncate'
+  
+  // Performance tracking
+  totalMessages   Int      @default(0)
+  totalTokens     Int      @default(0)
+  totalCost       Float    @default(0.0)
+  averageLatency  Int      @default(0) // milliseconds
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  agent     AIAgent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  model     AIModel     @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messages  AIMessage[]
+  
+  @@index([sessionId])
+  @@index([userId, createdAt])
+  @@map("ai_conversations")
+}
+
+model AIMessage {
+  id              String   @id @default(cuid())
+  conversationId  String
+  role            String   // 'user', 'assistant', 'system', 'function'
+  content         String   @db.Text
+  tokenCount      Int      @default(0)
+  latency         Int?     // Response time in milliseconds
+  cost            Float?   // Cost for this message
+  
+  // Function calling support
+  functionCall    Json?    // Function call details
+  functionResult  Json?    // Function execution result
+  
+  // Quality metrics
+  qualityScore    Float?   // 0-1 quality rating
+  feedbackRating  Int?     // User feedback rating
+  
+  createdAt DateTime @default(now())
+  
+  // Relations
+  conversation AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  @@index([conversationId, createdAt])
+  @@map("ai_messages")
+}
+
+model AIWorkflow {
+  id              String   @id @default(cuid())
+  agentId         String
+  name            String
+  description     String?
+  definition      Json     // Workflow definition (nodes, edges, conditions)
+  status          String   @default("inactive") // 'active', 'inactive', 'draft', 'error'
+  version         String   @default("1.0.0")
+  
+  // Execution stats
+  totalExecutions Int      @default(0)
+  successfulRuns  Int      @default(0)
+  failedRuns      Int      @default(0)
+  averageRuntime  Int      @default(0) // milliseconds
+  
+  // Triggers
+  triggerType     String?  // 'manual', 'scheduled', 'webhook', 'event'
+  triggerConfig   Json?    // Trigger-specific configuration
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  agent      AIAgent            @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  executions AIWorkflowExecution[]
+  
+  @@map("ai_workflows")
+}
+
+model AIWorkflowExecution {
+  id           String   @id @default(cuid())
+  workflowId   String
+  status       String   @default("running") // 'running', 'completed', 'failed', 'cancelled'
+  input        Json?    // Input data for the workflow
+  output       Json?    // Output data from the workflow
+  errorMessage String?
+  
+  // Performance tracking
+  startedAt    DateTime @default(now())
+  completedAt  DateTime?
+  duration     Int?     // Execution time in milliseconds
+  tokenUsage   Int      @default(0)
+  cost         Float    @default(0.0)
+  
+  // Relations
+  workflow AIWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  
+  @@index([workflowId, startedAt])
+  @@map("ai_workflow_executions")
+}
+
+model AIABTest {
+  id              String   @id @default(cuid())
+  agentId         String
+  name            String
+  description     String?
+  status          String   @default("draft") // 'draft', 'running', 'paused', 'completed'
+  testType        String   // 'response_quality', 'latency', 'cost_effectiveness', 'user_satisfaction'
+  
+  // Test configuration
+  trafficSplit    Float    @default(0.5) // 0-1, percentage for variant A
+  minimumSamples  Int      @default(100)
+  confidenceLevel Float    @default(0.95)
+  
+  // Results
+  winningVariant  String?  // 'A', 'B', or 'inconclusive'
+  confidenceScore Float?   // Statistical confidence
+  
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  agent    AIAgent           @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  variants AIABTestVariant[]
+  results  AIABTestResult[]
+  
+  @@map("ai_ab_tests")
+}
+
+model AIABTestVariant {
+  id            String   @id @default(cuid())
+  abTestId      String
+  modelId       String
+  name          String   // 'A' or 'B'
+  configuration Json?    // Variant-specific configuration
+  
+  // Performance metrics
+  totalRequests    Int   @default(0)
+  averageLatency   Int   @default(0) // milliseconds
+  averageQuality   Float @default(0.0) // 0-1 score
+  averageCost      Float @default(0.0)
+  userSatisfaction Float @default(0.0) // 0-1 score
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  abTest AIABTest @relation(fields: [abTestId], references: [id], onDelete: Cascade)
+  model  AIModel  @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  
+  @@unique([abTestId, name])
+  @@map("ai_ab_test_variants")
+}
+
+model AIABTestResult {
+  id         String   @id @default(cuid())
+  abTestId   String
+  variantName String  // 'A' or 'B'
+  metric     String   // 'latency', 'quality', 'cost', 'satisfaction'
+  value      Float
+  timestamp  DateTime @default(now())
+  
+  // Relations
+  abTest AIABTest @relation(fields: [abTestId], references: [id], onDelete: Cascade)
+  
+  @@index([abTestId, metric, timestamp])
+  @@map("ai_ab_test_results")
+}
+
+model AITrainingJob {
+  id              String   @id @default(cuid())
+  agentId         String
+  name            String
+  jobType         String   // 'fine_tuning', 'rag_indexing', 'knowledge_update', 'model_adaptation'
+  status          String   @default("queued") // 'queued', 'running', 'completed', 'failed', 'cancelled'
+  
+  // Configuration
+  trainingData    Json?    // Training dataset configuration
+  hyperparameters Json?    // Training hyperparameters
+  baseModel       String?  // Base model to fine-tune from
+  
+  // Progress tracking
+  progress        Float    @default(0.0) // 0-1 completion percentage
+  currentEpoch    Int?
+  totalEpochs     Int?
+  loss            Float?   // Current training loss
+  
+  // Results
+  modelPath       String?  // Path to trained model
+  metrics         Json?    // Training metrics and evaluation results
+  errorMessage    String?
+  
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  agent AIAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  
+  @@map("ai_training_jobs")
+}
+
+model AIPerformanceMetric {
+  id          String   @id @default(cuid())
+  agentId     String
+  modelId     String?
+  metricType  String   // 'latency', 'quality', 'cost', 'throughput', 'error_rate'
+  value       Float
+  unit        String?  // 'ms', 'tokens/sec', 'usd', 'percent'
+  
+  // Aggregation info
+  timeWindow  String   // 'minute', 'hour', 'day', 'week', 'month'
+  aggregation String   // 'avg', 'sum', 'min', 'max', 'p95', 'p99'
+  
+  timestamp DateTime @default(now())
+  
+  // Relations
+  agent AIAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  model AIModel? @relation(fields: [modelId], references: [id], onDelete: SetNull)
+  
+  @@index([agentId, metricType, timestamp])
+  @@index([modelId, metricType, timestamp])
+  @@map("ai_performance_metrics")
+}
+
+model AIHealthCheck {
+  id           String   @id @default(cuid())
+  deploymentId String
+  status       String   // 'healthy', 'degraded', 'unhealthy'
+  responseTime Int?     // milliseconds
+  errorMessage String?
+  details      Json?    // Additional health check details
+  checkedAt    DateTime @default(now())
+  
+  // Relations
+  deployment AIDeployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  
+  @@index([deploymentId, checkedAt])
+  @@map("ai_health_checks")
+}
+
+model AIBudget {
+  id              String   @id @default(cuid())
+  userId          String
+  teamId          String?
+  name            String
+  totalBudget     Float    // Total budget amount
+  usedBudget      Float    @default(0.0)
+  period          String   // 'daily', 'weekly', 'monthly', 'yearly'
+  
+  // Thresholds and alerts
+  warningThreshold Float   @default(0.8) // 80% of budget
+  alertThreshold   Float   @default(0.9) // 90% of budget
+  isActive         Boolean @default(true)
+  
+  // Time tracking
+  periodStart   DateTime
+  periodEnd     DateTime
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team? @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  
+  @@map("ai_budgets")
+}
+
+model AIGovernancePolicy {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  policyType      String   // 'content_filter', 'usage_limit', 'access_control', 'compliance'
+  rules           Json     // Policy rules definition
+  enforcement     String   @default("warn") // 'block', 'warn', 'log'
+  scope           String   // 'global', 'team', 'agent'
+  scopeId         String?  // Team ID or Agent ID for scoped policies
+  
+  isActive      Boolean  @default(true)
+  violations    Int      @default(0)
+  lastViolation DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("ai_governance_policies")
+}
+
+// Competitive Intelligence Models
+model Competitor {
+  id                String   @id @default(cuid())
+  name              String
+  domain            String   @unique
+  url               String
+  description       String?
+  industry          String?
+  size              String?  // startup, small, medium, large, enterprise
+  region            String?
+  tags              String[] // Array of tags for categorization
+  logo              String?
+  status            String   @default("active") // active, inactive, archived
+  isPublicCompany   Boolean  @default(false)
+  stockSymbol       String?
+  foundedYear       Int?
+  headquarters      String?
+  employees         String?  // "1-10", "11-50", "51-200", etc.
+  revenue           String?  // "Unknown", "$1M-$10M", etc.
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  lastAnalyzed      DateTime?
+  
+  // Relations
+  analyses          CompetitiveAnalysisResult[]
+  priceTracking     CompetitorPricing[]
+  featureComparisons FeatureComparison[]
+  technologyStack   TechnologyStack[]
+  marketData        MarketData[]
+  competitorAlerts  CompetitorAlert[]
+  socialMedia       CompetitorSocialMedia[]
+  contentAnalysis   CompetitorContent[]
+  monitoring        CompetitorMonitoring[]
+  
+  @@index([domain])
+  @@index([industry, status])
+  @@map("competitors")
+}
+
+model CompetitiveAnalysisResult {
+  id                String   @id @default(cuid())
+  competitorId      String
+  projectId         String?  // Optional link to user project
+  analysisType      String   // "comprehensive", "quick", "scheduled", "targeted"
+  status            String   @default("pending") // pending, running, completed, failed
+  
+  // Overall Scores (0-100)
+  overallScore      Int?     @default(0)
+  technicalScore    Int?     @default(0)
+  contentScore      Int?     @default(0)
+  seoScore          Int?     @default(0)
+  performanceScore  Int?     @default(0)
+  socialScore       Int?     @default(0)
+  businessScore     Int?     @default(0)
+  
+  // Detailed Analysis Data
+  technicalAnalysis Json?    // Technical metrics, security, mobile, etc.
+  contentAnalysis   Json?    // Content strategy, quality, freshness
+  seoAnalysis       Json?    // SEO metrics, keywords, structure
+  performanceAnalysis Json?  // Load times, Core Web Vitals
+  socialAnalysis    Json?    // Social presence, engagement
+  businessAnalysis  Json?    // Revenue model, value prop, target audience
+  
+  // Competitive Intelligence
+  marketPosition    Json?    // Market ranking, tier classification
+  strengths         Json?    // Array of identified strengths
+  weaknesses        Json?    // Array of identified weaknesses
+  opportunities     Json?    // Array of opportunities vs this competitor
+  threats           Json?    // Array of threats from this competitor
+  
+  // Execution Details
+  duration          Int?     // Analysis duration in milliseconds
+  errorMessage      String?
+  dataSourcesUsed   String[] // APIs, scrapers, manual input used
+  
+  createdAt         DateTime @default(now())
+  completedAt       DateTime?
+  
+  // Relations
+  competitor        Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  project           Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  @@index([competitorId, createdAt])
+  @@index([projectId, createdAt])
+  @@index([analysisType, status])
+  @@map("competitive_analysis_results")
+}
+
+model CompetitorPricing {
+  id              String   @id @default(cuid())
+  competitorId    String
+  planName        String   // "Free", "Pro", "Enterprise", etc.
+  planType        String   // "freemium", "subscription", "one-time", "custom"
+  currency        String   @default("USD")
+  price           Decimal? // Monthly price
+  annualPrice     Decimal? // Annual price (if different)
+  billingCycle    String?  // "monthly", "annual", "one-time"
+  features        Json?    // Array of features included
+  limitations     Json?    // Array of limitations
+  targetAudience  String?  // "individual", "team", "enterprise"
+  isPromoted      Boolean  @default(false)
+  isPopular       Boolean  @default(false)
+  hasTrial        Boolean  @default(false)
+  trialDuration   Int?     // Trial duration in days
+  
+  // Change tracking
+  priceChangeHistory Json?  // Array of price changes
+  lastPriceChange    DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  isActive        Boolean  @default(true)
+  
+  // Relations
+  competitor      Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  
+  @@index([competitorId, planType])
+  @@index([price, currency])
+  @@map("competitor_pricing")
+}
+
+model FeatureComparison {
+  id               String   @id @default(cuid())
+  competitorId     String
+  category         String   // "core", "advanced", "integrations", "support"
+  featureName      String
+  hasFeature       Boolean  @default(false)
+  featureQuality   String?  // "basic", "good", "excellent", "best-in-class"
+  description      String?
+  limitationsNotes String?
+  lastVerified     DateTime @default(now())
+  verificationMethod String? // "manual", "scraping", "api", "documentation"
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  competitor       Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  
+  @@unique([competitorId, featureName])
+  @@index([category, hasFeature])
+  @@map("feature_comparisons")
+}
+
+model TechnologyStack {
+  id              String   @id @default(cuid())
+  competitorId    String
+  category        String   // "frontend", "backend", "database", "analytics", "hosting", "cdn"
+  technology      String   // "React", "PostgreSQL", "AWS", etc.
+  confidence      String   @default("medium") // "low", "medium", "high", "confirmed"
+  detectionMethod String?  // "builtwith", "wappalyzer", "manual", "dns", "headers"
+  version         String?
+  notes           String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  competitor      Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  
+  @@unique([competitorId, category, technology])
+  @@index([technology, category])
+  @@map("technology_stacks")
+}
+
+model MarketData {
+  id              String   @id @default(cuid())
+  competitorId    String
+  dataType        String   // "traffic", "ranking", "keywords", "backlinks", "social"
+  source          String   // "similarweb", "semrush", "ahrefs", "manual"
+  
+  // Traffic Data
+  monthlyVisits   BigInt?
+  bounceRate      Decimal?
+  avgSessionDuration Decimal?
+  pagesPerSession Decimal?
+  
+  // SEO Data
+  organicKeywords Int?
+  paidKeywords    Int?
+  backlinks       Int?
+  domainRating    Int?
+  organicTraffic  BigInt?
+  paidTraffic     BigInt?
+  
+  // Rankings
+  globalRank      Int?
+  countryRank     Int?
+  categoryRank    Int?
+  
+  // Social Media
+  socialEngagement Json? // Platform-specific engagement metrics
+  
+  // Geographic Data
+  topCountries    Json? // Array of countries with traffic percentages
+  
+  // Raw Data
+  rawData         Json? // Full response from data source
+  
+  dataDate        DateTime @default(now()) // Date the data represents
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  competitor      Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  
+  @@index([competitorId, dataType, dataDate])
+  @@index([dataType, source])
+  @@map("market_data")
+}
+
+model CompetitorAlert {
+  id              String   @id @default(cuid())
+  competitorId    String
+  alertType       String   // "price_change", "feature_update", "content_change", "ranking_change", "technology_change"
+  severity        String   @default("medium") // "low", "medium", "high", "critical"
+  title           String
+  description     String
+  
+  // Change Details
+  previousValue   Json?
+  currentValue    Json?
+  changePercent   Decimal?
+  
+  // Alert Configuration
+  threshold       Json?    // Threshold that triggered the alert
+  isAutoGenerated Boolean  @default(true)
+  
+  // Status
+  isRead          Boolean  @default(false)
+  isResolved      Boolean  @default(false)
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  
+  createdAt       DateTime @default(now())
+  
+  // Relations
+  competitor      Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  
+  @@index([competitorId, alertType, isRead])
+  @@index([severity, isResolved])
+  @@map("competitor_alerts")
+}
+
+model CompetitorSocialMedia {
+  id              String   @id @default(cuid())
+  competitorId    String
+  platform        String   // "twitter", "linkedin", "facebook", "instagram", "youtube"
+  handle          String
+  url             String
+  followers       Int?
+  following       Int?
+  posts           Int?
+  engagement      Decimal? // Engagement rate
+  verified        Boolean  @default(false)
+  lastPostDate    DateTime?
+  avgPostsPerWeek Decimal?
+  
+  // Growth Metrics
+  followerGrowth  Json?    // Historical follower growth data
+  engagementHistory Json?  // Historical engagement data
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastChecked     DateTime @default(now())
+  
+  // Relations
+  competitor      Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  
+  @@unique([competitorId, platform])
+  @@index([platform, followers])
+  @@map("competitor_social_media")
+}
+
+model CompetitorContent {
+  id              String   @id @default(cuid())
+  competitorId    String
+  contentType     String   // "blog", "case_study", "whitepaper", "video", "podcast", "press_release"
+  title           String
+  url             String?
+  publishDate     DateTime?
+  contentLength   Int?     // Word count or duration
+  topics          String[] // Array of topics/tags
+  sentiment       String?  // "positive", "neutral", "negative"
+  qualityScore    Int?     // 0-100 content quality score
+  engagementScore Int?     // Social shares, comments, etc.
+  
+  // SEO Data
+  metaTitle       String?
+  metaDescription String?
+  keywords        String[] // Target keywords identified
+  
+  // Content Analysis
+  readabilityScore Int?
+  authorityScore  Int?     // Based on author credibility, citations
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  competitor      Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  
+  @@index([competitorId, contentType, publishDate])
+  @@index([contentType, qualityScore])
+  @@map("competitor_content")
+}
+
+model CompetitiveReport {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  userId          String
+  projectId       String?
+  
+  // Report Configuration
+  competitors     Json     // Array of competitor IDs
+  analysisTypes   Json     // Types of analysis to include
+  dateRange       Json?    // Start and end dates for historical data
+  customMetrics   Json?    // Custom metrics to include
+  
+  // Report Data
+  reportData      Json?    // Generated report data
+  executiveSummary String?
+  keyFindings     Json?    // Array of key findings
+  recommendations Json?    // Array of recommendations
+  
+  // Generation Status
+  status          String   @default("draft") // draft, generating, completed, failed
+  generatedAt     DateTime?
+  pdfUrl          String?  // URL to generated PDF
+  
+  // Sharing
+  isPublic        Boolean  @default(false)
+  shareToken      String?  @unique
+  expiresAt       DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project         Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  @@index([userId, status])
+  @@index([projectId, createdAt])
+  @@map("competitive_reports")
+}
+
+model CompetitorMonitoring {
+  id              String   @id @default(cuid())
+  userId          String
+  competitorId    String
+  projectId       String?
+  
+  // Monitoring Configuration
+  isActive        Boolean  @default(true)
+  frequency       String   @default("weekly") // "daily", "weekly", "monthly"
+  monitoringTypes Json     // Types of monitoring: pricing, features, content, etc.
+  alertThresholds Json?    // Thresholds for generating alerts
+  
+  // Notification Settings
+  emailNotifications Boolean @default(true)
+  slackNotifications Boolean @default(false)
+  webhookUrl        String?
+  
+  // Tracking
+  lastChecked     DateTime?
+  nextCheck       DateTime?
+  checksPerformed Int      @default(0)
+  alertsGenerated Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  competitor      Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  project         Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  @@unique([userId, competitorId, projectId])
+  @@index([competitorId, isActive])
+  @@map("competitor_monitoring")
+}

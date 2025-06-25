@@ -1,16 +1,17 @@
 /**
- * Next.js Middleware for Traffic Management Integration
- * Integrates with Vercel Edge Functions for intelligent request routing
+ * Enhanced Security Middleware with Comprehensive Protection
+ * Integrates rate limiting, DDoS protection, threat detection, and more
  */
 
-import { NextResponse } from 'next/server';
-import { geolocation, ipAddress } from '@vercel/edge';
+import { NextResponse, NextRequest } from 'next/server';
+import { withAuth } from 'next-auth/middleware';
 
 // Configuration
 const RATE_LIMIT_REQUESTS = 100;
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const PROTECTED_PATHS = ['/api/', '/dashboard/', '/admin/'];
-const PUBLIC_PATHS = ['/', '/about', '/pricing', '/contact'];
+const AUTH_PROTECTED_PATHS = ['/dashboard', '/admin'];
+const PUBLIC_PATHS = ['/', '/about', '/pricing', '/contact', '/auth/signin', '/auth/signup'];
 
 // In-memory store for edge runtime
 const requestStore = new Map();
@@ -23,21 +24,28 @@ const systemMetrics = {
 /**
  * Check if path requires protection
  */
-function isProtectedPath(pathname) {
+function isProtectedPath(pathname: string): boolean {
   return PROTECTED_PATHS.some(path => pathname.startsWith(path));
+}
+
+/**
+ * Check if path requires authentication
+ */
+function isAuthProtectedPath(pathname: string): boolean {
+  return AUTH_PROTECTED_PATHS.some(path => pathname.startsWith(path));
 }
 
 /**
  * Check if path is publicly accessible
  */
-function isPublicPath(pathname) {
+function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.includes(pathname) || pathname.startsWith('/_next/');
 }
 
 /**
  * Rate limiting implementation
  */
-function checkRateLimit(clientId) {
+function checkRateLimit(clientId: string): boolean {
   const now = Date.now();
   const windowStart = now - RATE_LIMIT_WINDOW;
   
@@ -48,7 +56,7 @@ function checkRateLimit(clientId) {
   const requests = requestStore.get(clientId);
   
   // Clean old requests
-  const validRequests = requests.filter(timestamp => timestamp > windowStart);
+  const validRequests = requests.filter((timestamp: number) => timestamp > windowStart);
   requestStore.set(clientId, validRequests);
   
   // Check limit
@@ -138,8 +146,8 @@ function createMaintenanceResponse() {
 /**
  * Log request for monitoring
  */
-function logRequest(request, clientId, allowed = true) {
-  const { geo } = geolocation(request);
+function logRequest(request: NextRequest, clientId: string, allowed = true) {
+  // const { geo } = geolocation(request); // Commented out due to missing @vercel/edge package
   const url = new URL(request.url);
   
   console.log(JSON.stringify({
@@ -148,8 +156,8 @@ function logRequest(request, clientId, allowed = true) {
     pathname: url.pathname,
     clientId: clientId.substring(0, 16) + '***', // Mask for privacy
     userAgent: request.headers.get('user-agent')?.substring(0, 100),
-    country: geo?.country,
-    city: geo?.city,
+    // country: geo?.country,  // Commented out due to missing @vercel/edge package
+    // city: geo?.city,        // Commented out due to missing @vercel/edge package
     allowed,
     systemHealth: getSystemHealth()
   }));
@@ -158,7 +166,29 @@ function logRequest(request, clientId, allowed = true) {
 /**
  * Main middleware function
  */
-export function middleware(request) {
+export function middleware(request: NextRequest) {
+  const url = new URL(request.url);
+  const pathname = url.pathname;
+  
+  // Handle authentication for protected paths
+  if (isAuthProtectedPath(pathname)) {
+    // Check for NextAuth session token
+    const token = request.cookies.get('next-auth.session-token') || 
+                  request.cookies.get('__Secure-next-auth.session-token');
+    
+    if (!token) {
+      // Redirect to sign-in page
+      return NextResponse.redirect(new URL('/auth/signin', request.url));
+    }
+  }
+  
+  return trafficManagementMiddleware(request);
+}
+
+/**
+ * Traffic management middleware function
+ */
+function trafficManagementMiddleware(request: NextRequest) {
   const startTime = Date.now();
   const url = new URL(request.url);
   const pathname = url.pathname;
@@ -168,7 +198,9 @@ export function middleware(request) {
     systemMetrics.requestCount++;
     
     // Get client identification
-    const clientIp = ipAddress(request);
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
     const clientId = `${clientIp}-${userAgent.slice(0, 20)}`;
     
