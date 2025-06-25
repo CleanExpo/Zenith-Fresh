@@ -51,6 +51,20 @@ model User {
   
   // Review Campaign Engine
   reviewCampaigns ReviewCampaign[]
+  
+  // Enhanced Website Analyzer
+  websiteAnalyses WebsiteAnalysis[]
+  
+  // Advanced Analytics relations
+  dataExportJobs DataExportJob[]
+  
+  // Enterprise Integration - Week 6
+  active         Boolean   @default(true)
+  lastLoginAt    DateTime?
+  scimExternalId String?   // SCIM external ID
+  deletedAt      DateTime? // Soft delete
+  tenantId       String?   // Multi-tenant support
+  assignedTasks  Task[]    @relation("TaskAssignee")
 }
 
 model Account {
@@ -135,6 +149,11 @@ model Task {
   project     Project   @relation(fields: [projectId], references: [id])
   notifications Notification[]
   activityLogs  ActivityLog[]
+  
+  // GitHub Integration - Week 6
+  githubIssueNumber Int?     // Linked GitHub issue
+  assignedToId      String?  // Task assignee
+  assignedTo        User?    @relation("TaskAssignee", fields: [assignedToId], references: [id])
 }
 
 model File {
@@ -267,6 +286,7 @@ model Team {
   id          String    @id @default(cuid())
   name        String
   description String?
+  tenantId    String?   // Multi-tenant support
   
   // Stripe subscription fields
   stripeCustomerId     String?
@@ -305,6 +325,16 @@ model Team {
   innovationAlerts     InnovationAlert[]
   // competitorAlerts     CompetitorAlert[] // Temporarily disabled for deployment
   monitoringSources    MonitoringSource[]
+  
+  // Premium subscription relation
+  subscription         Subscription?
+  
+  // Advanced Analytics relations - Week 4
+  analyticsDashboards  AnalyticsDashboard[]
+  analyticsReports     AnalyticsReport[]
+  analyticsMetrics     AnalyticsMetric[]
+  analyticsInsights    AnalyticsInsight[]
+  dataExportJobs       DataExportJob[]
 }
 
 model TeamMember {
@@ -1652,6 +1682,262 @@ model AnalyticsEvent {
   @@map("analytics_events")
 }
 
+// Premium Features and Monetization Models
+model Subscription {
+  id                    String    @id @default(cuid())
+  teamId                String    @unique
+  team                  Team      @relation(fields: [teamId], references: [id])
+  stripeSubscriptionId  String?   @unique
+  planId                String
+  status                SubscriptionStatus @default(TRIALING)
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  cancelAtPeriodEnd     Boolean   @default(false)
+  canceledAt            DateTime?
+  endedAt               DateTime?
+  trialStart            DateTime?
+  trialEnd              DateTime?
+  metadata              Json?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  // Relations
+  usageRecords          UsageRecord[]
+  invoices              Invoice[]
+  billingEvents         BillingEvent[]
+  
+  @@index([status, currentPeriodEnd])
+  @@map("subscriptions")
+}
+
+model UsageRecord {
+  id                String    @id @default(cuid())
+  subscriptionId    String
+  subscription      Subscription @relation(fields: [subscriptionId], references: [id])
+  teamId            String
+  userId            String?
+  metric            String    // api_calls, storage_gb, team_members, etc
+  quantity          Float
+  timestamp         DateTime  @default(now())
+  metadata          Json?
+  
+  @@index([subscriptionId, metric, timestamp])
+  @@index([teamId, metric, timestamp])
+  @@map("usage_records")
+}
+
+model UsageAggregate {
+  id                String    @id @default(cuid())
+  teamId            String
+  metric            String
+  period            DateTime  // Start of aggregation period
+  periodType        String    // hour, day, month
+  value             Float
+  recordCount       Int
+  createdAt         DateTime  @default(now())
+  
+  @@unique([teamId, metric, period, periodType])
+  @@index([teamId, period])
+  @@map("usage_aggregates")
+}
+
+model Invoice {
+  id                    String    @id @default(cuid())
+  subscriptionId        String
+  subscription          Subscription @relation(fields: [subscriptionId], references: [id])
+  stripeInvoiceId       String?   @unique
+  number                String    @unique
+  status                InvoiceStatus @default(DRAFT)
+  currency              String    @default("usd")
+  subtotal              Float
+  tax                   Float     @default(0)
+  discount              Float     @default(0)
+  total                 Float
+  amountPaid            Float     @default(0)
+  amountDue             Float
+  dueDate               DateTime?
+  paidAt                DateTime?
+  periodStart           DateTime
+  periodEnd             DateTime
+  metadata              Json?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  // Relations
+  lineItems             InvoiceLineItem[]
+  payments              Payment[]
+  dunningAttempts       DunningAttempt[]
+  
+  @@index([status, dueDate])
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id                String    @id @default(cuid())
+  invoiceId         String
+  invoice           Invoice   @relation(fields: [invoiceId], references: [id])
+  description       String
+  quantity          Float
+  unitPrice         Float
+  amount            Float
+  type              String    // subscription, usage, discount, tax
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+  
+  @@map("invoice_line_items")
+}
+
+model Payment {
+  id                String    @id @default(cuid())
+  invoiceId         String
+  invoice           Invoice   @relation(fields: [invoiceId], references: [id])
+  stripePaymentId   String?   @unique
+  amount            Float
+  currency          String
+  status            PaymentStatus @default(PENDING)
+  method            String?   // card, bank_transfer, etc
+  failureReason     String?
+  processedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  
+  @@index([status, createdAt])
+  @@map("payments")
+}
+
+model DunningAttempt {
+  id                String    @id @default(cuid())
+  invoiceId         String
+  invoice           Invoice   @relation(fields: [invoiceId], references: [id])
+  attemptNumber     Int
+  status            DunningStatus @default(PENDING)
+  emailSent         Boolean   @default(false)
+  nextAttemptDate   DateTime?
+  createdAt         DateTime  @default(now())
+  
+  @@unique([invoiceId, attemptNumber])
+  @@map("dunning_attempts")
+}
+
+model BillingEvent {
+  id                String    @id @default(cuid())
+  subscriptionId    String?
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
+  teamId            String
+  type              String    // subscription_created, payment_succeeded, etc
+  data              Json
+  stripeEventId     String?   @unique
+  processedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  
+  @@index([teamId, type, createdAt])
+  @@map("billing_events")
+}
+
+model PricingPlan {
+  id                String    @id @default(cuid())
+  name              String
+  description       String
+  stripePriceId     String?   @unique
+  price             Float
+  currency          String    @default("usd")
+  interval          String    // month, year
+  isActive          Boolean   @default(true)
+  features          Json      // Array of feature objects
+  limits            Json      // Usage limits
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@map("pricing_plans")
+}
+
+model FeatureFlag {
+  id                String    @id @default(cuid())
+  key               String    @unique
+  name              String
+  description       String?
+  type              String    // boolean, percentage, variant
+  value             Json      // The flag value/configuration
+  rules             Json?     // Targeting rules
+  requiredPlan      String?   // Minimum plan required
+  isEnabled         Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@map("feature_flags")
+}
+
+model CustomerPortalSession {
+  id                String    @id @default(cuid())
+  teamId            String
+  stripeSessionId   String    @unique
+  returnUrl         String
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime
+  
+  @@index([teamId, createdAt])
+  @@map("customer_portal_sessions")
+}
+
+model RevenueMetric {
+  id                String    @id @default(cuid())
+  date              DateTime
+  mrr               Float     // Monthly Recurring Revenue
+  arr               Float     // Annual Recurring Revenue
+  newMrr            Float     // New MRR added
+  churnedMrr        Float     // MRR lost to churn
+  expansionMrr      Float     // MRR from upgrades
+  contractionMrr    Float     // MRR from downgrades
+  activeSubscriptions Int
+  newSubscriptions  Int
+  churnedSubscriptions Int
+  trialConversions  Int
+  averageRevenue    Float     // Per customer
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+  
+  @@unique([date])
+  @@index([date])
+  @@map("revenue_metrics")
+}
+
+// Enums for Billing
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  PAUSED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  OPEN
+  PAID
+  VOID
+  UNCOLLECTIBLE
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum DunningStatus {
+  PENDING
+  SENT
+  FAILED
+  COMPLETED
+}
+
 // Innovation Agent Models
 model TechnologyTrend {
   id               String    @id @default(cuid())
@@ -1878,4 +2164,406 @@ model MonitoringSource {
   @@index([type, isActive])
   @@index([nextCheck])
   @@map("monitoring_sources")
+}
+
+// Enhanced Website Analyzer - Week 2 Feature
+model WebsiteAnalysis {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id])
+  url                   String
+  analysisId            String    @unique
+  overallScore          Int
+  contentQualityScore   Int?
+  seoScore              Int?
+  uxScore               Int?
+  performanceScore      Int?
+  accessibilityScore    Int?
+  recommendationCount   Int       @default(0)
+  issueCount           String?    // JSON string for issue breakdown
+  analysisData         Json       // Full analysis result data
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  @@index([userId, url, createdAt])
+  @@index([overallScore])
+  @@index([analysisId])
+  @@map("website_analyses")
+}
+
+// Advanced Analytics - Week 4 Feature
+model AnalyticsDashboard {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  teamId        String
+  team          Team      @relation(fields: [teamId], references: [id])
+  layout        Json      // Dashboard layout configuration
+  widgets       AnalyticsWidget[]
+  isDefault     Boolean   @default(false)
+  isPublic      Boolean   @default(false)
+  createdBy     String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@unique([teamId, name])
+  @@index([teamId, isDefault])
+  @@map("analytics_dashboards")
+}
+
+model AnalyticsWidget {
+  id            String    @id @default(cuid())
+  dashboardId   String
+  dashboard     AnalyticsDashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  type          String    // kpi, chart, table, map, funnel, heatmap
+  title         String
+  description   String?
+  config        Json      // Widget-specific configuration
+  dataSource    String    // metrics, events, custom
+  position      Json      // Grid position {x, y, w, h}
+  refreshRate   Int?      // Refresh rate in seconds
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([dashboardId])
+  @@map("analytics_widgets")
+}
+
+model AnalyticsReport {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  teamId        String
+  team          Team      @relation(fields: [teamId], references: [id])
+  template      String?   // Template ID if using predefined template
+  layout        Json      // Report layout and components
+  filters       Json?     // Default filters for the report
+  schedule      Json?     // Schedule configuration for automated reports
+  isPublic      Boolean   @default(false)
+  lastRunAt     DateTime?
+  nextRunAt     DateTime?
+  createdBy     String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  exports       ReportExport[]
+  schedules     ReportSchedule[]
+  
+  @@index([teamId, createdAt])
+  @@index([nextRunAt])
+  @@map("analytics_reports")
+}
+
+model ReportExport {
+  id            String    @id @default(cuid())
+  reportId      String
+  report        AnalyticsReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  format        String    // pdf, excel, csv
+  status        String    // pending, processing, completed, failed
+  fileUrl       String?
+  error         String?
+  exportedBy    String
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+  
+  @@index([reportId, createdAt])
+  @@map("report_exports")
+}
+
+model ReportSchedule {
+  id            String    @id @default(cuid())
+  reportId      String
+  report        AnalyticsReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  frequency     String    // daily, weekly, monthly
+  dayOfWeek     Int?      // 0-6 for weekly
+  dayOfMonth    Int?      // 1-31 for monthly
+  timeOfDay     String    // HH:MM format
+  timezone      String    @default("UTC")
+  recipients    String[]  // Email addresses
+  format        String    // pdf, excel, csv
+  isActive      Boolean   @default(true)
+  lastRunAt     DateTime?
+  nextRunAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([isActive, nextRunAt])
+  @@map("report_schedules")
+}
+
+model AnalyticsMetric {
+  id            String    @id @default(cuid())
+  teamId        String
+  team          Team      @relation(fields: [teamId], references: [id])
+  name          String
+  displayName   String
+  category      String    // revenue, users, engagement, performance
+  type          String    // counter, gauge, histogram, summary
+  unit          String?   // currency, percentage, seconds, count
+  description   String?
+  formula       Json?     // Custom metric formula
+  aggregations  String[]  // sum, avg, min, max, count
+  dimensions    String[]  // Available dimensions for breakdown
+  isCustom      Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  values        MetricValue[]
+  
+  @@unique([teamId, name])
+  @@index([teamId, category, isActive])
+  @@map("analytics_metrics")
+}
+
+model MetricValue {
+  id            String    @id @default(cuid())
+  metricId      String
+  metric        AnalyticsMetric @relation(fields: [metricId], references: [id], onDelete: Cascade)
+  timestamp     DateTime
+  value         Float
+  dimensions    Json?     // Dimension values for this data point
+  metadata      Json?     // Additional metadata
+  
+  @@index([metricId, timestamp])
+  @@index([timestamp])
+  @@map("metric_values")
+}
+
+model AnalyticsInsight {
+  id            String    @id @default(cuid())
+  teamId        String
+  team          Team      @relation(fields: [teamId], references: [id])
+  type          String    // anomaly, trend, prediction, recommendation
+  severity      String    // info, warning, critical
+  title         String
+  description   String
+  metric        String?   // Related metric
+  value         Float?    // Current value
+  change        Float?    // Change percentage
+  prediction    Float?    // Predicted value
+  confidence    Float?    // Confidence score (0-1)
+  actionable    Boolean   @default(false)
+  actions       Json?     // Suggested actions
+  metadata      Json?     // Additional context
+  isRead        Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  expiresAt     DateTime?
+  
+  @@index([teamId, type, isRead])
+  @@index([createdAt, severity])
+  @@map("analytics_insights")
+}
+
+model DataExportJob {
+  id            String    @id @default(cuid())
+  type          String    // report, dashboard, raw_data
+  format        String    // pdf, excel, csv, json
+  status        String    // queued, processing, completed, failed
+  config        Json      // Export configuration
+  fileUrl       String?
+  fileSize      Int?
+  error         String?
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  teamId        String
+  team          Team      @relation(fields: [teamId], references: [id])
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  
+  @@index([userId, status])
+  @@index([teamId, createdAt])
+  @@map("data_export_jobs")
+}
+
+// ===================================
+// ENTERPRISE INTEGRATION MODELS - Week 6
+// ===================================
+
+// SSO Configuration
+model SSOConfiguration {
+  id            String    @id @default(cuid())
+  tenantId      String
+  provider      String    // saml, google_workspace, microsoft, okta, auth0
+  configuration Json      // Provider-specific config
+  enabled       Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@unique([tenantId, provider])
+  @@map("sso_configurations")
+}
+
+// SSO User Mappings
+model SSOMapping {
+  id             String    @id @default(cuid())
+  userId         String
+  provider       String
+  providerUserId String
+  tenantId       String
+  metadata       Json?     // Additional provider data
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  @@unique([provider, providerUserId, tenantId])
+  @@map("sso_mappings")
+}
+
+// SCIM Directory Sync
+model SCIMMapping {
+  id           String    @id @default(cuid())
+  tenantId     String
+  resourceType String    // User, Group
+  resourceId   String    // Local resource ID
+  externalId   String    // External system ID
+  metadata     Json?     // SCIM attributes
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  @@unique([tenantId, resourceType, resourceId])
+  @@map("scim_mappings")
+}
+
+// API Management
+model APIKey {
+  id               String    @id @default(cuid())
+  name             String
+  key              String    @unique
+  keyPrefix        String    // First 8 chars for display
+  scope            String[]  // Array of permissions
+  rateLimit        Int       @default(1000)
+  rateLimitWindow  Int       @default(3600000) // 1 hour in ms
+  expiresAt        DateTime?
+  lastUsedAt       DateTime?
+  active           Boolean   @default(true)
+  tenantId         String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  usageRecords     APIUsage[]
+  
+  @@index([tenantId, active])
+  @@map("api_keys")
+}
+
+// API Usage Tracking
+model APIUsage {
+  id           String    @id @default(cuid())
+  apiKeyId     String
+  apiKey       APIKey    @relation(fields: [apiKeyId], references: [id])
+  endpoint     String
+  method       String
+  statusCode   Int
+  responseTime Int       // Milliseconds
+  timestamp    DateTime
+  ipAddress    String?
+  userAgent    String?
+  
+  @@index([apiKeyId, timestamp])
+  @@index([timestamp])
+  @@map("api_usage")
+}
+
+// Webhook System
+model WebhookSubscription {
+  id           String    @id @default(cuid())
+  url          String
+  events       String[]  // Array of event types
+  active       Boolean   @default(true)
+  secret       String
+  tenantId     String
+  filters      Json?     // Event filtering rules
+  retryConfig  Json      // Retry configuration
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  deliveries   WebhookDelivery[]
+  
+  @@index([tenantId, active])
+  @@map("webhook_subscriptions")
+}
+
+// Webhook Events
+model WebhookEvent {
+  id           String    @id @default(cuid())
+  type         String
+  data         Json
+  tenantId     String
+  resourceId   String?
+  resourceType String?
+  timestamp    DateTime  @default(now())
+  
+  deliveries   WebhookDelivery[]
+  
+  @@index([tenantId, type])
+  @@index([timestamp])
+  @@map("webhook_events")
+}
+
+// Webhook Deliveries
+model WebhookDelivery {
+  id             String             @id @default(cuid())
+  subscriptionId String
+  subscription   WebhookSubscription @relation(fields: [subscriptionId], references: [id])
+  eventId        String
+  event          WebhookEvent       @relation(fields: [eventId], references: [id])
+  status         String             // pending, success, failed, retry
+  attempts       Int                @default(0)
+  lastAttemptAt  DateTime?
+  nextAttemptAt  DateTime?
+  response       Json?              // Response details
+  error          String?
+  
+  @@index([subscriptionId, status])
+  @@index([nextAttemptAt])
+  @@map("webhook_deliveries")
+}
+
+// Third-Party Integrations
+model Integration {
+  id        String    @id @default(cuid())
+  tenantId  String
+  provider  String    // slack, teams, github, zapier
+  settings  Json      // Provider-specific settings
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  @@unique([tenantId, provider])
+  @@map("integrations")
+}
+
+// GitHub User Mapping
+model GitHubUserMapping {
+  id          String    @id @default(cuid())
+  githubLogin String    @unique
+  email       String
+  createdAt   DateTime  @default(now())
+  
+  @@map("github_user_mappings")
+}
+
+// White-Label Branding
+model BrandingConfig {
+  id        String    @id @default(cuid())
+  tenantId  String    @unique
+  config    Json      // Branding configuration
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  @@map("branding_configs")
+}
+
+// Custom Domains
+model CustomDomain {
+  id        String    @id @default(cuid())
+  domain    String    @unique
+  tenantId  String
+  config    Json      // Domain configuration
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  @@index([tenantId])
+  @@map("custom_domains")
 }
