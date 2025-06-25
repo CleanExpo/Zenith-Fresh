@@ -93,6 +93,17 @@ model User {
   aiAgents     AIAgent[]
   aiConversations AIConversation[]
   aiBudgets    AIBudget[]
+  
+  // Customer Success relations
+  onboarding         UserOnboarding?
+  supportTickets     SupportTicket[]
+  userFeedback       UserFeedback[]
+  feedbackVotes      FeedbackVote[]
+  npsResponses       NPSResponse[]
+  healthScore        CustomerHealthScore?
+  successMetrics     UserSuccessMetric[]
+  emailDeliveries    EmailDelivery[]
+  articleFeedback    ArticleFeedback[]
 
   @@map("users")
 }
@@ -2081,4 +2092,522 @@ model CompetitorMonitoring {
   @@unique([userId, competitorId, projectId])
   @@index([competitorId, isActive])
   @@map("competitor_monitoring")
+}
+
+// ================================
+// CUSTOMER SUCCESS & SUPPORT MODELS
+// ================================
+
+// User Onboarding
+model UserOnboarding {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  currentStep       Int      @default(0)
+  totalSteps        Int      @default(5)
+  completedSteps    Json?    // Array of completed step IDs
+  skippedSteps      Json?    // Array of skipped step IDs
+  
+  // Progress tracking
+  isCompleted       Boolean  @default(false)
+  completedAt       DateTime?
+  lastActiveStep    String?
+  timeSpentOnSteps  Json?    // Time spent on each step
+  
+  // Onboarding preferences
+  hasSkippedTour    Boolean  @default(false)
+  preferredTourType String?  // "guided", "self_paced", "video"
+  
+  // First-time actions
+  hasCreatedProject Boolean  @default(false)
+  hasRunFirstScan   Boolean  @default(false)
+  hasInvitedTeamMember Boolean @default(false)
+  hasCustomizedDashboard Boolean @default(false)
+  hasSetupNotifications Boolean @default(false)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tourSteps         OnboardingTourStep[]
+  
+  @@map("user_onboarding")
+}
+
+model OnboardingTourStep {
+  id              String   @id @default(cuid())
+  onboardingId    String
+  stepNumber      Int
+  stepId          String   // Unique identifier for the step
+  title           String
+  description     String
+  targetElement   String?  // CSS selector for highlighting
+  action          String?  // "click", "input", "navigate", "wait"
+  isCompleted     Boolean  @default(false)
+  isSkipped       Boolean  @default(false)
+  completedAt     DateTime?
+  timeSpent       Int?     // Time spent in seconds
+  
+  createdAt       DateTime @default(now())
+  
+  onboarding      UserOnboarding @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  
+  @@unique([onboardingId, stepId])
+  @@map("onboarding_tour_steps")
+}
+
+// Help System
+model HelpArticle {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  content         String   @db.Text
+  summary         String?
+  category        String   // "getting-started", "features", "troubleshooting", "api", "billing"
+  subcategory     String?
+  tags            String[] // Array of tags for searching
+  
+  // Metadata
+  isPublished     Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+  difficulty      String   @default("beginner") // "beginner", "intermediate", "advanced"
+  estimatedReadTime Int?   // Minutes
+  
+  // Engagement metrics
+  viewCount       Int      @default(0)
+  helpfulVotes    Int      @default(0)
+  unhelpfulVotes  Int      @default(0)
+  lastViewed      DateTime?
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  
+  // Content management
+  authorId        String?
+  reviewerId      String?
+  publishedAt     DateTime?
+  lastReviewed    DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  relatedArticles Json?    // Array of related article IDs
+  contextualHelp  ContextualHelp[]
+  articleFeedback ArticleFeedback[]
+  
+  @@index([category, isPublished])
+  @@index([slug])
+  @@index([tags])
+  @@map("help_articles")
+}
+
+model ContextualHelp {
+  id              String   @id @default(cuid())
+  articleId       String
+  page            String   // Page/route where help appears
+  element         String?  // CSS selector for contextual positioning
+  trigger         String   @default("hover") // "hover", "click", "focus"
+  position        String   @default("top") // "top", "bottom", "left", "right"
+  isActive        Boolean  @default(true)
+  priority        Int      @default(0) // Higher priority shows first
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  article         HelpArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  
+  @@index([page, isActive])
+  @@map("contextual_help")
+}
+
+model ArticleFeedback {
+  id              String   @id @default(cuid())
+  articleId       String
+  userId          String?
+  isHelpful       Boolean
+  comment         String?
+  userAgent       String?
+  ipAddress       String?
+  
+  createdAt       DateTime @default(now())
+  
+  article         HelpArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([articleId, isHelpful])
+  @@map("article_feedback")
+}
+
+// Support Tickets
+model SupportTicket {
+  id              String   @id @default(cuid())
+  ticketNumber    String   @unique
+  userId          String
+  subject         String
+  description     String   @db.Text
+  category        String   // "technical", "billing", "feature-request", "bug-report", "general"
+  priority        String   @default("medium") // "low", "medium", "high", "urgent", "critical"
+  status          String   @default("open") // "open", "in-progress", "waiting-response", "resolved", "closed"
+  
+  // Assignment
+  assignedTo      String?  // Support team member ID
+  assignedAt      DateTime?
+  
+  // Resolution
+  resolution      String?  @db.Text
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  
+  // Satisfaction
+  satisfactionRating Int? // 1-5 stars
+  satisfactionFeedback String?
+  
+  // Metadata
+  source          String   @default("web") // "web", "email", "chat", "phone"
+  userAgent       String?
+  attachments     Json?    // Array of attachment metadata
+  
+  // SLA tracking
+  firstResponseAt DateTime?
+  firstResponseSLA Int?    // Hours until first response SLA
+  resolutionSLA   Int?     // Hours until resolution SLA
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  responses       SupportResponse[]
+  escalations     TicketEscalation[]
+  
+  @@index([userId, status])
+  @@index([status, priority])
+  @@index([category, createdAt])
+  @@map("support_tickets")
+}
+
+model SupportResponse {
+  id              String   @id @default(cuid())
+  ticketId        String
+  responderId     String?  // NULL for user responses, ID for support team
+  content         String   @db.Text
+  isInternal      Boolean  @default(false) // Internal notes vs customer-facing
+  attachments     Json?    // Array of attachment metadata
+  
+  createdAt       DateTime @default(now())
+  
+  ticket          SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  @@index([ticketId, createdAt])
+  @@map("support_responses")
+}
+
+model TicketEscalation {
+  id              String   @id @default(cuid())
+  ticketId        String
+  fromLevel       String   // "level1", "level2", "level3", "management"
+  toLevel         String
+  reason          String
+  escalatedBy     String
+  escalatedTo     String?
+  notes           String?
+  
+  createdAt       DateTime @default(now())
+  
+  ticket          SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  @@index([ticketId, createdAt])
+  @@map("ticket_escalations")
+}
+
+// User Feedback
+model UserFeedback {
+  id              String   @id @default(cuid())
+  userId          String?
+  type            String   // "feature-request", "bug-report", "general", "nps", "csat", "ces"
+  category        String?  // "ui-ux", "performance", "feature", "content", "billing"
+  title           String?
+  message         String   @db.Text
+  
+  // Ratings
+  rating          Int?     // 1-10 for NPS, 1-5 for others
+  experience      String?  // "poor", "fair", "good", "very-good", "excellent"
+  
+  // Context
+  page            String?  // Page where feedback was given
+  feature         String?  // Specific feature feedback is about
+  userAgent       String?
+  ipAddress       String?
+  screenshot      String?  // URL to screenshot
+  
+  // Processing
+  status          String   @default("new") // "new", "reviewing", "in-progress", "completed", "dismissed"
+  assignedTo      String?
+  priority        String   @default("medium") // "low", "medium", "high"
+  tags            String[] // Array of tags for categorization
+  
+  // Response
+  responseMessage String?
+  respondedAt     DateTime?
+  respondedBy     String?
+  
+  // Public visibility (for feature requests)
+  isPublic        Boolean  @default(false)
+  upvotes         Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  votes           FeedbackVote[]
+  
+  @@index([type, status])
+  @@index([category, createdAt])
+  @@index([rating, type])
+  @@map("user_feedback")
+}
+
+model FeedbackVote {
+  id              String   @id @default(cuid())
+  feedbackId      String
+  userId          String
+  voteType        String   // "upvote", "downvote"
+  
+  createdAt       DateTime @default(now())
+  
+  feedback        UserFeedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([feedbackId, userId])
+  @@map("feedback_votes")
+}
+
+// NPS Surveys
+model NPSSurvey {
+  id              String   @id @default(cuid())
+  name            String
+  question        String   @default("How likely are you to recommend our product to a friend or colleague?")
+  isActive        Boolean  @default(true)
+  
+  // Targeting
+  targetAudience  String   @default("all") // "all", "new-users", "power-users", "churning"
+  triggerEvent    String?  // "signup", "milestone", "scheduled", "manual"
+  delayDays       Int?     // Days after trigger event
+  
+  // Campaign settings
+  frequency       String   @default("quarterly") // "weekly", "monthly", "quarterly", "yearly", "once"
+  maxResponses    Int?     // Limit responses per user
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  responses       NPSResponse[]
+  
+  @@map("nps_surveys")
+}
+
+model NPSResponse {
+  id              String   @id @default(cuid())
+  surveyId        String
+  userId          String?
+  score           Int      // 0-10 NPS score
+  category        String   // "detractor", "passive", "promoter"
+  feedback        String?  @db.Text
+  
+  // Context
+  page            String?
+  userAgent       String?
+  ipAddress       String?
+  
+  // Follow-up
+  hasFollowedUp   Boolean  @default(false)
+  followUpDate    DateTime?
+  followUpNotes   String?
+  
+  createdAt       DateTime @default(now())
+  
+  survey          NPSSurvey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([surveyId, category])
+  @@index([userId, createdAt])
+  @@map("nps_responses")
+}
+
+// Customer Health Scoring
+model CustomerHealthScore {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  
+  // Overall health score (0-100)
+  overallScore    Int      @default(50)
+  
+  // Component scores (0-100 each)
+  usageScore      Int      @default(50)   // Product usage frequency/depth
+  engagementScore Int      @default(50)   // Feature adoption, session time
+  supportScore    Int      @default(50)   // Support ticket frequency/sentiment
+  satisfactionScore Int    @default(50)   // NPS, CSAT, feedback sentiment
+  paymentScore    Int      @default(50)   // Payment history, billing health
+  
+  // Risk indicators
+  riskLevel       String   @default("medium") // "low", "medium", "high", "critical"
+  churnProbability Float   @default(0.5)    // 0-1 probability of churning
+  riskFactors     Json?    // Array of specific risk factors
+  
+  // Engagement metrics
+  lastActive      DateTime?
+  daysInactive    Int      @default(0)
+  loginFrequency  Float    @default(0.0)    // Logins per week
+  featureUsage    Json?    // Feature usage statistics
+  
+  // Support metrics
+  totalTickets    Int      @default(0)
+  openTickets     Int      @default(0)
+  avgTicketResolutionTime Int? // Hours
+  lastTicketDate  DateTime?
+  
+  // Business metrics
+  accountValue    Float    @default(0.0)    // Monthly recurring revenue
+  contractLength  Int?     // Contract length in months
+  daysSinceSignup Int      @default(0)
+  
+  // Intervention tracking
+  interventionNeeded Boolean @default(false)
+  lastIntervention DateTime?
+  interventionType String? // "email", "call", "meeting", "discount"
+  
+  calculatedAt    DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interventions   CustomerIntervention[]
+  
+  @@index([overallScore, riskLevel])
+  @@index([churnProbability])
+  @@map("customer_health_scores")
+}
+
+model CustomerIntervention {
+  id              String   @id @default(cuid())
+  healthScoreId   String
+  type            String   // "email", "call", "meeting", "discount", "feature-demo", "training"
+  status          String   @default("planned") // "planned", "in-progress", "completed", "cancelled"
+  priority        String   @default("medium") // "low", "medium", "high", "urgent"
+  
+  title           String
+  description     String?  @db.Text
+  outcome         String?  @db.Text
+  
+  // Scheduling
+  scheduledFor    DateTime?
+  completedAt     DateTime?
+  assignedTo      String?  // CSM or support person ID
+  
+  // Results
+  wasSuccessful   Boolean?
+  followUpNeeded  Boolean  @default(false)
+  followUpDate    DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  healthScore     CustomerHealthScore @relation(fields: [healthScoreId], references: [id], onDelete: Cascade)
+  
+  @@index([healthScoreId, status])
+  @@index([scheduledFor, assignedTo])
+  @@map("customer_interventions")
+}
+
+// User Success Metrics
+model UserSuccessMetric {
+  id              String   @id @default(cuid())
+  userId          String
+  metricType      String   // "time-to-value", "feature-adoption", "milestone-completion", "engagement"
+  metricName      String   // Specific metric name
+  value           Float
+  unit            String?  // "minutes", "days", "percentage", "count"
+  
+  // Context
+  category        String?  // "onboarding", "feature-usage", "billing", "support"
+  milestone       String?  // "first-project", "first-scan", "team-invite", etc.
+  
+  // Benchmarking
+  benchmark       Float?   // Industry/internal benchmark
+  percentile      Int?     // User's percentile vs other users
+  
+  recordedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, metricType, recordedAt])
+  @@index([metricType, metricName])
+  @@map("user_success_metrics")
+}
+
+// Email Onboarding Campaigns
+model OnboardingEmail {
+  id              String   @id @default(cuid())
+  name            String
+  subject         String
+  content         String   @db.Text
+  emailType       String   // "welcome", "getting-started", "feature-highlight", "milestone", "re-engagement"
+  
+  // Scheduling
+  triggerEvent    String   // "signup", "first-project", "inactive-7-days", "milestone"
+  delayHours      Int      @default(0) // Hours after trigger event
+  
+  // Targeting
+  userSegment     String   @default("all") // "all", "free", "paid", "trial", "new"
+  isActive        Boolean  @default(true)
+  
+  // A/B Testing
+  isTestEmail     Boolean  @default(false)
+  testGroup       String?  // "A", "B"
+  
+  // Performance
+  sentCount       Int      @default(0)
+  openCount       Int      @default(0)
+  clickCount      Int      @default(0)
+  unsubscribeCount Int     @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  deliveries      EmailDelivery[]
+  
+  @@index([triggerEvent, isActive])
+  @@map("onboarding_emails")
+}
+
+model EmailDelivery {
+  id              String   @id @default(cuid())
+  emailId         String
+  userId          String
+  status          String   @default("pending") // "pending", "sent", "delivered", "bounced", "failed"
+  
+  // Engagement
+  openedAt        DateTime?
+  clickedAt       DateTime?
+  unsubscribedAt  DateTime?
+  
+  // Delivery details
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  bouncedAt       DateTime?
+  errorMessage    String?
+  
+  // Tracking
+  emailProvider   String?  // "sendgrid", "ses", "postmark"
+  messageId       String?  // Provider message ID
+  
+  createdAt       DateTime @default(now())
+  
+  email           OnboardingEmail @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([emailId, status])
+  @@index([userId, sentAt])
+  @@map("email_deliveries")
 }

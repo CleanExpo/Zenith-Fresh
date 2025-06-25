@@ -1,0 +1,117 @@
+{
+  "scenarios": {
+    "smoke_test": {
+      "description": "Smoke test to verify basic functionality",
+      "stages": [
+        { "duration": "1m", "target": 10 }
+      ],
+      "thresholds": {
+        "http_req_duration": ["p(95)<1000"],
+        "errors": ["rate<0.05"]
+      }
+    },
+    "load_test": {
+      "description": "Normal load test for expected traffic",
+      "stages": [
+        { "duration": "2m", "target": 100 },
+        { "duration": "5m", "target": 100 },
+        { "duration": "2m", "target": 0 }
+      ],
+      "thresholds": {
+        "http_req_duration": ["p(95)<2000"],
+        "errors": ["rate<0.01"]
+      }
+    },
+    "stress_test": {
+      "description": "Stress test to find breaking point",
+      "stages": [
+        { "duration": "2m", "target": 100 },
+        { "duration": "5m", "target": 200 },
+        { "duration": "2m", "target": 300 },
+        { "duration": "5m", "target": 400 },
+        { "duration": "3m", "target": 0 }
+      ],
+      "thresholds": {
+        "http_req_duration": ["p(95)<5000"],
+        "errors": ["rate<0.05"]
+      }
+    },
+    "spike_test": {
+      "description": "Spike test for sudden traffic increases",
+      "stages": [
+        { "duration": "1m", "target": 100 },
+        { "duration": "30s", "target": 1000 },
+        { "duration": "1m", "target": 100 },
+        { "duration": "30s", "target": 0 }
+      ],
+      "thresholds": {
+        "http_req_duration": ["p(95)<3000"],
+        "errors": ["rate<0.10"]
+      }
+    },
+    "soak_test": {
+      "description": "Endurance test for memory leaks and degradation",
+      "stages": [
+        { "duration": "5m", "target": 100 },
+        { "duration": "30m", "target": 100 },
+        { "duration": "5m", "target": 0 }
+      ],
+      "thresholds": {
+        "http_req_duration": ["p(95)<2000"],
+        "errors": ["rate<0.01"]
+      }
+    },
+    "million_user_simulation": {
+      "description": "Simulation of million-user scale load",
+      "stages": [
+        { "duration": "10m", "target": 1000 },
+        { "duration": "20m", "target": 5000 },
+        { "duration": "30m", "target": 10000 },
+        { "duration": "20m", "target": 5000 },
+        { "duration": "10m", "target": 0 }
+      ],
+      "thresholds": {
+        "http_req_duration": ["p(95)<10000"],
+        "errors": ["rate<0.02"]
+      }
+    }
+  },
+  "environments": {
+    "local": {
+      "BASE_URL": "http://localhost:3000",
+      "API_TIMEOUT": "30s"
+    },
+    "staging": {
+      "BASE_URL": "https://staging.zenith.engineer",
+      "API_TIMEOUT": "60s"
+    },
+    "production": {
+      "BASE_URL": "https://zenith.engineer",
+      "API_TIMEOUT": "30s"
+    }
+  },
+  "performance_budgets": {
+    "api_response_time": {
+      "p50": 200,
+      "p90": 500,
+      "p95": 1000,
+      "p99": 2000
+    },
+    "page_load_time": {
+      "p50": 1000,
+      "p90": 2000,
+      "p95": 3000,
+      "p99": 5000
+    },
+    "error_rates": {
+      "api_errors": 0.01,
+      "page_errors": 0.005,
+      "timeout_errors": 0.001
+    },
+    "throughput": {
+      "requests_per_second": 100,
+      "concurrent_users": 1000,
+      "database_connections": 500
+    }
+  }
+}

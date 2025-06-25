@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import '../src/app/globals.css';
 import Sidebar from '@/components/Sidebar';
 import { SessionProvider } from '@/components/SessionProvider';
+import { CustomerSuccessProvider } from '@/components/customer-success/CustomerSuccessProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -20,14 +21,16 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <SessionProvider>
-          <div className="min-h-screen bg-gray-50">
-            <Sidebar />
-            <div className="md:pl-64 flex flex-col flex-1">
-              <main className="flex-1">
-                {children}
-              </main>
+          <CustomerSuccessProvider>
+            <div className="min-h-screen bg-gray-50">
+              <Sidebar />
+              <div className="md:pl-64 flex flex-col flex-1">
+                <main className="flex-1">
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
+          </CustomerSuccessProvider>
         </SessionProvider>
       </body>
     </html>
