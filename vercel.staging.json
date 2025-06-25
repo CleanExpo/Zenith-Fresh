@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "name": "zenith-platform-staging",
+  "buildCommand": "npm ci && npm run vercel-build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm ci",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "NODE_ENV": "staging",
+    "NEXT_PUBLIC_APP_URL": "https://zenith-staging.vercel.app",
+    "NEXT_PUBLIC_APP_NAME": "Zenith Platform (Staging)",
+    "FORCE_BUILD": "true",
+    "CACHE_BUST": "staging-20250625-001"
+  },
+  "build": {
+    "env": {
+      "NODE_ENV": "staging",
+      "FORCE_BUILD": "true"
+    }
+  },
+  "functions": {
+    "app/api/**/*.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "app/api/cron/**/*.ts": {
+      "memory": 1024,
+      "maxDuration": 300
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "X-Environment",
+          "value": "staging"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/api/admin/ensure-demo-data",
+      "destination": "/404",
+      "permanent": false
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
+import { StagingBanner } from '@/components/StagingBanner';
 // import { ErrorBoundary } from '@/components/ErrorBoundary';
 // import { LoadingSpinner } from '@/components/ui/loading-spinner';
 // import { Sidebar } from '@/components/Sidebar';
@@ -24,6 +25,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         {/* <GoogleAnalytics /> */}
+        <StagingBanner />
         <Providers>
           <Suspense fallback={<div>Loading...</div>}>
             {children}
