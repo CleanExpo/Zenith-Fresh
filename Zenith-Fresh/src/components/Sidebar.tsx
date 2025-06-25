@@ -7,11 +7,13 @@ import {
   ChartBarIcon,
   DocumentTextIcon,
   CogIcon,
-  BellIcon
+  BellIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+  { name: 'Teams', href: '/teams', icon: UserGroupIcon },
   { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
   { name: 'Reports', href: '/dashboard/reports', icon: DocumentTextIcon },
   { name: 'Notifications', href: '/notifications', icon: BellIcon },

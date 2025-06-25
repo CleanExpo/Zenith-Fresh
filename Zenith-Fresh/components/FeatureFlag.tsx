@@ -25,7 +25,7 @@ export function useFeatureFlags(features: (keyof typeof FEATURE_FLAGS)[]): Recor
   const flags: Record<string, boolean> = {};
   
   features.forEach((feature) => {
-    flags[feature] = useFeatureFlag(feature);
+    flags[feature as string] = useFeatureFlag(feature);
   });
   
   return flags;
@@ -47,10 +47,10 @@ export function FeatureFlagDebugger() {
       <h3 className="text-sm font-bold mb-2">Feature Flags</h3>
       <div className="space-y-1 text-xs">
         {allFlags.map((flag) => (
-          <div key={flag} className="flex justify-between">
-            <span>{flag}:</span>
-            <span className={flagStatus[flag] ? 'text-green-400' : 'text-red-400'}>
-              {flagStatus[flag] ? 'ON' : 'OFF'}
+          <div key={flag as string} className="flex justify-between">
+            <span>{flag as string}:</span>
+            <span className={flagStatus[flag as string] ? 'text-green-400' : 'text-red-400'}>
+              {flagStatus[flag as string] ? 'ON' : 'OFF'}
             </span>
           </div>
         ))}

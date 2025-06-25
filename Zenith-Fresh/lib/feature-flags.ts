@@ -47,10 +47,59 @@ export const FEATURE_FLAGS: Record<string, FeatureFlag> = {
     environments: ['development'],
     allowedUsers: [],
   },
+  PDF_REPORTS: {
+    name: 'PDF Report Generation',
+    description: 'Generate and email PDF reports for website analysis',
+    enabled: process.env.NEXT_PUBLIC_FEATURE_PDF_REPORTS === 'true',
+    rolloutPercentage: 100,
+    environments: ['development', 'staging', 'production'],
+  },
   DARK_MODE: {
     name: 'Dark Mode',
     description: 'Dark theme support across the application',
     enabled: true,
+    rolloutPercentage: 100,
+    environments: ['development', 'staging', 'production'],
+  },
+  EMAIL_NOTIFICATIONS: {
+    name: 'Email Notifications',
+    description: 'Send email alerts and reports via Resend',
+    enabled: process.env.NEXT_PUBLIC_FEATURE_EMAIL_NOTIFICATIONS === 'true',
+    rolloutPercentage: 100,
+    environments: ['development', 'staging', 'production'],
+  },
+  SLACK_NOTIFICATIONS: {
+    name: 'Slack Notifications',
+    description: 'Send alerts to Slack channels via webhooks',
+    enabled: process.env.NEXT_PUBLIC_FEATURE_SLACK_NOTIFICATIONS === 'true',
+    rolloutPercentage: 100,
+    environments: ['development', 'staging', 'production'],
+  },
+  DISCORD_NOTIFICATIONS: {
+    name: 'Discord Notifications',
+    description: 'Send alerts to Discord channels via webhooks',
+    enabled: process.env.NEXT_PUBLIC_FEATURE_DISCORD_NOTIFICATIONS === 'true',
+    rolloutPercentage: 80,
+    environments: ['development', 'staging', 'production'],
+  },
+  WEBHOOK_NOTIFICATIONS: {
+    name: 'Webhook Notifications',
+    description: 'Send alerts to custom webhook endpoints',
+    enabled: process.env.NEXT_PUBLIC_FEATURE_WEBHOOK_NOTIFICATIONS === 'true',
+    rolloutPercentage: 100,
+    environments: ['development', 'staging', 'production'],
+  },
+  SCHEDULED_SCANS: {
+    name: 'Scheduled Scans',
+    description: 'Automated website scanning at regular intervals',
+    enabled: process.env.NEXT_PUBLIC_FEATURE_SCHEDULED_SCANS === 'true',
+    rolloutPercentage: 100,
+    environments: ['development', 'staging', 'production'],
+  },
+  ALERT_THRESHOLDS: {
+    name: 'Alert Thresholds',
+    description: 'Customizable alert thresholds and conditions',
+    enabled: process.env.NEXT_PUBLIC_FEATURE_ALERT_THRESHOLDS === 'true',
     rolloutPercentage: 100,
     environments: ['development', 'staging', 'production'],
   },
@@ -76,16 +125,16 @@ export function isFeatureEnabled(
     return false;
   }
 
-  // Check allowed users
-  if (feature.allowedUsers && userId) {
-    if (!feature.allowedUsers.includes(userId)) {
+  // Check allowed users - if allowedUsers is defined, user must be in the list
+  if (feature.allowedUsers && feature.allowedUsers.length > 0) {
+    if (!userId || !feature.allowedUsers.includes(userId)) {
       return false;
     }
   }
 
-  // Check allowed emails
-  if (feature.allowedEmails && userEmail) {
-    if (!feature.allowedEmails.includes(userEmail)) {
+  // Check allowed emails - if allowedEmails is defined, user must be in the list
+  if (feature.allowedEmails && feature.allowedEmails.length > 0) {
+    if (!userEmail || !feature.allowedEmails.includes(userEmail)) {
       return false;
     }
   }
