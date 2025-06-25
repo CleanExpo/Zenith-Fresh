@@ -1,0 +1,436 @@
+{
+  "environment": "staging",
+  "version": "1.0.0",
+  "lastUpdated": "2025-06-25T08:00:00Z",
+  "description": "Staging-specific feature flag configuration for Zenith Platform",
+  
+  "featureFlags": {
+    "core": {
+      "description": "Core application features",
+      "flags": {
+        "FEATURE_FLAGS_ENABLED": {
+          "enabled": true,
+          "description": "Enable the feature flags system globally",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        },
+        "STAGING_MODE": {
+          "enabled": true,
+          "description": "Enable staging mode with debugging and enhanced logging",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging"],
+          "userTargeting": false
+        },
+        "DEBUG_MODE": {
+          "enabled": true,
+          "description": "Enable debug mode with detailed error information",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging"],
+          "userTargeting": false
+        }
+      }
+    },
+    
+    "websiteAnalyzer": {
+      "description": "Website Health Analyzer features",
+      "flags": {
+        "NEXT_PUBLIC_FEATURE_ENHANCED_ANALYZER": {
+          "enabled": true,
+          "description": "Enhanced website analyzer with advanced features",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false,
+          "features": [
+            "PDF report generation",
+            "Scheduled scans",
+            "Historical tracking",
+            "Performance insights",
+            "SEO analysis"
+          ]
+        },
+        "FEATURE_ANALYZER_NOTIFICATIONS": {
+          "enabled": true,
+          "description": "Email notifications for analyzer results",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        },
+        "FEATURE_ANALYZER_SCHEDULING": {
+          "enabled": true,
+          "description": "Scheduled website analysis scans",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        }
+      }
+    },
+    
+    "teamManagement": {
+      "description": "Team collaboration and management features",
+      "flags": {
+        "NEXT_PUBLIC_FEATURE_TEAM_MANAGEMENT": {
+          "enabled": true,
+          "description": "Team management and collaboration features",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false,
+          "features": [
+            "Team creation",
+            "Member invitations",
+            "Role management",
+            "Team analytics",
+            "Shared projects"
+          ]
+        },
+        "FEATURE_TEAM_ANALYTICS": {
+          "enabled": true,
+          "description": "Team performance analytics and insights",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        },
+        "FEATURE_TEAM_PERMISSIONS": {
+          "enabled": true,
+          "description": "Granular team permissions and access control",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        }
+      }
+    },
+    
+    "aiFeatures": {
+      "description": "AI-powered features and integrations",
+      "flags": {
+        "NEXT_PUBLIC_FEATURE_AI_CONTENT_ANALYSIS": {
+          "enabled": false,
+          "description": "AI-powered content analysis and optimization",
+          "type": "boolean",
+          "rolloutPercentage": 0,
+          "environment": ["staging"],
+          "userTargeting": false,
+          "reason": "Disabled in staging to conserve AI API usage",
+          "features": [
+            "Content optimization suggestions",
+            "SEO improvements",
+            "Accessibility analysis",
+            "Performance recommendations"
+          ]
+        },
+        "FEATURE_AI_CHATBOT": {
+          "enabled": false,
+          "description": "AI-powered support chatbot",
+          "type": "boolean",
+          "rolloutPercentage": 0,
+          "environment": ["staging"],
+          "userTargeting": false,
+          "reason": "Disabled in staging to conserve AI API usage"
+        },
+        "FEATURE_AI_INSIGHTS": {
+          "enabled": false,
+          "description": "AI-generated insights and recommendations",
+          "type": "boolean",
+          "rolloutPercentage": 0,
+          "environment": ["staging"],
+          "userTargeting": false,
+          "reason": "Disabled in staging to conserve AI API usage"
+        }
+      }
+    },
+    
+    "enterpriseFeatures": {
+      "description": "Enterprise-grade features and integrations",
+      "flags": {
+        "NEXT_PUBLIC_FEATURE_COMPETITIVE_INTELLIGENCE": {
+          "enabled": false,
+          "description": "Competitive intelligence and market analysis",
+          "type": "boolean",
+          "rolloutPercentage": 0,
+          "environment": ["staging"],
+          "userTargeting": false,
+          "reason": "Disabled in staging - requires production data sources",
+          "features": [
+            "Competitor analysis",
+            "Market trends",
+            "Performance benchmarking",
+            "Strategic insights"
+          ]
+        },
+        "FEATURE_ENTERPRISE_INTEGRATIONS": {
+          "enabled": false,
+          "description": "Enterprise system integrations",
+          "type": "boolean",
+          "rolloutPercentage": 0,
+          "environment": ["staging"],
+          "userTargeting": false,
+          "reason": "Disabled in staging - requires enterprise credentials"
+        },
+        "FEATURE_ADVANCED_ANALYTICS": {
+          "enabled": true,
+          "description": "Advanced analytics dashboard",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        }
+      }
+    },
+    
+    "paymentAndBilling": {
+      "description": "Payment processing and billing features",
+      "flags": {
+        "DISABLE_PAYMENT_PROCESSING": {
+          "enabled": true,
+          "description": "Disable payment processing in staging environment",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging"],
+          "userTargeting": false,
+          "reason": "Always disabled in staging for safety"
+        },
+        "FEATURE_BILLING_DASHBOARD": {
+          "enabled": true,
+          "description": "Billing dashboard and subscription management",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false,
+          "testMode": true
+        },
+        "FEATURE_USAGE_TRACKING": {
+          "enabled": true,
+          "description": "Usage tracking and metering",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        }
+      }
+    },
+    
+    "developmentAndTesting": {
+      "description": "Development and testing specific features",
+      "flags": {
+        "MOCK_EXTERNAL_APIS": {
+          "enabled": false,
+          "description": "Mock external API responses for testing",
+          "type": "boolean",
+          "rolloutPercentage": 0,
+          "environment": ["staging"],
+          "userTargeting": false,
+          "reason": "Disabled to test real integrations"
+        },
+        "FEATURE_TEST_DATA": {
+          "enabled": true,
+          "description": "Enable test data generation and seeding",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging"],
+          "userTargeting": false
+        },
+        "FEATURE_PERFORMANCE_PROFILING": {
+          "enabled": true,
+          "description": "Enable performance profiling and metrics",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging"],
+          "userTargeting": false
+        },
+        "FEATURE_ERROR_BOUNDARIES": {
+          "enabled": true,
+          "description": "Enhanced error boundaries with debugging info",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging"],
+          "userTargeting": false
+        }
+      }
+    },
+    
+    "securityAndCompliance": {
+      "description": "Security and compliance features",
+      "flags": {
+        "FORCE_HTTPS": {
+          "enabled": true,
+          "description": "Force HTTPS redirects",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        },
+        "SECURE_COOKIES": {
+          "enabled": true,
+          "description": "Enable secure cookie settings",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        },
+        "FEATURE_AUDIT_LOGGING": {
+          "enabled": true,
+          "description": "Comprehensive audit logging",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        },
+        "FEATURE_RATE_LIMITING": {
+          "enabled": true,
+          "description": "API rate limiting and throttling",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        }
+      }
+    },
+    
+    "monitoringAndObservability": {
+      "description": "Monitoring, logging, and observability features",
+      "flags": {
+        "FEATURE_DETAILED_LOGGING": {
+          "enabled": true,
+          "description": "Enhanced logging with detailed context",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging"],
+          "userTargeting": false
+        },
+        "FEATURE_PERFORMANCE_MONITORING": {
+          "enabled": true,
+          "description": "Real-time performance monitoring",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        },
+        "FEATURE_ERROR_TRACKING": {
+          "enabled": true,
+          "description": "Advanced error tracking and reporting",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        },
+        "FEATURE_HEALTH_CHECKS": {
+          "enabled": true,
+          "description": "Comprehensive health check endpoints",
+          "type": "boolean",
+          "rolloutPercentage": 100,
+          "environment": ["staging", "production"],
+          "userTargeting": false
+        }
+      }
+    }
+  },
+  
+  "userTargeting": {
+    "description": "User targeting rules for feature flags",
+    "rules": {
+      "betaUsers": {
+        "description": "Users opted into beta features",
+        "enabled": true,
+        "criteria": {
+          "userAttributes": ["beta_user"],
+          "emails": ["zenithfresh25@gmail.com"],
+          "percentage": 10
+        }
+      },
+      "teamLeaders": {
+        "description": "Team leaders and administrators",
+        "enabled": true,
+        "criteria": {
+          "roles": ["admin", "team_leader"],
+          "percentage": 100
+        }
+      },
+      "stagingTesters": {
+        "description": "Internal staging testers",
+        "enabled": true,
+        "criteria": {
+          "emails": ["zenithfresh25@gmail.com"],
+          "domains": ["zenith.engineer"],
+          "percentage": 100
+        }
+      }
+    }
+  },
+  
+  "rolloutRules": {
+    "description": "Rollout rules for gradual feature deployment",
+    "defaultRollout": {
+      "strategy": "percentage",
+      "percentage": 100,
+      "stagingOverride": true
+    },
+    "strategies": {
+      "canary": {
+        "description": "Canary deployment to small percentage of users",
+        "percentage": 5,
+        "duration": "24h",
+        "successCriteria": ["errorRate < 1%", "responseTime < 200ms"]
+      },
+      "gradual": {
+        "description": "Gradual rollout over time",
+        "phases": [
+          {"percentage": 10, "duration": "24h"},
+          {"percentage": 50, "duration": "48h"},
+          {"percentage": 100, "duration": "unlimited"}
+        ]
+      }
+    }
+  },
+  
+  "overrides": {
+    "description": "Environment-specific overrides",
+    "staging": {
+      "description": "Staging environment overrides",
+      "forceEnabled": [
+        "STAGING_MODE",
+        "DEBUG_MODE",
+        "FEATURE_DETAILED_LOGGING",
+        "FEATURE_TEST_DATA",
+        "FEATURE_PERFORMANCE_PROFILING"
+      ],
+      "forceDisabled": [
+        "DISABLE_PAYMENT_PROCESSING",
+        "NEXT_PUBLIC_FEATURE_AI_CONTENT_ANALYSIS",
+        "NEXT_PUBLIC_FEATURE_COMPETITIVE_INTELLIGENCE",
+        "MOCK_EXTERNAL_APIS"
+      ]
+    },
+    "production": {
+      "description": "Production environment overrides",
+      "forceEnabled": [
+        "FORCE_HTTPS",
+        "SECURE_COOKIES",
+        "FEATURE_RATE_LIMITING"
+      ],
+      "forceDisabled": [
+        "DEBUG_MODE",
+        "FEATURE_TEST_DATA",
+        "MOCK_EXTERNAL_APIS"
+      ]
+    }
+  },
+  
+  "metadata": {
+    "owner": "Zenith Platform Team",
+    "version": "1.0.0",
+    "environment": "staging",
+    "lastUpdated": "2025-06-25T08:00:00Z",
+    "configurationSource": "config/staging-feature-flags.json",
+    "documentation": "https://docs.zenith.engineer/feature-flags",
+    "supportContact": "support@zenith.engineer"
+  }
+}

@@ -24,17 +24,7 @@ import {
 
 // Import sub-components
 import { CompetitorOverview } from './CompetitorOverview';
-import { CompetitorDiscovery } from './CompetitorDiscovery';
 import { FeatureComparison } from './FeatureComparison';
-import { PricingAnalysis } from './PricingAnalysis';
-import { MarketIntelligence } from './MarketIntelligence';
-import { TechnologyAnalysis } from './TechnologyAnalysis';
-import { CompetitorMonitoring } from './CompetitorMonitoring';
-import { CompetitiveReports } from './CompetitiveReports';
-import { MarketShare } from './MarketShare';
-import { SentimentAnalysis } from './SentimentAnalysis';
-import { CompetitorAlerts } from './CompetitorAlerts';
-import { DataSources } from './DataSources';
 
 interface TabConfig {
   id: string;
@@ -106,82 +96,11 @@ export function CompetitiveIntelligenceDashboard({ projectId }: CompetitiveDashb
       badge: competitorCount > 0 ? competitorCount.toString() : undefined
     },
     {
-      id: 'discovery',
-      name: 'Competitor Discovery',
-      icon: MagnifyingGlassIcon,
-      component: CompetitorDiscovery,
-      description: 'Find and add new competitors to track'
-    },
-    {
       id: 'features',
       name: 'Feature Comparison',
       icon: CheckCircleIcon,
       component: FeatureComparison,
       description: 'Compare features across competitors'
-    },
-    {
-      id: 'pricing',
-      name: 'Pricing Analysis',
-      icon: CurrencyDollarIcon,
-      component: PricingAnalysis,
-      description: 'Track and analyze competitor pricing strategies'
-    },
-    {
-      id: 'market',
-      name: 'Market Intelligence',
-      icon: GlobeAltIcon,
-      component: MarketIntelligence,
-      description: 'Industry insights and market trends'
-    },
-    {
-      id: 'technology',
-      name: 'Technology Stack',
-      icon: CpuChipIcon,
-      component: TechnologyAnalysis,
-      description: 'Analyze competitor technology choices'
-    },
-    {
-      id: 'monitoring',
-      name: 'Monitoring',
-      icon: EyeIcon,
-      component: CompetitorMonitoring,
-      description: 'Automated competitor tracking and alerts'
-    },
-    {
-      id: 'reports',
-      name: 'Reports',
-      icon: DocumentChartBarIcon,
-      component: CompetitiveReports,
-      description: 'Generate comprehensive competitive analysis reports'
-    },
-    {
-      id: 'market-share',
-      name: 'Market Share',
-      icon: ChartBarIcon,
-      component: MarketShare,
-      description: 'Track market position and share analysis'
-    },
-    {
-      id: 'sentiment',
-      name: 'Sentiment Analysis',
-      icon: UserGroupIcon,
-      component: SentimentAnalysis,
-      description: 'Monitor competitor mentions and sentiment'
-    },
-    {
-      id: 'alerts',
-      name: 'Alerts',
-      icon: BellIcon,
-      component: CompetitorAlerts,
-      description: 'Manage competitive intelligence alerts',
-      badge: alertCount > 0 ? alertCount.toString() : undefined
-    },
-    {
-      id: 'data-sources',
-      name: 'Data Sources',
-      icon: ServerStackIcon,
-      component: DataSources,
-      description: 'Configure external data integrations'
     }
   ];
 
