@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm ci && npm run vercel-build",
+  "buildCommand": "npm ci && node build-optimized.js",
   "devCommand": "npm run dev",
   "installCommand": "npm ci",
   "framework": "nextjs",
@@ -14,17 +14,31 @@
     "env": {
       "NODE_ENV": "production",
       "FORCE_BUILD": "true",
-      "CACHE_BUST": "20250625-003000"
+      "CACHE_BUST": "20250625-120000",
+      "NODE_OPTIONS": "--max-old-space-size=8192",
+      "NEXT_TELEMETRY_DISABLED": "1"
     }
   },
   "functions": {
     "app/api/**/*.ts": {
-      "memory": 1024,
+      "memory": 3008,
       "maxDuration": 60
     },
     "app/api/cron/**/*.ts": {
-      "memory": 1024,
+      "memory": 3008,
       "maxDuration": 300
+    },
+    "app/api/ai/**/*.ts": {
+      "memory": 3008,
+      "maxDuration": 120
+    },
+    "app/api/automation/**/*.ts": {
+      "memory": 3008,
+      "maxDuration": 180
+    },
+    "app/api/intelligence/**/*.ts": {
+      "memory": 3008,
+      "maxDuration": 120
     }
   },
   "headers": [
