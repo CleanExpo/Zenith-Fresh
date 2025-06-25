@@ -29,7 +29,7 @@ export default async function DashboardPage() {
         {/* Core Features - Always Available */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold mb-4">Website Health Analyzer</h2>
-          <p className="text-gray-600 mb-4">Analyze your website's performance and health.</p>
+          <p className="text-gray-600 mb-4">Analyze your website&apos;s performance and health.</p>
           <a href="/tools/website-analyzer" className="text-blue-600 hover:underline">
             Launch Analyzer →
           </a>
@@ -61,6 +61,34 @@ export default async function DashboardPage() {
             </a>
           </div>
         )}
+
+        {/* Performance Monitoring - Always Available */}
+        <div className="bg-white rounded-lg shadow p-6 border-2 border-blue-500">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Performance Monitoring</h2>
+            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+              NEW
+            </span>
+          </div>
+          <p className="text-gray-600 mb-4">Comprehensive performance monitoring and observability dashboard.</p>
+          <a href="/monitoring" className="text-blue-600 hover:underline">
+            View Monitoring Dashboard →
+          </a>
+        </div>
+
+        {/* Enterprise Integrations Hub - Always Available */}
+        <div className="bg-white rounded-lg shadow p-6 border-2 border-green-500">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Enterprise Integrations</h2>
+            <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
+              PRODUCTION
+            </span>
+          </div>
+          <p className="text-gray-600 mb-4">Connect and manage all your enterprise integrations, APIs, and data flows.</p>
+          <a href="/dashboard/integrations" className="text-green-600 hover:underline">
+            Manage Integrations →
+          </a>
+        </div>
 
         {/* Client-side feature flag example */}
         <FeatureFlag feature="COMPETITIVE_INTELLIGENCE">
