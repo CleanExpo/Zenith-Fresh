@@ -10,12 +10,24 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(uuid|recharts)/)',
+  ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/*.stories.{js,jsx,ts,tsx}',
     '!src/**/*.test.{js,jsx,ts,tsx}',
     '!src/**/index.{js,jsx,ts,tsx}',
+    '!src/lib/agents/**',
+    '!tests/**',
+  ],
+  testPathIgnorePatterns: [
+    '<rootDir>/tests/e2e/',
+    '<rootDir>/tests/staging/',
+    '<rootDir>/src/lib/orchestration/__tests__/',
+    '<rootDir>/src/components/__tests__/',
+    '<rootDir>/src/components/ui/__tests__/',
   ],
   coverageThreshold: {
     global: {

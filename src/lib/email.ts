@@ -268,16 +268,30 @@ export async function sendTeamInvitationEmail(
   to: string,
   inviterName: string,
   teamName: string,
-  inviteToken: string
+  inviteToken: string,
+  customMessage?: string
 ): Promise<EmailResponse> {
   const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite?token=${inviteToken}`;
   const template = EmailTemplates.teamInvitation(inviterName, teamName, inviteUrl);
   
+  // Add custom message if provided
+  let html = template.html;
+  let text = template.text;
+  
+  if (customMessage) {
+    const customMessageHtml = `<div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #2563eb; margin: 20px 0;">
+      <p style="margin: 0; font-style: italic;">"${customMessage}"</p>
+    </div>`;
+    
+    html = html.replace('<p>Click the button below', `${customMessageHtml}<p>Click the button below`);
+    text = text.replace('Accept invitation:', `Personal message: "${customMessage}"\n\nAccept invitation:`);
+  }
+  
   return sendEmail({
     to,
     subject: template.subject,
-    html: template.html,
-    text: template.text,
+    html,
+    text,
     tags: [
       { name: 'type', value: 'team-invitation' },
       { name: 'team', value: teamName },

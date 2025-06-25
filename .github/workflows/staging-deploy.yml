@@ -1,0 +1,115 @@
+name: 🚀 Deploy to Staging
+
+on:
+  push:
+    branches: [ staging, develop ]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'main'
+
+jobs:
+  test:
+    name: 🧪 Test Before Deploy
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: zenith_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 🔧 Install dependencies
+      run: npm ci
+
+    - name: 🏗️ Generate Prisma client
+      run: npx prisma generate
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/zenith_test
+
+    - name: 🗄️ Setup test database
+      run: npx prisma db push --force-reset
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/zenith_test
+
+    - name: 🧪 Run tests
+      run: npm test
+      env:
+        NODE_ENV: test
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/zenith_test
+
+    - name: 🏗️ Test build
+      run: npm run build
+      env:
+        NODE_ENV: staging
+
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: test
+    if: success()
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 🔧 Install Vercel CLI
+      run: npm i -g vercel@latest
+
+    - name: 🔗 Pull Vercel Environment Information
+      run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+    - name: 🏗️ Build Project Artifacts
+      run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+    - name: 🚀 Deploy to Staging
+      run: vercel deploy --prebuilt --config vercel.staging.json --token=${{ secrets.VERCEL_TOKEN }}
+
+    - name: 🎯 Set Deployment Alias
+      run: vercel alias --token=${{ secrets.VERCEL_TOKEN }} zenith-staging.vercel.app
+
+    - name: 📊 Run Staging Tests
+      run: |
+        sleep 30  # Wait for deployment to be ready
+        npm run test:staging
+      env:
+        STAGING_URL: https://zenith-staging.vercel.app
+
+    - name: 💬 Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '🚀 **Staging Deployment Ready!**\n\n✅ Tests passed\n🌍 Preview: https://zenith-staging.vercel.app\n📊 Review the changes before merging to production.'
+          })

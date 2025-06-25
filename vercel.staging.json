@@ -11,7 +11,19 @@
     "NEXT_PUBLIC_APP_URL": "https://zenith-staging.vercel.app",
     "NEXT_PUBLIC_APP_NAME": "Zenith Platform (Staging)",
     "FORCE_BUILD": "true",
-    "CACHE_BUST": "staging-20250625-001"
+    "CACHE_BUST": "staging-20250625-001",
+    "DATABASE_URL": "@railway-database-url",
+    "POSTGRES_PRISMA_URL": "@railway-database-url-pooled",
+    "POSTGRES_URL_NON_POOLING": "@railway-database-url-direct",
+    "DIRECT_URL": "@railway-database-url-direct",
+    "DATABASE_POOL_MIN": "2",
+    "DATABASE_POOL_MAX": "10",
+    "DATABASE_CONNECTION_TIMEOUT": "10000",
+    "DATABASE_IDLE_TIMEOUT": "30000",
+    "DATABASE_SSL_ENABLED": "true",
+    "BACKUP_ENABLED": "true",
+    "DATABASE_MONITORING_ENABLED": "true",
+    "HEALTH_CHECK_ENABLED": "true"
   },
   "build": {
     "env": {

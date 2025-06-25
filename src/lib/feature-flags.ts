@@ -32,9 +32,41 @@ const DEFAULT_FEATURE_FLAGS: FeatureFlag[] = [
   {
     key: 'enhanced_website_analyzer',
     name: 'Enhanced Website Analyzer',
-    description: 'PDF reports, scheduling, and historical tracking',
+    description: 'AI-powered analysis with advanced insights and competitive intelligence',
     enabled: true,
-    rolloutPercentage: 100,
+    rolloutPercentage: 100, // Full rollout in development/staging
+    environments: ['development', 'staging'],
+  },
+  {
+    key: 'ai_website_analysis',
+    name: 'AI Website Analysis',
+    description: 'OpenAI/Claude powered content and SEO analysis',
+    enabled: true,
+    rolloutPercentage: 75, // Gradual rollout
+    environments: ['development', 'staging'],
+  },
+  {
+    key: 'competitive_intelligence',
+    name: 'Competitive Intelligence',
+    description: 'Advanced competitive analysis and benchmarking',
+    enabled: true,
+    rolloutPercentage: 50, // Limited rollout
+    environments: ['development', 'staging'],
+  },
+  {
+    key: 'accessibility_audit',
+    name: 'Accessibility Audit',
+    description: 'WCAG compliance checking and UX scoring',
+    enabled: true,
+    rolloutPercentage: 80, // High rollout
+    environments: ['development', 'staging'],
+  },
+  {
+    key: 'enhanced_recommendations',
+    name: 'Enhanced Recommendations',
+    description: 'ROI-based intelligent recommendations with implementation guides',
+    enabled: true,
+    rolloutPercentage: 60, // Moderate rollout
     environments: ['development', 'staging'],
   },
   {
@@ -50,7 +82,7 @@ const DEFAULT_FEATURE_FLAGS: FeatureFlag[] = [
     name: 'AI Content Analysis',
     description: 'AI-powered content optimization and recommendations',
     enabled: true,
-    rolloutPercentage: 0, // Not rolled out yet
+    rolloutPercentage: 70, // Gradual rollout
     environments: ['development', 'staging'],
   },
   {
