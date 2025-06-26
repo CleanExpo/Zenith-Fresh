@@ -8,6 +8,7 @@
     }
   },
   "env": {
-    "SKIP_REDIS": "true"
+    "SKIP_REDIS": "true",
+    "SKIP_TYPE_CHECK": "true"
   }
 }

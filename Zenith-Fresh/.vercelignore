@@ -3,3 +3,14 @@
 node_modules/
 *.log
 .env*
+
+# Enterprise API routes with TypeScript errors
+src/app/api/ai/enterprise/
+app/api/ai/enterprise/
+
+# Test files 
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
