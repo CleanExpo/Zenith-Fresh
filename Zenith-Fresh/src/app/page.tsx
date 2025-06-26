@@ -82,17 +82,17 @@ export default function Home() {
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link
-                href="/auth/signin"
-                className="rounded-md bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 flex items-center gap-2"
+                href="/free-analyzer"
+                className="rounded-md bg-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 flex items-center gap-2"
               >
-                Start Free Trial
-                <ArrowRightIcon className="h-4 w-4" />
+                Try Free Analyzer - No Signup
+                <ArrowRightIcon className="h-5 w-5" />
               </Link>
               <Link
-                href="/contact"
+                href="/auth/signin"
                 className="text-base font-semibold leading-6 text-gray-900 hover:text-blue-600"
               >
-                Book a Demo <span aria-hidden="true">→</span>
+                Sign In <span aria-hidden="true">→</span>
               </Link>
             </div>
             
@@ -187,16 +187,16 @@ export default function Home() {
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link
-                href="/auth/signin"
+                href="/free-analyzer"
                 className="rounded-md bg-white px-6 py-3 text-base font-semibold text-blue-600 shadow-sm hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
-                Start Free Trial
+                Try Free Analyzer Now
               </Link>
               <Link
-                href="/pricing"
+                href="/auth/signin"
                 className="text-base font-semibold leading-6 text-white hover:text-blue-200"
               >
-                View Pricing <span aria-hidden="true">→</span>
+                Sign In for Full Access <span aria-hidden="true">→</span>
               </Link>
             </div>
           </div>
