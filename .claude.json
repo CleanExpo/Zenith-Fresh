@@ -17,6 +17,52 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "PS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith-Fresh> vercel --prod --force\nVercel CLI 42.3.0\n🔍  Inspect: https://vercel.com/admin-cleanexpo247s-projects/zenith-fresh/9PBWcLGSNgL8M8renuo6WRbpNBqh [1s]\n✅  Production: https://zenith-fresh-czkzga50n-admin-cleanexpo247s-projects.vercel.app [1s]\nError: Command \"npm ci && node build-optimized.js\" exited with 1\nError: Check your logs at https://zenith-fresh-czkzga50n-admin-cleanexpo247s-projects.vercel.app/_logs or run `vercel logs zenith-fresh-czkzga50n-admin-cleanexpo247s-projects.vercel.app`\nPS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith-Fresh> ",
+          "pastedContents": {}
+        },
+        {
+          "display": "here are all the variables already included in vercel environment: let me know what is actully missing and identify the reason ewhy it is not picking up the variables on deployment..[Pasted text #1 +48 lines]",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "ANTHROPIC_API_KEY=\"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\"\nOPENAI_API_KEY=\"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\"\nGOOGLE_AI_API_KEY=\"AIzaSyBLk_upVrezl0ovEio8Zf-bitcGvGdq9cY\"\nVEO_API_KEY=\"AIzaSyBLk_upVrezl0ovEio8Zf-bitcGvGdq9cY\"\nCLOUDFLARE_ACCOUNT_ID=\"d1d95e7d0d00689b79bb87ff51282e0a\"\nCLOUDFLARE_ZONE_ID=\"63b0806cc86a160229dfbac0b6dbbb2e\"\nCORS_ORIGIN=\"https://zenith.engineer\"\nNEXTAUTH_URL=\"https://zenith.engineer\"\nNEXT_PUBLIC_API_URL=\"https://zenith.engineer/api\"\nNEXT_PUBLIC_APP_URL=\"https://zenith.engineer\"\nNEXT_PUBLIC_APP_NAME=\"Zenith Platform\"\nNEXT_PUBLIC_APP_VERSION=\"1.0.0\"\nVERCEL_URL=\"zenith.engineer\"\nCRON_SECRET=\"zenith-cron-secret-key-2024\"\nJWT_SECRET=\"1gAxGqMzi0aCFUOP7iT3Szz327L4zVNTGofOH+i4WDNJMNAd1zsRf+vM26KzXpYQI8SfkzPy1ADks/unmuSkCw==\"\nNEXTAUTH_SECRET=\"202e5145552bf1eec543660f0a7f7548\"\nFORCE_HTTPS=\"true\"\nSECURE_COOKIES=\"true\"\nDATABASE_URL=\"postgresql://postgres:esGerRxYDOQdqCHWZXHrTLldfAzpdVFd@switchyard.proxy.rlwy.net:31569/railway\"\nDIRECT_URL=\"postgresql://postgres:esGerRxYDOQdqCHWZXHrTLldfAzpdVFd@switchyard.proxy.rlwy.net:31569/railway\"\nPOSTGRES_PRISMA_URL=\"postgresql://postgres:esGerRxYDOQdqCHWZXHrTLldfAzpdVFd@switchyard.proxy.rlwy.net:31569/railway?pgbouncer=true\"\nPOSTGRES_URL_NON_POOLING=\"postgresql://postgres:esGerRxYDOQdqCHWZXHrTLldfAzpdVFd@switchyard.proxy.rlwy.net:31569/railway\"\nSTRIPE_SECRET_KEY=\"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\"\nSTRIPE_PUBLISHABLE_KEY=\"pk_live_51Gx5IrHjjUzwIJDNUlnkyODSG4xOzdGRj6RzQctaAJFe0MVhD6NaXMLIqYCAvRzDBeRrFzp3yyRgGV6CblPnpUIT00frcmDwO7\"\nSTRIPE_RESTRICTED_KEY=\"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\"\nSTRIPE_WEBHOOK_SECRET=\"whsec_dM8MBZSxQJuT10W37uan1SzmoA4JixFS\"\nRESEND_API_KEY=\"re_f9hdVViN_8GgCa2A4xM9PXKahtFSwRagQ\"\nNEXT_PUBLIC_SENTRY_DSN=https://031d3600b3b5a20b0b4748c177c443db@o4509524611366912.ingest.us.sentry.io/4509524612415488\nDATAFORSEO_API_KEY=\"5dc71b768cc6379f\"\nDATAFORSEO_LOGIN=\"phill.m@carsi.com.au\"\nDATAFORSEO_PASSWORD=\"8PcyMmS84hqjdtR\"\nGITHUB_TOKEN=\"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\"\nGOOGLE_CLIENT_ID=\"1042641540611-i6ev2r99kp938m016gi5moagid7humtb.apps.googleusercontent.com\"\nGOOGLE_CLIENT_SECRET=\"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\"\nSUPABASE_URL=\"https://goggasvuqbcyaetpitrm.supabase.co\"\nSUPABASE_ANON_KEY=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvZ2dhc3Z1cWJjeWFldHBpdHJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4ODYxNDAsImV4cCI6MjA2NTQ2MjE0MH0.nKukg0CuvjiiGFIfMo01LfUENMS1FGLSHGqao4z7CyQ\"\nSUPABASE_SERVICE_ROLE_KEY=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvZ2dhc3Z1cWJjeWFldHBpdHJtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0OTg4NjE0MCwiZXhwIjoyMDY1NDYyMTQwfQ.x5qrRMq7AV9Vg1ClKlCj6S6w0WwFkat2BNEDbHRcEsw\"\nVERCEL=\"1\"\nVERCEL_TOKEN=\"N5UFI8ZprlgY69oigubxRp6s\"\nVERCEL_AUTOMATION_BYPASS_SECRET=\"zS4lNR5HHZroUrMYoqku0yef2nbULFML\"\nVERCEL_OIDC_TOKEN=1gAxGqMzi0aCFUOP7iT3Szz327L4zVNTGofOH+i4WDNJMNAd1zsRf+vM26KzXpYQI8SfkzPy1ADks/unmuSkCw==\nNODE_ENV=\"production\"\nMASTER_USERNAME=\"zenith_master\"\nMASTER_PASSWORD=\"ZenithMaster2024!\"\ndev_test=\"DevTest2024!\"\nqa_lead=\"QALead2024!\"\nstaff_1=\"StaffTest2024!\"\nstaff_2=\"StaffTest2024!\"\n"
+            }
+          }
+        },
+        {
+          "display": " run `vercel logs zenith-fresh-fx4p38ck9-admin-cleanexpo247s-projects.vercel.app`\nPS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith-Fresh> vercel --prod --force\nVercel CLI 42.3.0\n🔍  Inspect: https://vercel.com/admin-cleanexpo247s-projects/zenith-fresh/4HRzHEg9BqMaHV3rfzZ5Wq8n7iGc [1s]\n✅  Production: https://zenith-fresh-fwh97y9cw-admin-cleanexpo247s-projects.vercel.app [1s]\nError: Command \"npm ci && node build-optimized.js\" exited with 1\nError: Check your logs at https://zenith-fresh-fwh97y9cw-admin-cleanexpo247s-projects.vercel.app/_logs or run `vercel logs zenith-fresh-fwh97y9cw-admin-cleanexpo247s-projects.vercel.app`\nPS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith-Fresh> ",
+          "pastedContents": {}
+        },
+        {
+          "display": "[Pasted text #1 +10 lines]",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "PS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith-Fresh> vercel --prod --force\nVercel CLI 42.3.0\n? Set up and deploy “~\\Desktop\\Zenith-Fresh”? yes\n? Which scope should contain your project? cleanexpo247s-projects\n? Found project “admin-cleanexpo247s-projects/zenith-fresh”. Link to it? yes\n🔗  Linked to admin-cleanexpo247s-projects/zenith-fresh (created .vercel)\n🔍  Inspect: https://vercel.com/admin-cleanexpo247s-projects/zenith-fresh/4J96FHEFVwC6u4sYcZrubm3RN2LP [11s]\n✅  Production: https://zenith-fresh-fx4p38ck9-admin-cleanexpo247s-projects.vercel.app [11s]\nError: Command \"npm ci && node build-optimized.js\" exited with 1\nError: Check your logs at https://zenith-fresh-fx4p38ck9-admin-cleanexpo247s-projects.vercel.app/_logs or run `vercel logs zenith-fresh-fx4p38ck9-admin-cleanexpo247s-projects.vercel.app`\nPS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith-Fresh> "
+            }
+          }
+        },
+        {
+          "display": "Has everything now been committed the main branch?",
+          "pastedContents": {}
+        },
+        {
+          "display": "Failed to load resource: the server responded with a status of 404 ()\n[NEW] Explain Console errors by using Copilot in Edge: click\n         \n         to explain an error. \n        Learn more",
+          "pastedContents": {}
+        },
+        {
+          "display": "[Pasted text #1 +85 lines]",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "[21:10:13.440] Running build in Washington, D.C., USA (East) – iad1\n[21:10:13.440] Build machine configuration: 4 cores, 8 GB\n[21:10:13.459] Cloning github.com/CleanExpo/Zenith-Fresh (Branch: main, Commit: 1ec7358)\n[21:10:15.440] Warning: Failed to fetch one or more git submodules\n[21:10:15.440] Cloning completed: 1.981s\n[21:10:18.167] Restored build cache from previous deployment (2GHh9ahZpur6XCqjseVoqkFyt2od)\n[21:10:20.027] Running \"vercel build\"\n[21:10:20.525] Vercel CLI 43.3.0\n[21:10:21.584] Running \"install\" command: `npm ci`...\n[21:10:27.901] npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported\n[21:10:28.876] npm warn deprecated lodash.get@4.4.2: This package is deprecated. Use the optional chaining (?.) operator instead.\n[21:10:28.967] npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.\n[21:10:29.320] npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.\n[21:10:29.486] npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported\n[21:10:29.853] npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead\n[21:10:30.643] npm warn deprecated @types/long@5.0.0: This is a stub types definition. long provides its own type definitions, so you do not need this installed.\n[21:10:30.678] npm warn deprecated critters@0.0.25: Ownership of Critters has moved to the Nuxt team, who will be maintaining the project going forward. If you'd like to keep using Critters, please switch to the actively-maintained fork at https://github.com/danielroe/beasties\n[21:10:31.922] npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead\n[21:10:31.964] npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead\n[21:10:32.472] npm warn deprecated glob@7.1.6: Glob versions prior to v9 are no longer supported\n[21:10:32.517] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported\n[21:10:39.194] npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.\n[21:10:55.891] \n[21:10:55.891] added 1000 packages, and audited 1001 packages in 34s\n[21:10:55.891] \n[21:10:55.891] 206 packages are looking for funding\n[21:10:55.891]   run `npm fund` for details\n[21:10:55.907] \n[21:10:55.907] 4 vulnerabilities (3 low, 1 high)\n[21:10:55.907] \n[21:10:55.907] To address issues that do not require attention, run:\n[21:10:55.907]   npm audit fix\n[21:10:55.907] \n[21:10:55.907] Some issues need review, and may require choosing\n[21:10:55.907] a different dependency.\n[21:10:55.907] \n[21:10:55.908] Run `npm audit` for details.\n[21:10:56.174] Detected Next.js version: 14.2.30\n[21:10:56.175] Running \"npm ci && node build-optimized.js\"\n[21:11:06.431] npm warn deprecated @types/long@5.0.0: This is a stub types definition. long provides its own type definitions, so you do not need this installed.\n[21:11:06.488] npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.\n[21:11:06.549] npm warn deprecated lodash.get@4.4.2: This package is deprecated. Use the optional chaining (?.) operator instead.\n[21:11:06.669] npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.\n[21:11:06.697] npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead\n[21:11:06.715] npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported\n[21:11:06.872] npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported\n[21:11:06.890] npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead\n[21:11:06.892] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported\n[21:11:06.929] npm warn deprecated glob@7.1.6: Glob versions prior to v9 are no longer supported\n[21:11:07.319] npm warn deprecated critters@0.0.25: Ownership of Critters has moved to the Nuxt team, who will be maintaining the project going forward. If you'd like to keep using Critters, please switch to the actively-maintained fork at https://github.com/danielroe/beasties\n[21:11:07.649] npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead\n[21:11:12.154] npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.\n[21:11:23.923] \n[21:11:23.923] added 1000 packages, and audited 1001 packages in 28s\n[21:11:23.923] \n[21:11:23.923] 206 packages are looking for funding\n[21:11:23.923]   run `npm fund` for details\n[21:11:23.934] \n[21:11:23.934] 4 vulnerabilities (3 low, 1 high)\n[21:11:23.934] \n[21:11:23.934] To address issues that do not require attention, run:\n[21:11:23.934]   npm audit fix\n[21:11:23.934] \n[21:11:23.934] Some issues need review, and may require choosing\n[21:11:23.934] a different dependency.\n[21:11:23.934] \n[21:11:23.934] Run `npm audit` for details.\n[21:11:24.097] 🔧 Starting optimized production build...\n[21:11:24.097] 📝 Generating Prisma client...\n[21:11:25.760] Prisma schema loaded from prisma/schema.prisma\n[21:11:28.089] \n[21:11:28.090] ✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 1.25s\n[21:11:28.090] \n[21:11:28.090] Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)\n[21:11:28.090] \n[21:11:28.090] Help us improve the Prisma ORM for everyone. Share your feedback in a short 2-min survey: https://pris.ly/orm/survey/release-5-22\n[21:11:28.090] \n[21:11:28.346] ✅ Prisma client generated successfully\n[21:11:28.347] 🏗️ Building Next.js application...\n[21:11:29.466]   ▲ Next.js 14.2.30\n[21:11:29.466]   - Experiments (use with caution):\n[21:11:29.466]     · turbo\n[21:11:29.466]     · optimizeCss\n[21:11:29.467]     · scrollRestoration\n[21:11:29.467] \n[21:11:29.501]    Creating an optimized production build ..."
+            }
+          }
+        },
+        {
           "display": "Ok, the free ananlyser is coming up but when you apply your website url it asks you to sign up. I wanted the free analyser to be free and with no paywall or need to supply an email or sign in. can we change this please?",
           "pastedContents": {}
         },
@@ -606,34 +652,6 @@
         },
         {
           "display": "Lets look at the reamaining tasks in the No BS roadmap to continue. Lets use all the available agents to continue",
-          "pastedContents": {}
-        },
-        {
-          "display": "Are you using multiple agents or just one agent. Use multiple agents",
-          "pastedContents": {}
-        },
-        {
-          "display": "Lets continue to the next stage",
-          "pastedContents": {}
-        },
-        {
-          "display": "lets continue",
-          "pastedContents": {}
-        },
-        {
-          "display": "#please continue",
-          "pastedContents": {}
-        },
-        {
-          "display": "Using the method we have created, lets keep working through the remaining stages",
-          "pastedContents": {}
-        },
-        {
-          "display": "lets enact the power of the built in agents to do the next stage of the No B-S roadmap",
-          "pastedContents": {}
-        },
-        {
-          "display": "lets return to the last task we were performing",
           "pastedContents": {}
         }
       ],
