@@ -1,38 +1,24 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Check if Redis should be bypassed for development
-const SKIP_REDIS = process.env.SKIP_REDIS === 'true';
-
-// Performance monitoring with conditional Redis dependency
-class ConditionalPerformanceMonitor {
+// Simple performance monitoring without Redis dependency
+class SimplePerformanceMonitor {
   static startTimer(): { stop: () => number } {
     const startTime = Date.now();
     
     return {
       stop: () => {
         const endTime = Date.now();
-        const duration = endTime - startTime; // Duration in milliseconds
+        const duration = endTime - startTime;
         return duration;
       }
     };
   }
 
   static async recordMetric(metric: any): Promise<void> {
-    if (SKIP_REDIS) {
-      // In development mode without Redis, just log slow requests
-      if (metric.duration > 200) {
-        console.warn(`[DEV] Slow request: ${metric.endpoint} took ${metric.duration.toFixed(2)}ms`);
-      }
-      return;
-    }
-
-    try {
-      // Only import PerformanceMonitor when Redis is available
-      const { PerformanceMonitor } = await import('./lib/performance');
-      await PerformanceMonitor.recordMetric(metric);
-    } catch (error) {
-      console.error('Performance monitoring failed:', error);
+    // Simple logging for slow requests
+    if (metric.duration > 200) {
+      console.warn(`Slow request: ${metric.endpoint} took ${metric.duration.toFixed(2)}ms`);
     }
   }
 }
@@ -64,7 +50,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const timer = ConditionalPerformanceMonitor.startTimer();
+  const timer = SimplePerformanceMonitor.startTimer();
   
   // Clone the request headers
   const requestHeaders = new Headers(request.headers);
@@ -107,11 +93,11 @@ export async function middleware(request: NextRequest) {
   // Add performance timing header
   const duration = timer.stop();
   response.headers.set('X-Middleware-Time', `${duration.toFixed(2)}ms`);
-  response.headers.set('X-Redis-Status', SKIP_REDIS ? 'disabled-dev-mode' : 'enabled');
+  response.headers.set('X-Performance-Status', duration > 200 ? 'slow' : 'ok');
 
   // Record middleware performance conditionally
   if (!SKIP_MONITORING.some(skip => path.startsWith(skip))) {
-    ConditionalPerformanceMonitor.recordMetric({
+    SimplePerformanceMonitor.recordMetric({
       endpoint: `middleware:${path}`,
       method: request.method,
       duration,

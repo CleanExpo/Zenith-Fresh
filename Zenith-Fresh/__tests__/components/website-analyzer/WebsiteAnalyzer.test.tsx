@@ -32,71 +32,118 @@ jest.mock('@/components/website-analyzer/AnalysisDisplay', () => ({
 
 const mockAnalysisResults: AnalysisResults = {
   url: 'https://example.com',
+  timestamp: new Date(),
   performance: {
-    score: 85,
-    metrics: {
-      firstContentfulPaint: 1200,
-      largestContentfulPaint: 2400,
-      firstInputDelay: 100,
-      cumulativeLayoutShift: 0.1,
-      speedIndex: 2000,
-    },
-    opportunities: [
-      {
-        id: 'optimize-images',
-        title: 'Optimize images',
-        description: 'Compress and resize images',
-        impact: 'high',
-        savings: 500,
-      },
-    ],
+    loadTime: 1200,
+    firstContentfulPaint: 1200,
+    largestContentfulPaint: 2400,
+    firstInputDelay: 100,
+    cumulativeLayoutShift: 0.1,
+    timeToInteractive: 2500,
+    totalBlockingTime: 150,
+    speedIndex: 2000,
   },
   seo: {
     score: 90,
-    issues: [
-      {
-        type: 'warning',
-        message: 'Missing meta description',
-        element: 'head',
-        recommendation: 'Add a meta description tag',
-      },
-    ],
-    recommendations: [
-      {
-        category: 'content',
-        priority: 'high',
-        title: 'Add meta description',
-        description: 'Include a compelling meta description',
-      },
-    ],
+    title: {
+      present: true,
+      length: 45,
+      optimal: true,
+    },
+    metaDescription: {
+      present: true,
+      length: 140,
+      optimal: true,
+    },
+    headings: {
+      h1Count: 1,
+      h2Count: 3,
+      structure: true,
+    },
+    images: {
+      total: 5,
+      withAlt: 4,
+      missingAlt: 1,
+    },
+    internalLinks: 10,
+    externalLinks: 2,
+    canonicalUrl: 'https://example.com',
+    structured: true,
+    socialTags: {
+      openGraph: true,
+      twitterCard: true,
+    },
   },
   security: {
     score: 95,
+    https: true,
+    hsts: true,
+    contentSecurityPolicy: true,
+    xFrameOptions: true,
+    xContentTypeOptions: true,
+    referrerPolicy: true,
     vulnerabilities: [],
-    recommendations: [
-      {
-        category: 'headers',
-        priority: 'medium',
-        title: 'Add security headers',
-        description: 'Implement Content Security Policy',
-      },
-    ],
   },
   accessibility: {
     score: 88,
     violations: [
       {
-        id: 'color-contrast',
         impact: 'moderate',
         description: 'Low color contrast detected',
-        nodes: ['button.primary'],
+        element: 'button.primary',
         help: 'Ensure sufficient color contrast',
+        helpUrl: 'https://dequeuniversity.com/rules/axe/4.0/color-contrast',
       },
     ],
-    passes: [],
-    incomplete: [],
+    passes: [
+      {
+        description: 'Images have alt text',
+        element: 'img',
+      },
+    ],
+    colorContrast: {
+      passed: 15,
+      failed: 2,
+    },
+    keyboardNavigation: true,
+    screenReaderCompatibility: true,
+    semanticStructure: true,
   },
-  timestamp: Date.now(),
+  technical: {
+    framework: 'React',
+    cms: null,
+    analytics: ['Google Analytics'],
+    technologies: ['React', 'Next.js'],
+    serverResponse: {
+      status: 200,
+      headers: {},
+    },
+    domComplexity: {
+      elements: 150,
+      depth: 8,
+    },
+    resources: {
+      scripts: 5,
+      stylesheets: 3,
+      images: 5,
+      fonts: 2,
+    },
+  },
+  recommendations: {
+    performance: [
+      {
+        priority: 'high',
+        title: 'Optimize images',
+        description: 'Compress images to reduce load time',
+        impact: 'Improves page speed',
+        effort: 'medium',
+      },
+    ],
+    seo: [],
+    security: [],
+    accessibility: [],
+  },
+  overallScore: 88,
 }
 
 describe('WebsiteAnalyzer Component', () => {
