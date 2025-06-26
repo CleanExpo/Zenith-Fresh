@@ -421,12 +421,12 @@ async function getRequestHistory(identifier: string, startTime: number, endTime:
     
     return events.map(event => ({
       timestamp: event.createdAt.getTime(),
-      endpoint: event.details?.pathname || '',
-      method: event.details?.method || 'GET',
-      statusCode: event.details?.statusCode || 200,
+      endpoint: (event.details as any)?.pathname || '',
+      method: (event.details as any)?.method || 'GET',
+      statusCode: (event.details as any)?.statusCode || 200,
       userAgent: event.userAgent || '',
-      responseTime: event.details?.responseTime || 0,
-      payloadSize: event.details?.payloadSize || 0,
+      responseTime: (event.details as any)?.responseTime || 0,
+      payloadSize: (event.details as any)?.payloadSize || 0,
     }));
   } catch (error) {
     console.error('Error getting request history:', error);

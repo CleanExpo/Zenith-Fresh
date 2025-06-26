@@ -705,7 +705,7 @@ function RequirementCard({ requirement }: { requirement: any }) {
     not_applicable: { icon: XCircle, color: 'text-gray-600', bg: 'bg-gray-50' }
   };
 
-  const config = statusConfig[requirement.status || 'not_met'];
+  const config = statusConfig[requirement.status as keyof typeof statusConfig || 'not_met'];
   const Icon = config.icon;
 
   return (

@@ -116,7 +116,7 @@ export async function checkRateLimit(options: RateLimitOptions): Promise<RateLim
     }
     
     // Get rate limit configuration
-    const config = customConfig || RATE_LIMIT_CONFIGS[tier]?.[type] || RATE_LIMIT_CONFIGS.free[type];
+    const config = customConfig || RATE_LIMIT_CONFIGS[tier]?.[type as keyof typeof RATE_LIMIT_CONFIGS.free] || RATE_LIMIT_CONFIGS.free[type as keyof typeof RATE_LIMIT_CONFIGS.free];
     
     if (!config) {
       throw new Error(`No rate limit configuration found for type: ${type}`);
@@ -202,14 +202,20 @@ async function isWhitelisted(identifier: string): Promise<boolean> {
     // Check database
     const whitelisted = await prisma.iPWhitelist.findFirst({
       where: {
-        OR: [
-          { ipAddress: identifier },
-          { ipRange: { contains: identifier } },
-        ],
-        isActive: true,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } },
+        AND: [
+          {
+            OR: [
+              { ipAddress: identifier },
+              { ipRange: { contains: identifier } },
+            ],
+          },
+          { isActive: true },
+          {
+            OR: [
+              { expiresAt: null },
+              { expiresAt: { gt: new Date() } },
+            ],
+          },
         ],
       },
     });
@@ -240,14 +246,20 @@ async function isBlacklisted(identifier: string): Promise<boolean> {
     // Check database
     const blacklisted = await prisma.iPBlacklist.findFirst({
       where: {
-        OR: [
-          { ipAddress: identifier },
-          { ipRange: { contains: identifier } },
-        ],
-        isActive: true,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } },
+        AND: [
+          {
+            OR: [
+              { ipAddress: identifier },
+              { ipRange: { contains: identifier } },
+            ],
+          },
+          { isActive: true },
+          {
+            OR: [
+              { expiresAt: null },
+              { expiresAt: { gt: new Date() } },
+            ],
+          },
         ],
       },
     });

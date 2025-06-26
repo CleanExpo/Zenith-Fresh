@@ -471,7 +471,7 @@ export class AutoScaler {
     let evaluatedPolicies = 0;
     let triggeredActions = 0;
 
-    for (const policy of this.policies.values()) {
+    for (const policy of Array.from(this.policies.values())) {
       if (!policy.enabled) continue;
 
       evaluatedPolicies++;

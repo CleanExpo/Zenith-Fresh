@@ -8,7 +8,7 @@ import {
   Circle, 
   ArrowRight, 
   ArrowLeft, 
-  Skip, 
+  SkipForward as Skip, 
   Play,
   BookOpen,
   Users,
@@ -47,6 +47,7 @@ interface OnboardingData {
   hasInvitedTeamMember: boolean;
   hasCustomizedDashboard: boolean;
   hasSetupNotifications: boolean;
+  timeSpentOnSteps?: Record<string, number>;
 }
 
 const onboardingSteps: OnboardingStep[] = [
@@ -97,7 +98,12 @@ const onboardingSteps: OnboardingStep[] = [
   }
 ];
 
-export default function OnboardingFlow() {
+interface OnboardingFlowProps {
+  onComplete?: () => void;
+  onSkip?: () => void;
+}
+
+export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowProps = {}) {
   const { data: session } = useSession();
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     currentStep: 0,
@@ -204,7 +210,7 @@ export default function OnboardingFlow() {
         body: JSON.stringify({
           metricType: 'time-to-value',
           metricName: 'onboarding-completion',
-          value: Math.floor((new Date().getTime() - new Date(session?.user?.createdAt || Date.now()).getTime()) / (1000 * 60)),
+          value: Math.floor((new Date().getTime() - new Date((session?.user as any)?.createdAt || Date.now()).getTime()) / (1000 * 60)),
           unit: 'minutes',
           category: 'onboarding',
           milestone: 'onboarding-complete'

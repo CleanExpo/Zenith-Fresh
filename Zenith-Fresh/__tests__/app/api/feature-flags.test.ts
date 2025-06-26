@@ -19,6 +19,25 @@ jest.mock('@/lib/auth', () => ({
   },
 }))
 
+// Mock NextRequest to avoid cookies issues
+jest.mock('next/server', () => ({
+  NextRequest: jest.fn().mockImplementation((url, options = {}) => {
+    return {
+      url,
+      method: options.method || 'GET',
+      headers: new Headers(options.headers),
+      body: options.body,
+      json: async () => options.body ? JSON.parse(options.body) : {},
+    }
+  }),
+  NextResponse: {
+    json: (data: any, options?: any) => ({
+      json: async () => data,
+      status: options?.status || 200,
+    }),
+  },
+}))
+
 const mockGetServerSession = require('next-auth').getServerSession as jest.MockedFunction<any>
 
 describe('Feature Flags API', () => {

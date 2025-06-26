@@ -790,7 +790,7 @@ export default function TaxComplianceManager({ userId, isAdmin = false }: TaxCom
                               <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                                 <div>
                                   <span className="text-sm font-medium">{rate.jurisdiction}</span>
-                                  <Badge className={getTypeColor(rate.type)} size="sm" variant="outline">
+                                  <Badge className={getTypeColor(rate.type)} variant="outline">
                                     {rate.type.toUpperCase()}
                                   </Badge>
                                 </div>

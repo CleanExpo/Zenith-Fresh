@@ -209,7 +209,7 @@ export default function DataSyncPipelines() {
 
   // Handle pipeline execution
   const handleRunPipeline = useCallback(async (pipelineId: string) => {
-    setRunningPipelines(prev => new Set([...prev, pipelineId]));
+    setRunningPipelines(prev => new Set([...Array.from(prev), pipelineId]));
     
     // Simulate pipeline execution
     setTimeout(() => {

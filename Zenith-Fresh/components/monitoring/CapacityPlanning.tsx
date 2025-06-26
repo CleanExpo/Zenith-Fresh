@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ServerStackIcon, 
   ChartBarIcon, 
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   ExclamationTriangleIcon,
   LightBulbIcon,
   ClockIcon,

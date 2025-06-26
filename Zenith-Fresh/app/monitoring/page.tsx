@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { PerformanceMonitoringDashboard } from '@/components/monitoring/PerformanceMonitoringDashboard';
+import { ErrorMonitoringDashboard } from '@/components/monitoring/ErrorMonitoringDashboard';
+import { MetricsErrorBoundary } from '@/components/error-boundaries';
 
 export const metadata: Metadata = {
   title: 'Performance Monitoring - Zenith Platform',
@@ -34,13 +36,21 @@ export default async function MonitoringPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Performance Monitoring</h1>
+          <h1 className="text-3xl font-bold text-gray-900">System Monitoring</h1>
           <p className="text-gray-600 mt-2">
-            Comprehensive observability and performance insights for Zenith Platform
+            Comprehensive observability, performance insights, and error tracking for Zenith Platform
           </p>
         </div>
         
-        <PerformanceMonitoringDashboard />
+        <div className="space-y-8">
+          <MetricsErrorBoundary>
+            <ErrorMonitoringDashboard />
+          </MetricsErrorBoundary>
+          
+          <MetricsErrorBoundary>
+            <PerformanceMonitoringDashboard />
+          </MetricsErrorBoundary>
+        </div>
       </div>
     </div>
   );

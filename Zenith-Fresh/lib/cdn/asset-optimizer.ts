@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import sharp from 'sharp';
 import { Redis } from 'ioredis';
 import { performance } from 'perf_hooks';
+
+// Conditional sharp import for environments where it's not available
+let sharp: any;
+try {
+  sharp = require('sharp');
+} catch (error) {
+  console.warn('Sharp not available, image optimization disabled');
+  sharp = null;
+}
 
 interface AssetOptimizationConfig {
   images: {
@@ -81,10 +89,14 @@ export class AssetOptimizer {
     } = {}
   ): Promise<{
     optimized: Buffer;
-    metadata: sharp.Metadata;
+    metadata: any;
     metrics: AssetMetrics;
     variants: Array<{ format: string; size: number; buffer: Buffer }>;
   }> {
+    if (!sharp) {
+      throw new Error('Sharp is not available for image optimization');
+    }
+    
     const startTime = performance.now();
     const originalSize = buffer.length;
 
@@ -370,7 +382,7 @@ export class AssetOptimizer {
   /**
    * Get best image format based on browser support and image characteristics
    */
-  private getBestImageFormat(metadata: sharp.Metadata): 'webp' | 'avif' | 'jpeg' | 'png' {
+  private getBestImageFormat(metadata: any): 'webp' | 'avif' | 'jpeg' | 'png' {
     // AVIF for better compression (if supported)
     if (this.config.images.formats.includes('avif')) {
       return 'avif';
@@ -643,7 +655,7 @@ export class AssetOptimizer {
     let totalOptimizedSize = 0;
     let totalProcessingTime = 0;
 
-    for (const [type, metrics] of this.metrics.entries()) {
+    for (const [type, metrics] of Array.from(this.metrics.entries())) {
       const cacheHits = metrics.filter(m => m.cacheHit).length;
       const totalSavings = metrics.reduce((sum, m) => sum + (m.originalSize - m.optimizedSize), 0);
       
@@ -699,7 +711,7 @@ export class AssetOptimizer {
     let totalHits = 0;
     let totalRequests = 0;
 
-    for (const type of this.metrics.keys()) {
+    for (const type of Array.from(this.metrics.keys())) {
       const metrics = this.metrics.get(type)!;
       totalRequests += metrics.length;
       totalHits += metrics.filter(m => m.cacheHit).length;

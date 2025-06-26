@@ -598,7 +598,17 @@ export default function EnterpriseBillingDashboard({ userId, isAdmin = false }: 
                       mode="range"
                       defaultMonth={dateRange?.from}
                       selected={dateRange}
-                      onSelect={(range) => setDateRange(range || { from: undefined, to: undefined })}
+                      onSelect={(date: Date | DateRange | undefined) => {
+                        if (!date) {
+                          setDateRange({ from: undefined, to: undefined })
+                        } else if (date instanceof Date) {
+                          // Single date selected, treat as range start
+                          setDateRange({ from: date, to: undefined })
+                        } else {
+                          // DateRange selected
+                          setDateRange(date)
+                        }
+                      }}
                       numberOfMonths={2}
                     />
                   </PopoverContent>

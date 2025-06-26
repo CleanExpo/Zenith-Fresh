@@ -250,14 +250,32 @@ export default function TeamPage() {
         <div className="mt-6">
           {activeTab === 'overview' && <TeamDetails team={team} />}
           {activeTab === 'members' && (
-            <TeamMembers team={team} onTeamUpdate={setTeam} />
+            <TeamMembers 
+              team={team as any} 
+              onTeamUpdate={(updatedTeam) => {
+                // Merge the updated team with the current team data
+                setTeam(prev => prev ? { ...prev, ...updatedTeam } as Team : updatedTeam as Team);
+              }} 
+            />
           )}
           {activeTab === 'projects' && (
-            <TeamProjects team={team} onTeamUpdate={setTeam} />
+            <TeamProjects 
+              team={team as any} 
+              onTeamUpdate={(updatedTeam) => {
+                // Merge the updated team with the current team data
+                setTeam(prev => prev ? { ...prev, ...updatedTeam } as Team : updatedTeam as Team);
+              }} 
+            />
           )}
           {activeTab === 'activity' && <TeamActivity team={team} />}
           {activeTab === 'settings' && team.userRole === 'ADMIN' && (
-            <TeamSettings team={team} onTeamUpdate={setTeam} />
+            <TeamSettings 
+              team={team as any} 
+              onTeamUpdate={(updatedTeam) => {
+                // Merge the updated team with the current team data
+                setTeam(prev => prev ? { ...prev, ...updatedTeam } as Team : updatedTeam as Team);
+              }} 
+            />
           )}
         </div>
       </div>

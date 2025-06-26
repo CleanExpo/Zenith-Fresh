@@ -301,7 +301,7 @@ class MetricsCollector {
   private metrics = new Map<string, PerformanceMetric[]>();
   private customMetrics = new Map<string, CustomMetric>();
   private redis: Redis;
-  private performanceObserver: PerformanceObserver;
+  private performanceObserver!: PerformanceObserver;
 
   constructor(redis: Redis) {
     this.redis = redis;
@@ -397,7 +397,7 @@ class MetricsCollector {
     const now = Date.now();
     const since = now - timeWindow;
 
-    for (const [name, metricArray] of this.metrics.entries()) {
+    for (const [name, metricArray] of Array.from(this.metrics.entries())) {
       const recentMetrics = metricArray.filter(m => m.timestamp >= since);
       
       if (recentMetrics.length > 0) {
@@ -450,7 +450,7 @@ class MetricsCollector {
       }
     });
 
-    this.performanceObserver.observe({ entryTypes: ['measure', 'navigation', 'resource'] });
+    this.performanceObserver.observe({ entryTypes: ['measure', 'resource'] });
   }
 
   private startSystemMetricsCollection(): void {

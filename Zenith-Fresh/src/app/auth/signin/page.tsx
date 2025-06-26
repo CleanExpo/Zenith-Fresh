@@ -1,5 +1,10 @@
 import { SignInForm } from '@/components/auth/SignInForm';
+import { SignInErrorBoundary } from '@/components/error-boundaries';
 
 export default function SignInPage() {
-  return <SignInForm />;
+  return (
+    <SignInErrorBoundary>
+      <SignInForm />
+    </SignInErrorBoundary>
+  );
 }

@@ -139,7 +139,7 @@ export default function ScheduledScans({
         <CreateScheduledScanForm
           schedulePresets={schedulePresets}
           onCancel={() => setShowCreateForm(false)}
-          onSuccess={(scan) => {
+          onSuccess={(scan: any) => {
             onScheduledScanCreated(scan);
             setShowCreateForm(false);
           }}

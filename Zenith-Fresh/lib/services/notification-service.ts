@@ -84,7 +84,7 @@ export class NotificationService {
     }
   }
 
-  private async sendEmailNotification(data: NotificationData, emailAddress: string) {
+  public async sendEmailNotification(data: NotificationData, emailAddress: string): Promise<any> {
     const { scan, alerts, type } = data;
     
     const subject = type === 'alert' 
@@ -130,7 +130,7 @@ export class NotificationService {
     }
   }
 
-  private async sendSlackNotification(data: NotificationData, webhookUrl: string) {
+  public async sendSlackNotification(data: NotificationData, webhookUrl: string): Promise<{ success: boolean }> {
     const { scan, alerts, type } = data;
     
     const message = {
@@ -223,7 +223,7 @@ export class NotificationService {
     }
   }
 
-  private async sendDiscordNotification(data: NotificationData, webhookUrl: string) {
+  public async sendDiscordNotification(data: NotificationData, webhookUrl: string): Promise<{ success: boolean }> {
     const { scan, alerts, type } = data;
     
     const embed = {
@@ -322,7 +322,11 @@ export class NotificationService {
     }
   }
 
-  private async sendWebhookNotification(data: NotificationData, webhookUrl: string) {
+  /**
+   * Sends a webhook notification with scan data to a custom webhook URL
+   * This method is public and can be used for testing webhook notifications
+   */
+  public async sendWebhookNotification(data: NotificationData, webhookUrl: string): Promise<{ success: boolean }> {
     const { scan, alerts, type } = data;
     
     const payload = {

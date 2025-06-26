@@ -29,9 +29,8 @@ import {
   Download,
   Eye,
   Cpu,
-  Memory,
-  Network,
-  HardDrive
+  HardDrive,
+  Network
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 

@@ -435,12 +435,12 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
     <>
       <div className={className} style={gridStyle}>
         {images.map((image, index) => (
-          <LazyLoadContainer
+          <div
             key={index}
-            offset={lazyLoadOffset}
             className="cursor-pointer hover:opacity-90 transition-opacity"
             onClick={() => handleImageClick(image.src)}
           >
+            <LazyLoadContainer offset={lazyLoadOffset}>
             <OptimizedImage
               src={image.src}
               alt={image.alt}
@@ -458,6 +458,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               </p>
             )}
           </LazyLoadContainer>
+          </div>
         ))}
       </div>
 

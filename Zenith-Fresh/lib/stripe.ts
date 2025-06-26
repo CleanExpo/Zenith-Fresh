@@ -11,7 +11,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 // Initialize Stripe with enterprise configuration
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-05-28.basil',
   typescript: true,
   telemetry: false, // Disable telemetry for security compliance
   maxNetworkRetries: 3,
@@ -367,7 +367,8 @@ export class StripeHelpers {
    */
   static hasFeature(userTier: string, feature: string): boolean {
     const tierConfig = PLAN_CONFIG[userTier as keyof typeof PLAN_CONFIG];
-    return tierConfig?.features[feature as keyof typeof tierConfig.features] || false;
+    const featureValue = tierConfig?.features[feature as keyof typeof tierConfig.features];
+    return typeof featureValue === 'boolean' ? featureValue : false;
   }
 
   /**

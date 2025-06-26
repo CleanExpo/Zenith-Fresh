@@ -68,7 +68,6 @@ class CronScheduler {
           }
         },
         {
-          scheduled: false, // Don't start immediately
           timezone: 'UTC', // Use UTC for consistency
         }
       );
@@ -268,7 +267,7 @@ class CronScheduler {
   async shutdown() {
     console.log('Shutting down cron scheduler...');
     
-    for (const [id, task] of this.scheduledTasks) {
+    for (const [id, task] of Array.from(this.scheduledTasks)) {
       task.stop();
     }
     

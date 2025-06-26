@@ -1,0 +1,891 @@
+{
+  "timestamp": "2025-06-26T01:02:18.362Z",
+  "summary": {
+    "totalPackages": 0,
+    "vulnerabilities": {
+      "critical": 0,
+      "high": 7,
+      "moderate": 0,
+      "low": 2,
+      "total": 9
+    },
+    "outdated": {
+      "major": 13,
+      "minor": 2,
+      "patch": 0
+    },
+    "licenseIssues": 0,
+    "maliciousRisk": 28,
+    "largePackages": 1
+  },
+  "details": {
+    "vulnerabilities": [
+      {
+        "package": "@lhci/cli",
+        "severity": "high",
+        "fixAvailable": {
+          "name": "@lhci/cli",
+          "version": "0.15.1",
+          "isSemVerMajor": true
+        },
+        "via": [
+          "@lhci/utils",
+          "lighthouse"
+        ]
+      },
+      {
+        "package": "@lhci/utils",
+        "severity": "high",
+        "fixAvailable": {
+          "name": "@lhci/cli",
+          "version": "0.15.1",
+          "isSemVerMajor": true
+        },
+        "via": [
+          "lighthouse"
+        ]
+      },
+      {
+        "package": "@puppeteer/browsers",
+        "severity": "high",
+        "fixAvailable": {
+          "name": "lighthouse",
+          "version": "12.6.1",
+          "isSemVerMajor": true
+        },
+        "via": [
+          "tar-fs"
+        ]
+      },
+      {
+        "package": "@sentry/node",
+        "severity": "low",
+        "fixAvailable": {
+          "name": "lighthouse",
+          "version": "12.6.1",
+          "isSemVerMajor": true
+        },
+        "via": [
+          "cookie"
+        ]
+      },
+      {
+        "package": "cookie",
+        "severity": "low",
+        "fixAvailable": {
+          "name": "lighthouse",
+          "version": "12.6.1",
+          "isSemVerMajor": true
+        },
+        "via": [
+          {
+            "source": 1103907,
+            "name": "cookie",
+            "dependency": "cookie",
+            "title": "cookie accepts cookie name, path, and domain with out of bounds characters",
+            "url": "https://github.com/advisories/GHSA-pxg6-pf52-xh8x",
+            "severity": "low",
+            "cwe": [
+              "CWE-74"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<0.7.0"
+          }
+        ]
+      },
+      {
+        "package": "lighthouse",
+        "severity": "high",
+        "fixAvailable": {
+          "name": "lighthouse",
+          "version": "12.6.1",
+          "isSemVerMajor": true
+        },
+        "via": [
+          "@sentry/node",
+          "puppeteer-core"
+        ]
+      },
+      {
+        "package": "puppeteer-core",
+        "severity": "high",
+        "fixAvailable": {
+          "name": "lighthouse",
+          "version": "12.6.1",
+          "isSemVerMajor": true
+        },
+        "via": [
+          "@puppeteer/browsers",
+          "tar-fs",
+          "ws"
+        ]
+      },
+      {
+        "package": "tar-fs",
+        "severity": "high",
+        "fixAvailable": {
+          "name": "lighthouse",
+          "version": "12.6.1",
+          "isSemVerMajor": true
+        },
+        "via": [
+          {
+            "source": 1104677,
+            "name": "tar-fs",
+            "dependency": "tar-fs",
+            "title": "tar-fs Vulnerable to Link Following and Path Traversal via Extracting a Crafted tar File",
+            "url": "https://github.com/advisories/GHSA-pq67-2wwv-3xjx",
+            "severity": "high",
+            "cwe": [
+              "CWE-22"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+            },
+            "range": ">=2.0.0 <2.1.2"
+          },
+          {
+            "source": 1105197,
+            "name": "tar-fs",
+            "dependency": "tar-fs",
+            "title": "tar-fs can extract outside the specified dir with a specific tarball",
+            "url": "https://github.com/advisories/GHSA-8cj5-5rvv-wf4v",
+            "severity": "high",
+            "cwe": [
+              "CWE-22"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": ">=2.0.0 <2.1.3"
+          }
+        ]
+      },
+      {
+        "package": "ws",
+        "severity": "high",
+        "fixAvailable": {
+          "name": "lighthouse",
+          "version": "12.6.1",
+          "isSemVerMajor": true
+        },
+        "via": [
+          {
+            "source": 1098392,
+            "name": "ws",
+            "dependency": "ws",
+            "title": "ws affected by a DoS when handling a request with many HTTP headers",
+            "url": "https://github.com/advisories/GHSA-3h5v-q93c-6h6q",
+            "severity": "high",
+            "cwe": [
+              "CWE-476"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=8.0.0 <8.17.1"
+          }
+        ]
+      }
+    ],
+    "outdated": [
+      {
+        "package": "@lhci/cli",
+        "current": "0.12.0",
+        "wanted": "0.12.0",
+        "latest": "0.15.1",
+        "type": "minor",
+        "isCritical": false
+      },
+      {
+        "package": "@prisma/client",
+        "current": "5.22.0",
+        "wanted": "5.22.0",
+        "latest": "6.10.1",
+        "type": "major",
+        "isCritical": false
+      },
+      {
+        "package": "@types/bcryptjs",
+        "current": "2.4.6",
+        "wanted": "2.4.6",
+        "latest": "3.0.0",
+        "type": "major",
+        "isCritical": false
+      },
+      {
+        "package": "@types/node",
+        "current": "20.19.1",
+        "wanted": "20.19.1",
+        "latest": "24.0.4",
+        "type": "major",
+        "isCritical": false
+      },
+      {
+        "package": "@types/react",
+        "current": "18.3.23",
+        "wanted": "18.3.23",
+        "latest": "19.1.8",
+        "type": "major",
+        "isCritical": false
+      },
+      {
+        "package": "@types/react-dom",
+        "current": "18.3.7",
+        "wanted": "18.3.7",
+        "latest": "19.1.6",
+        "type": "major",
+        "isCritical": false
+      },
+      {
+        "package": "bcryptjs",
+        "current": "2.4.3",
+        "wanted": "2.4.3",
+        "latest": "3.0.2",
+        "type": "major",
+        "isCritical": false
+      },
+      {
+        "package": "discord.js",
+        "current": "14.20.0",
+        "wanted": "14.21.0",
+        "latest": "14.21.0",
+        "type": "minor",
+        "isCritical": false
+      },
+      {
+        "package": "glob",
+        "current": "8.1.0",
+        "wanted": "8.1.0",
+        "latest": "11.0.3",
+        "type": "major",
+        "isCritical": false
+      },
+      {
+        "package": "lighthouse",
+        "current": "11.7.1",
+        "wanted": "11.7.1",
+        "latest": "12.6.1",
+        "type": "major",
+        "isCritical": false
+      },
+      {
+        "package": "next",
+        "current": "14.2.30",
+        "wanted": "14.2.30",
+        "latest": "15.3.4",
+        "type": "major",
+        "isCritical": true
+      },
+      {
+        "package": "prisma",
+        "current": "5.22.0",
+        "wanted": "5.22.0",
+        "latest": "6.10.1",
+        "type": "major",
+        "isCritical": true
+      },
+      {
+        "package": "react",
+        "current": "18.3.1",
+        "wanted": "18.3.1",
+        "latest": "19.1.0",
+        "type": "major",
+        "isCritical": true
+      },
+      {
+        "package": "react-dom",
+        "current": "18.3.1",
+        "wanted": "18.3.1",
+        "latest": "19.1.0",
+        "type": "major",
+        "isCritical": false
+      },
+      {
+        "package": "tailwindcss",
+        "current": "3.4.17",
+        "wanted": "3.4.17",
+        "latest": "4.1.10",
+        "type": "major",
+        "isCritical": false
+      }
+    ],
+    "licenseIssues": [],
+    "maliciousRisk": [
+      {
+        "package": "@prisma/client",
+        "patterns": [
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "generator-build/index.js"
+          },
+          {
+            "pattern": "/process\\.env\\.(npm_token|github_token|aws)/i",
+            "file": "generator-build/index.js"
+          },
+          {
+            "pattern": "/eval\\s*\\(/",
+            "file": "runtime/binary.js"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "runtime/binary.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "runtime/binary.js"
+          }
+        ]
+      },
+      {
+        "package": "bcryptjs",
+        "patterns": [
+          {
+            "pattern": "/eval\\s*\\(/",
+            "file": "tests/suite.js"
+          }
+        ]
+      },
+      {
+        "package": "bull",
+        "patterns": [
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "lib/getters.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "lib/job.js"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "lib/process/child-pool.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "lib/queue.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "lib/queue.js"
+          }
+        ]
+      },
+      {
+        "package": "bullmq",
+        "patterns": [
+          {
+            "pattern": "/child_process/",
+            "file": "dist/cjs/classes/child.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/cjs/classes/flow-producer.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/cjs/classes/job.js"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "dist/cjs/classes/main-base.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/cjs/classes/queue-getters.js"
+          }
+        ]
+      },
+      {
+        "package": "chart.js",
+        "patterns": [
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "dist/chart.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "dist/chart.umd.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/chart.umd.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "dist/chart.umd.min.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/chart.umd.min.js"
+          }
+        ]
+      },
+      {
+        "package": "chartjs-adapter-date-fns",
+        "patterns": [
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/chartjs-adapter-date-fns.bundle.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/chartjs-adapter-date-fns.bundle.min.js"
+          }
+        ]
+      },
+      {
+        "package": "chrome-launcher",
+        "patterns": [
+          {
+            "pattern": "/child_process/",
+            "file": "dist/chrome-finder.js"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "dist/chrome-launcher.d.ts"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "dist/chrome-launcher.js"
+          },
+          {
+            "pattern": "/\\.spawn\\s*\\(/",
+            "file": "dist/chrome-launcher.js"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "dist/utils.d.ts"
+          }
+        ]
+      },
+      {
+        "package": "d3",
+        "patterns": [
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "dist/d3.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/d3.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "dist/d3.min.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/d3.min.js"
+          }
+        ]
+      },
+      {
+        "package": "discord.js",
+        "patterns": [
+          {
+            "pattern": "/eval\\s*\\(/",
+            "file": "src/client/Client.js"
+          }
+        ]
+      },
+      {
+        "package": "html2canvas",
+        "patterns": [
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "dist/html2canvas.esm.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "dist/html2canvas.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "dist/html2canvas.min.js"
+          }
+        ]
+      },
+      {
+        "package": "ioredis",
+        "patterns": [
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "built/Pipeline.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "built/autoPipelining.js"
+          }
+        ]
+      },
+      {
+        "package": "jspdf",
+        "patterns": [
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "dist/jspdf.es.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/jspdf.es.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "dist/jspdf.es.min.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/jspdf.es.min.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "dist/jspdf.node.js"
+          }
+        ]
+      },
+      {
+        "package": "node-cron",
+        "patterns": [
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/cjs/pattern/convertion/range-conversion.js"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "dist/cjs/tasks/background-scheduled-task/background-scheduled-task.d.ts"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "dist/cjs/tasks/background-scheduled-task/background-scheduled-task.js"
+          }
+        ]
+      },
+      {
+        "package": "puppeteer-core",
+        "patterns": [
+          {
+            "pattern": "/child_process/",
+            "file": "lib/cjs/puppeteer/api/Browser.d.ts"
+          },
+          {
+            "pattern": "/eval\\s*\\(/",
+            "file": "lib/cjs/puppeteer/api/ElementHandle.d.ts"
+          },
+          {
+            "pattern": "/eval\\s*\\(/",
+            "file": "lib/cjs/puppeteer/api/ElementHandle.js"
+          },
+          {
+            "pattern": "/eval\\s*\\(/",
+            "file": "lib/cjs/puppeteer/api/Frame.d.ts"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "lib/cjs/puppeteer/api/Frame.d.ts"
+          }
+        ]
+      },
+      {
+        "package": "rate-limiter-flexible",
+        "patterns": [
+          {
+            "pattern": "/eval\\s*\\(/",
+            "file": "lib/RateLimiterRedis.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "lib/RateLimiterRedis.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "lib/RateLimiterValkey.js"
+          }
+        ]
+      },
+      {
+        "package": "react",
+        "patterns": [
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "cjs/react.development.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "umd/react.development.js"
+          }
+        ]
+      },
+      {
+        "package": "react-dom",
+        "patterns": [
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "cjs/react-dom-server-legacy.browser.development.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "cjs/react-dom-server-legacy.browser.production.min.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "cjs/react-dom-server-legacy.node.development.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "cjs/react-dom-server-legacy.node.production.min.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "cjs/react-dom-server.browser.development.js"
+          }
+        ]
+      },
+      {
+        "package": "recharts",
+        "patterns": [
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "es6/cartesian/YAxis.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "es6/component/Label.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "es6/component/LabelList.js"
+          }
+        ]
+      },
+      {
+        "package": "stripe",
+        "patterns": [
+          {
+            "pattern": "/child_process/",
+            "file": "cjs/platform/NodePlatformFunctions.js"
+          }
+        ]
+      },
+      {
+        "package": "tailwind-merge",
+        "patterns": [
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/bundle-cjs.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "dist/es5/bundle-cjs.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "src/lib/class-group-utils.ts"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "src/lib/validators.ts"
+          }
+        ]
+      },
+      {
+        "package": "tailwindcss",
+        "patterns": [
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "lib/lib/collapseDuplicateDeclarations.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "lib/lib/generateRules.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "lib/lib/generateRules.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "lib/lib/setupContextUtils.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "lib/lib/setupContextUtils.js"
+          }
+        ]
+      },
+      {
+        "package": "typescript",
+        "patterns": [
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "lib/_tsc.js"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "lib/_tsc.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "lib/_tsc.js"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "lib/_tsserver.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "lib/_tsserver.js"
+          }
+        ]
+      },
+      {
+        "package": "@lhci/cli",
+        "patterns": [
+          {
+            "pattern": "/child_process/",
+            "file": "src/autorun/autorun.js"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "src/collect/node-runner.js"
+          },
+          {
+            "pattern": "/\\.spawn\\s*\\(/",
+            "file": "src/collect/node-runner.js"
+          }
+        ]
+      },
+      {
+        "package": "@types/jest",
+        "patterns": [
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "index.d.ts"
+          }
+        ]
+      },
+      {
+        "package": "@types/node",
+        "patterns": [
+          {
+            "pattern": "/child_process/",
+            "file": "child_process.d.ts"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "child_process.d.ts"
+          },
+          {
+            "pattern": "/\\.spawn\\s*\\(/",
+            "file": "child_process.d.ts"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "cluster.d.ts"
+          },
+          {
+            "pattern": "/\\.spawn\\s*\\(/",
+            "file": "cluster.d.ts"
+          }
+        ]
+      },
+      {
+        "package": "cross-env",
+        "patterns": [
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "src/index.js"
+          }
+        ]
+      },
+      {
+        "package": "lighthouse",
+        "patterns": [
+          {
+            "pattern": "/child_process/",
+            "file": "cli/run.js"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "cli/test/smokehouse/lib/child-process-error.d.ts"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "cli/test/smokehouse/lib/child-process-error.d.ts"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "cli/test/smokehouse/lib/child-process-error.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "cli/test/smokehouse/lib/child-process-error.js"
+          }
+        ]
+      },
+      {
+        "package": "prisma",
+        "patterns": [
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "build/child.js"
+          },
+          {
+            "pattern": "/eval\\s*\\(/",
+            "file": "build/index.js"
+          },
+          {
+            "pattern": "/Function\\s*\\(/",
+            "file": "build/index.js"
+          },
+          {
+            "pattern": "/child_process/",
+            "file": "build/index.js"
+          },
+          {
+            "pattern": "/\\.exec\\s*\\(/",
+            "file": "build/index.js"
+          }
+        ]
+      }
+    ],
+    "largePackages": [
+      {
+        "package": "@prisma/client",
+        "size": 8382279,
+        "sizeHuman": "7.99 MB"
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "message": "Address 7 high severity vulnerabilities",
+      "action": "Run: npm audit fix"
+    },
+    {
+      "priority": "MEDIUM",
+      "message": "13 packages have major version updates available",
+      "action": "Review breaking changes before updating"
+    },
+    {
+      "priority": "CRITICAL",
+      "message": "28 packages contain suspicious code patterns",
+      "action": "Investigate and consider removing these packages"
+    },
+    {
+      "priority": "LOW",
+      "message": "1 packages are unusually large (>5MB)",
+      "action": "Consider lighter alternatives for better performance"
+    }
+  ],
+  "fixes": [
+    "Updated package-lock.json"
+  ]
+}

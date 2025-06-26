@@ -12,12 +12,15 @@ let systemMetrics = {
   performance: {
     averageResponseTime: 0,
     slowQueries: 0,
-    errorRate: 0
+    errorRate: 0,
+    availability: 99.9
   },
   resources: {
     memoryUsage: 0,
     cpuLoad: 0,
-    activeConnections: 0
+    activeConnections: 0,
+    diskUsage: 0,
+    networkIO: 0
   },
   traffic: {
     currentLoad: 0,

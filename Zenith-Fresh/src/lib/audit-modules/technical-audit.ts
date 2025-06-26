@@ -22,7 +22,8 @@ export class TechnicalAudit {
       checks: {},
       issues: [],
       recommendations: [],
-      metrics: {}
+      metrics: {},
+      error: undefined as string | undefined
     };
 
     try {
@@ -47,7 +48,7 @@ export class TechnicalAudit {
     } catch (error) {
       console.error('Technical audit failed:', error);
       results.status = 'failed';
-      results.error = error.message;
+      results.error = (error as Error).message;
       return results;
     }
   }
@@ -78,7 +79,7 @@ export class TechnicalAudit {
       }
 
     } catch (error) {
-      results.checks.ssl = { score: 0, error: error.message };
+      results.checks.ssl = { score: 0, error: (error as Error).message };
     }
   }
 
@@ -97,7 +98,7 @@ export class TechnicalAudit {
 
       // Count security headers
       Object.keys(checks).forEach(key => {
-        if (key.startsWith('has') && checks[key]) {
+        if (key.startsWith('has') && (checks as any)[key]) {
           checks.securityHeadersCount++;
         }
       });
@@ -119,7 +120,7 @@ export class TechnicalAudit {
       }
 
     } catch (error) {
-      results.checks.securityHeaders = { score: 0, error: error.message };
+      results.checks.securityHeaders = { score: 0, error: (error as Error).message };
     }
   }
 
@@ -196,7 +197,7 @@ export class TechnicalAudit {
       }
 
     } catch (error) {
-      results.checks.seoBasics = { score: 0, error: error.message };
+      results.checks.seoBasics = { score: 0, error: (error as Error).message };
     }
   }
 
@@ -253,7 +254,7 @@ export class TechnicalAudit {
       }
 
     } catch (error) {
-      results.checks.accessibility = { score: 0, error: error.message };
+      results.checks.accessibility = { score: 0, error: (error as Error).message };
     }
   }
 
@@ -294,7 +295,7 @@ export class TechnicalAudit {
       }
 
     } catch (error) {
-      results.checks.mobileFriendliness = { score: 0, error: error.message };
+      results.checks.mobileFriendliness = { score: 0, error: (error as Error).message };
     }
   }
 
@@ -337,7 +338,7 @@ export class TechnicalAudit {
       }
 
     } catch (error) {
-      results.checks.performanceTechnical = { score: 0, error: error.message };
+      results.checks.performanceTechnical = { score: 0, error: (error as Error).message };
     }
   }
 
@@ -375,7 +376,7 @@ export class TechnicalAudit {
       }
 
     } catch (error) {
-      results.checks.structuredData = { score: 0, error: error.message };
+      results.checks.structuredData = { score: 0, error: (error as Error).message };
     }
   }
 
@@ -445,7 +446,7 @@ export class TechnicalAudit {
       }
 
     } catch (error) {
-      results.checks.robotsAndSitemap = { score: 0, error: error.message };
+      results.checks.robotsAndSitemap = { score: 0, error: (error as Error).message };
     }
   }
 

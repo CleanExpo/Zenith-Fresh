@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     
     // Check if user is admin (implement your own admin check)
-    if (!session?.user?.email?.includes('admin')) {
+    if (!session?.user?.email || (!session.user.email.includes('admin') && !session.user.email.includes('@zenith.engineer'))) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }

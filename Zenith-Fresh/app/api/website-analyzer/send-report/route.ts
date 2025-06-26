@@ -1,3 +1,4 @@
+import React from 'react';
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -56,11 +57,16 @@ export async function POST(request: NextRequest) {
 
 async function generatePDFReport(analysisResults: AnalysisResults, reportConfig: ReportConfig): Promise<Buffer> {
   try {
-    // Create React PDF document
+    // Create React PDF document - call the functional component directly
     const pdfDocument = PDFReport({ analysisResults, reportConfig });
     
-    // Render to buffer
-    const pdfBuffer = await renderToBuffer(pdfDocument);
+    // Ensure we have a valid document element
+    if (!pdfDocument) {
+      throw new Error('PDF document generation failed');
+    }
+    
+    // Render to buffer with type assertion
+    const pdfBuffer = await renderToBuffer(pdfDocument as any);
     
     return Buffer.from(pdfBuffer);
   } catch (error) {

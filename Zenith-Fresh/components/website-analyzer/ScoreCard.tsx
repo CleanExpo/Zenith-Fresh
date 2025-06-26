@@ -35,7 +35,7 @@ export function ScoreCard({ title, score, description, color }: ScoreCardProps) 
         score: 'text-purple-600',
       },
     };
-    return colorMap[color];
+    return colorMap[color as keyof typeof colorMap];
   };
 
   const getScoreColor = (score: number) => {

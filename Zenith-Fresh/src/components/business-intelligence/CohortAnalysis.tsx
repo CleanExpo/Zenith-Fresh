@@ -339,7 +339,7 @@ export function CohortAnalysis({
                 theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
               } border shadow-sm text-center`}>
                 <div className="text-3xl font-bold text-purple-600">
-                  ${(cohortMetrics.reduce((sum, c) => sum + c.avgLifetimeValue, 0) / cohortMetrics.length).toFixed(0)}
+                  ${(cohortMetrics.reduce((sum, c) => sum + (c.avgLifetimeValue || 0), 0) / cohortMetrics.length).toFixed(0)}
                 </div>
                 <div className="text-sm text-gray-600 mt-1">Avg Lifetime Value</div>
               </div>
@@ -348,7 +348,7 @@ export function CohortAnalysis({
                 theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
               } border shadow-sm text-center`}>
                 <div className="text-3xl font-bold text-orange-600">
-                  {(cohortMetrics.reduce((sum, c) => sum + c.churnRate, 0) / cohortMetrics.length * 100).toFixed(1)}%
+                  {(cohortMetrics.reduce((sum, c) => sum + (c.churnRate || 0), 0) / cohortMetrics.length * 100).toFixed(1)}%
                 </div>
                 <div className="text-sm text-gray-600 mt-1">Avg Churn Rate</div>
               </div>

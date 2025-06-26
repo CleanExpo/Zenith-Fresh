@@ -351,7 +351,7 @@ function TestCard({ test, isSelected, onSelect, onControl }: {
     completed: 'bg-blue-100 text-blue-700'
   };
 
-  const TestTypeIcon = testTypes[test.testType].icon;
+  const TestTypeIcon = testTypes[test.testType as keyof typeof testTypes].icon;
 
   return (
     <Card 
@@ -374,7 +374,7 @@ function TestCard({ test, isSelected, onSelect, onControl }: {
       <CardContent className="pt-0">
         <div className="space-y-2">
           <div className="text-xs text-muted-foreground">
-            {testTypes[test.testType].label}
+            {testTypes[test.testType as keyof typeof testTypes].label}
           </div>
           
           {test.status === 'running' && (
@@ -624,8 +624,8 @@ function VariantCard({ variant, testType, isWinner }: {
     satisfaction: { value: variant.userSatisfaction * 100, unit: '%', format: (v: number) => `${v.toFixed(1)}%` }
   };
 
-  const primaryMetric = testTypes[testType]?.metric || 'quality';
-  const metricData = metrics[primaryMetric];
+  const primaryMetric = testTypes[testType as keyof typeof testTypes]?.metric || 'quality';
+  const metricData = metrics[primaryMetric as keyof typeof metrics];
 
   return (
     <Card className={isWinner ? 'ring-2 ring-green-500' : ''}>
@@ -649,7 +649,7 @@ function VariantCard({ variant, testType, isWinner }: {
           <div className="text-center p-3 bg-muted/50 rounded">
             <div className="text-2xl font-bold">{metricData.format(metricData.value)}</div>
             <div className="text-sm text-muted-foreground capitalize">
-              {testTypes[testType]?.label}
+              {testTypes[testType as keyof typeof testTypes]?.label}
             </div>
           </div>
 

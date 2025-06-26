@@ -35,6 +35,7 @@ export function RealTimeAnalyticsDashboard({
   const [realtimeMetrics, setRealtimeMetrics] = useState<Map<string, DataPoint[]>>(new Map());
   const [kpis, setKpis] = useState<KPI[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
+  const [maxDataPointsState, setMaxDataPoints] = useState(maxDataPoints);
   
   // WebSocket connection
   const wsRef = useRef<WebSocket | null>(null);
@@ -193,7 +194,7 @@ export function RealTimeAnalyticsDashboard({
           timestamp: new Date(metric.timestamp),
           value: metric.value,
           metadata: metric.tags
-        }].slice(-maxDataPoints); // Keep only recent data points
+        }].slice(-maxDataPointsState); // Keep only recent data points
         
         updated.set(metric.name, newData);
       });
@@ -298,7 +299,7 @@ export function RealTimeAnalyticsDashboard({
             <label className="block text-sm font-medium mb-1">Max Data Points</label>
             <input
               type="number"
-              value={maxDataPoints}
+              value={maxDataPointsState}
               onChange={(e) => setMaxDataPoints(parseInt(e.target.value))}
               min="50"
               max="1000"

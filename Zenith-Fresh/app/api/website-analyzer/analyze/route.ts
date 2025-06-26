@@ -54,12 +54,17 @@ async function analyzeWebsite(url: string): Promise<AnalysisResults> {
   
   try {
     // Fetch the website
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Zenith-Platform-Analyzer/1.0',
       },
-      timeout: 30000,
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -413,7 +418,7 @@ function generateRecommendations(performance: any, seo: any, security: any, acce
   }
 
   // Security recommendations
-  security.vulnerabilities.forEach(vuln => {
+  security.vulnerabilities.forEach((vuln: any) => {
     recommendations.security.push({
       priority: vuln.severity === 'high' ? 'high' as const : 'medium' as const,
       title: vuln.type,
@@ -424,7 +429,7 @@ function generateRecommendations(performance: any, seo: any, security: any, acce
   });
 
   // Accessibility recommendations
-  accessibility.violations.forEach(violation => {
+  accessibility.violations.forEach((violation: any) => {
     recommendations.accessibility.push({
       priority: violation.impact === 'serious' ? 'high' as const : 'medium' as const,
       title: violation.description,

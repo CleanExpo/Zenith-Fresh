@@ -1,0 +1,37 @@
+# Claude Code Rules - READ BEFORE EVERY TASK
+
+## BUILD SUCCESS DEFINITION
+✅ Build succeeds if: npm run build exits with code 0
+⚠️ "Compiled with warnings" = SUCCESS
+❌ Only "Failed to compile" = FAILURE
+
+## NEVER ATTEMPT TO FIX
+1. Any warnings from /node_modules/ directory
+2. "Critical dependency" warnings from:
+   - lighthouse
+   - yargs-parser  
+   - puppeteer
+   - webpack internals
+3. Dynamic import warnings
+4. These are PERMANENT and UNFIXABLE
+
+## TASK COMPLETION CRITERIA
+- Focus on the ACTUAL task description
+- Don't get sidetracked by unrelated warnings
+- If build was working before task, and still works after = SUCCESS
+
+## WHEN YOU SEE WARNINGS
+1. Check: Is it from node_modules? → IGNORE IT
+2. Check: Does build complete? → TASK SUCCESSFUL
+3. Only fix warnings from OUR code in /app, /lib, /components
+
+## COMMON TRAPS TO AVOID
+- Don't run build to "check" unless task specifically requires it
+- Don't try to suppress third-party warnings
+- Don't modify webpack config for node_modules warnings
+- Don't say "ready for deployment" when enterprise features still need activation
+
+## CURRENT PROJECT STATUS
+- Build works ✅
+- Enterprise components built but need activation
+- Focus on connecting existing components, not fixing warnings

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { WebsiteAnalyzerTool } from '@/components/tools/WebsiteAnalyzerTool';
+import { WebsiteAnalyzerErrorBoundary } from '@/components/error-boundaries';
 
 export const metadata: Metadata = {
   title: 'Website Health Analyzer - Zenith Platform',
@@ -17,15 +18,17 @@ export default async function WebsiteAnalyzerPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Website Health Analyzer</h1>
-        <p className="text-gray-600 mt-2">
-          Analyze your website's performance, Core Web Vitals, and technical SEO with comprehensive historical tracking.
-        </p>
-      </div>
+    <WebsiteAnalyzerErrorBoundary section="scan">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Website Health Analyzer</h1>
+          <p className="text-gray-600 mt-2">
+            Analyze your website's performance, Core Web Vitals, and technical SEO with comprehensive historical tracking.
+          </p>
+        </div>
 
-      <WebsiteAnalyzerTool userId={session.user?.id || ''} />
-    </div>
+        <WebsiteAnalyzerTool userId={session.user?.id || ''} />
+      </div>
+    </WebsiteAnalyzerErrorBoundary>
   );
 }

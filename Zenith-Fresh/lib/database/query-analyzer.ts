@@ -160,7 +160,7 @@ export class QueryAnalyzer {
     }
 
     // Calculate percentiles
-    for (const pattern of patterns.values()) {
+    for (const pattern of Array.from(patterns.values())) {
       const durations = pattern.samples.map(s => s.duration).sort((a, b) => a - b);
       pattern.percentile95 = durations[Math.floor(durations.length * 0.95)] || pattern.averageDuration;
       pattern.percentile99 = durations[Math.floor(durations.length * 0.99)] || pattern.averageDuration;
@@ -358,7 +358,7 @@ export class QueryAnalyzer {
       tables.push(dmlMatch[2]);
     }
 
-    return [...new Set(tables)];
+    return Array.from(new Set(tables));
   }
 
   /**
@@ -391,7 +391,7 @@ export class QueryAnalyzer {
       columns.push(...groupColumns);
     }
 
-    return [...new Set(columns)];
+    return Array.from(new Set(columns));
   }
 
   /**
@@ -686,7 +686,7 @@ export class QueryAnalyzer {
     }
     
     // Suggest denormalization for very frequent joins
-    for (const [tablesPair, frequency] of joinFrequency.entries()) {
+    for (const [tablesPair, frequency] of Array.from(joinFrequency.entries())) {
       if (frequency > 10000) {
         suggestions.push({
           type: 'schema_change',

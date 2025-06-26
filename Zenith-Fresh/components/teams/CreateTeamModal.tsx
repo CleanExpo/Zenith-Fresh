@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface Team {
   id: string;
@@ -29,6 +29,14 @@ export function CreateTeamModal({ onClose, onTeamCreated }: CreateTeamModalProps
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus the name input when modal opens
+  useEffect(() => {
+    if (nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, []);
 
   const generateSlug = (name: string) => {
     return name
@@ -82,9 +90,14 @@ export function CreateTeamModal({ onClose, onTeamCreated }: CreateTeamModalProps
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
+      <div 
+        className="bg-white rounded-lg max-w-md w-full p-6" 
+        role="dialog" 
+        aria-labelledby="modal-title" 
+        aria-describedby="modal-description"
+      >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Create Team</h2>
+          <h2 id="modal-title" className="text-xl font-semibold text-gray-900">Create New Team</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 focus:outline-none"
@@ -105,12 +118,16 @@ export function CreateTeamModal({ onClose, onTeamCreated }: CreateTeamModalProps
           </button>
         </div>
 
+        <p id="modal-description" className="sr-only">Create a new team by providing a name, slug, and optional description</p>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="team-name" className="block text-sm font-medium text-gray-700 mb-1">
               Team Name
             </label>
             <input
+              ref={nameInputRef}
+              id="team-name"
               type="text"
               value={formData.name}
               onChange={handleNameChange}
@@ -121,10 +138,11 @@ export function CreateTeamModal({ onClose, onTeamCreated }: CreateTeamModalProps
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="team-slug" className="block text-sm font-medium text-gray-700 mb-1">
               Team Slug
             </label>
             <input
+              id="team-slug"
               type="text"
               value={formData.slug}
               onChange={(e) =>
@@ -142,10 +160,11 @@ export function CreateTeamModal({ onClose, onTeamCreated }: CreateTeamModalProps
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description (Optional)
+            <label htmlFor="team-description" className="block text-sm font-medium text-gray-700 mb-1">
+              Description
             </label>
             <textarea
+              id="team-description"
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
