@@ -31,7 +31,7 @@ export function CustomerSuccessProvider({ children }: CustomerSuccessProviderPro
         setOnboardingData(data);
         
         // Show onboarding if not completed and user is new (within 7 days)
-        const userCreatedAt = new Date(session?.user?.createdAt || Date.now());
+        const userCreatedAt = new Date((session?.user as any)?.createdAt || Date.now());
         const daysSinceSignup = (Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24);
         
         if (!data.isCompleted && daysSinceSignup <= 7) {

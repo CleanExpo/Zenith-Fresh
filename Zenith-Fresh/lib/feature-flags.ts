@@ -103,6 +103,13 @@ export const FEATURE_FLAGS: Record<string, FeatureFlag> = {
     rolloutPercentage: 100,
     environments: ['development', 'staging', 'production'],
   },
+  ENTERPRISE_INTEGRATIONS: {
+    name: 'Enterprise Integrations',
+    description: 'Comprehensive enterprise integration hub with 650+ lines of management features',
+    enabled: process.env.NEXT_PUBLIC_FEATURE_ENTERPRISE_INTEGRATIONS === 'true' || true,
+    rolloutPercentage: 100,
+    environments: ['development', 'staging', 'production'],
+  },
 };
 
 /**

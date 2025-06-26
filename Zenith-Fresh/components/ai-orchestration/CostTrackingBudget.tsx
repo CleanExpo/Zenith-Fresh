@@ -711,7 +711,7 @@ function CostPredictions({ predictions }: { predictions: CostPrediction[] }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {predictions.map((prediction) => {
-        const trendIcon = prediction.trend === 'increasing' ? TrendingUp : 
+        const TrendIcon = prediction.trend === 'increasing' ? TrendingUp : 
                          prediction.trend === 'decreasing' ? TrendingDown : 
                          Target;
         const trendColor = prediction.trend === 'increasing' ? 'text-red-500' : 
@@ -724,7 +724,7 @@ function CostPredictions({ predictions }: { predictions: CostPrediction[] }) {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{prediction.agentName}</CardTitle>
                 <div className={`flex items-center space-x-1 ${trendColor}`}>
-                  <trendIcon className="h-4 w-4" />
+                  <TrendIcon className="h-4 w-4" />
                   <span className="text-sm capitalize">{prediction.trend}</span>
                 </div>
               </div>

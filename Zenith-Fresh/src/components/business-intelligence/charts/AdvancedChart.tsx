@@ -313,7 +313,7 @@ export function AdvancedChart({
         ref={chartRef}
         type={type === 'area' ? 'line' : type}
         data={chartData}
-        options={options}
+        options={options as any}
       />
     </div>
   );

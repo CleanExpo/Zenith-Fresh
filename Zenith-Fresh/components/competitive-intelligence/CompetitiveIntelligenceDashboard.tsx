@@ -246,7 +246,7 @@ export function CompetitiveIntelligenceDashboard({ projectId }: CompetitiveDashb
               </div>
             }
           >
-            <ActiveComponent projectId={projectId} onRefresh={refreshData} />
+            <ActiveComponent projectId={projectId} {...(ActiveComponent === CompetitorOverview ? {} : { onRefresh: refreshData })} />
           </React.Suspense>
         </div>
       </div>

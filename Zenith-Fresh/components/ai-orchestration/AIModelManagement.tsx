@@ -365,7 +365,7 @@ function AddModelDialog({ isOpen, onClose, onAdd }: {
     provider: 'openai',
     modelId: '',
     version: '',
-    capabilities: [],
+    capabilities: [] as string[],
     contextLength: 4096,
     costPer1kTokens: 0.002,
     apiKey: ''

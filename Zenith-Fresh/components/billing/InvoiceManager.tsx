@@ -619,7 +619,15 @@ export default function InvoiceManager({ userId, isAdmin = false }: InvoiceManag
                       mode="range"
                       defaultMonth={dateRange?.from}
                       selected={dateRange}
-                      onSelect={(range) => setDateRange(range || { from: undefined, to: undefined })}
+                      onSelect={(date: Date | any | undefined) => {
+                        if (!date) {
+                          setDateRange({ from: undefined, to: undefined })
+                        } else if (date instanceof Date) {
+                          setDateRange({ from: date, to: undefined })
+                        } else {
+                          setDateRange(date || { from: undefined, to: undefined })
+                        }
+                      }}
                       numberOfMonths={2}
                     />
                   </PopoverContent>

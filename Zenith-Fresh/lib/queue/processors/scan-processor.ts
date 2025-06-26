@@ -43,7 +43,7 @@ export async function processScanJob(job: Job<ScanJobData>) {
       where: { id: scanId },
       data: {
         status: 'completed',
-        results: scanResult,
+        results: JSON.parse(JSON.stringify(scanResult)),
         performanceScore: scanResult.performance.score,
         accessibilityScore: scanResult.accessibility.score,
         bestPracticesScore: scanResult.bestPractices.score,

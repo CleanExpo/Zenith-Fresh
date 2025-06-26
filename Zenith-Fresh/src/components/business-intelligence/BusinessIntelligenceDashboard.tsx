@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  ScatterPlot, Scatter, ComposedChart, ResponsiveContainer, XAxis, YAxis,
+  ScatterChart, Scatter, ComposedChart, ResponsiveContainer, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ReferenceLine, Brush, ErrorBar
 } from 'recharts';
 import { TrendingUp, TrendingDown, Target, Users, Globe, Activity, 
@@ -388,7 +388,7 @@ export function BusinessIntelligenceDashboard({
                 cy="50%"
                 outerRadius={80}
                 dataKey={dataKeys[0]}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
               >
                 {data.map((_: any, index: number) => (
                   <Cell key={`cell-${index}`} fill={colors?.[index % colors.length] || '#8884d8'} />
@@ -402,13 +402,13 @@ export function BusinessIntelligenceDashboard({
       case 'scatter':
         return (
           <ResponsiveContainer {...commonProps}>
-            <ScatterPlot>
+            <ScatterChart>
               {showGrid && <CartesianGrid strokeDasharray="3 3" opacity={0.3} />}
               <XAxis dataKey={xAxisKey} type="number" />
               <YAxis dataKey={dataKeys[0]} label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }} />
               <Tooltip cursor={{ strokeDasharray: '3 3' }} />
               <Scatter data={data} fill={colors?.[0] || '#8884d8'} />
-            </ScatterPlot>
+            </ScatterChart>
           </ResponsiveContainer>
         );
         

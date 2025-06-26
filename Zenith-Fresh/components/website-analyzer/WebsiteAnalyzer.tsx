@@ -54,7 +54,7 @@ export function WebsiteAnalyzer({ onAnalysisComplete }: WebsiteAnalyzerProps) {
       {/* URL Input Form */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h2 className="text-xl font-semibold mb-4">Enter Website URL</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" role="form">
           <div>
             <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
               Website URL

@@ -51,7 +51,7 @@ interface CacheLayer {
 class MemoryCache implements CacheLayer {
   public name = 'memory';
   private cache = new Map<string, CacheEntry>();
-  private stats = {
+  private _stats = {
     hits: 0,
     misses: 0,
     sets: 0,
@@ -72,7 +72,7 @@ class MemoryCache implements CacheLayer {
     const entry = this.cache.get(key);
     
     if (!entry) {
-      this.stats.misses++;
+      this._stats.misses++;
       return null;
     }
 
@@ -81,14 +81,14 @@ class MemoryCache implements CacheLayer {
     // Check if expired
     if (now - entry.timestamp > entry.ttl * 1000) {
       this.cache.delete(key);
-      this.stats.misses++;
+      this._stats.misses++;
       return null;
     }
 
     // Update access statistics
     entry.metadata.hits++;
     entry.metadata.lastAccess = now;
-    this.stats.hits++;
+    this._stats.hits++;
 
     return entry.data as T;
   }
@@ -118,12 +118,12 @@ class MemoryCache implements CacheLayer {
     };
 
     this.cache.set(key, entry);
-    this.stats.sets++;
+    this._stats.sets++;
   }
 
   async delete(key: string): Promise<void> {
     this.cache.delete(key);
-    this.stats.deletes++;
+    this._stats.deletes++;
   }
 
   async clear(): Promise<void> {
@@ -147,7 +147,7 @@ class MemoryCache implements CacheLayer {
       ...this.stats,
       size: this.cache.size,
       memoryUsage: totalSize,
-      hitRate: this.stats.hits / (this.stats.hits + this.stats.misses) * 100,
+      hitRate: this._stats.hits / (this._stats.hits + this._stats.misses) * 100,
       topKeys,
     };
   }
@@ -183,7 +183,7 @@ class MemoryCache implements CacheLayer {
   private cleanup(): void {
     const now = Date.now();
     
-    for (const [key, entry] of this.cache.entries()) {
+    for (const [key, entry] of Array.from(this.cache.entries())) {
       if (now - entry.timestamp > entry.ttl * 1000) {
         this.cache.delete(key);
       }
@@ -191,7 +191,7 @@ class MemoryCache implements CacheLayer {
   }
 
   async invalidateByTag(tag: string): Promise<void> {
-    for (const [key, entry] of this.cache.entries()) {
+    for (const [key, entry] of Array.from(this.cache.entries())) {
       if (entry.tags.includes(tag)) {
         this.cache.delete(key);
       }
@@ -205,7 +205,7 @@ class MemoryCache implements CacheLayer {
 class RedisCache implements CacheLayer {
   public name = 'redis';
   private redis: Redis;
-  private stats = {
+  private _stats = {
     hits: 0,
     misses: 0,
     sets: 0,
@@ -221,7 +221,7 @@ class RedisCache implements CacheLayer {
       const result = await this.redis.get(key);
       
       if (!result) {
-        this.stats.misses++;
+        this._stats.misses++;
         return null;
       }
 
@@ -234,11 +234,11 @@ class RedisCache implements CacheLayer {
       // Update in Redis (fire and forget)
       this.redis.set(key, JSON.stringify(entry), 'EX', entry.ttl).catch(() => {});
       
-      this.stats.hits++;
+      this._stats.hits++;
       return entry.data;
     } catch (error) {
       console.error('Redis cache get error:', error);
-      this.stats.misses++;
+      this._stats.misses++;
       return null;
     }
   }
@@ -279,7 +279,7 @@ class RedisCache implements CacheLayer {
         }
       }
 
-      this.stats.sets++;
+      this._stats.sets++;
     } catch (error) {
       console.error('Redis cache set error:', error);
     }
@@ -288,7 +288,7 @@ class RedisCache implements CacheLayer {
   async delete(key: string): Promise<void> {
     try {
       await this.redis.del(key);
-      this.stats.deletes++;
+      this._stats.deletes++;
     } catch (error) {
       console.error('Redis cache delete error:', error);
     }
@@ -310,11 +310,11 @@ class RedisCache implements CacheLayer {
       return {
         ...this.stats,
         memoryUsage,
-        hitRate: this.stats.hits / (this.stats.hits + this.stats.misses) * 100,
+        hitRate: this._stats.hits / (this._stats.hits + this._stats.misses) * 100,
       };
     } catch (error) {
       console.error('Redis stats error:', error);
-      return this.stats;
+      return this._stats;
     }
   }
 
@@ -511,7 +511,7 @@ export class AdvancedCacheManager {
     const totalMemory = layerStats.reduce((sum, layer) => sum + (layer.stats.memoryUsage || 0), 0);
 
     const performance: Record<string, { count: number; avgTime: number }> = {};
-    for (const [operation, times] of this.metrics.entries()) {
+    for (const [operation, times] of Array.from(this.metrics.entries())) {
       const count = Math.floor(times / 1000); // Rough count estimation
       const avgTime = count > 0 ? times / count : 0;
       performance[operation] = { count, avgTime };
@@ -681,7 +681,7 @@ export class AdvancedCacheManager {
           const latency = performance.now() - startTime;
           return {
             name: layer.name,
-            status: latency < 100 ? 'healthy' : 'unhealthy' as const,
+            status: latency < 100 ? ('healthy' as const) : ('unhealthy' as const),
             latency,
           };
         } catch (error) {
@@ -776,7 +776,7 @@ export function cached(options: CacheOptions & { key?: string } = {}) {
 // Export factory function
 export function createAdvancedCacheManager(
   redis: Redis,
-  options?: Parameters<typeof AdvancedCacheManager.prototype.constructor>[1]
+  options?: any
 ): AdvancedCacheManager {
   return new AdvancedCacheManager(redis, options);
 }

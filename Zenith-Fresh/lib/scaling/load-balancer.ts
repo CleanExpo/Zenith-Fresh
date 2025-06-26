@@ -479,7 +479,7 @@ export class LoadBalancer {
     const healthyServers = servers.filter(s => s.healthy);
     
     const circuitBreakerStates: Record<string, string> = {};
-    for (const [serverId, breaker] of this.circuitBreakers.entries()) {
+    for (const [serverId, breaker] of Array.from(this.circuitBreakers.entries())) {
       circuitBreakerStates[serverId] = breaker.getState();
     }
 

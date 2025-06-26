@@ -151,15 +151,15 @@ export class BillingService {
         planId,
         stripeSubscriptionId: stripeSubscription.id,
         status: stripeSubscription.status as SubscriptionStatus,
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-        trialStart: stripeSubscription.trial_start ? new Date(stripeSubscription.trial_start * 1000) : null,
-        trialEnd: stripeSubscription.trial_end ? new Date(stripeSubscription.trial_end * 1000) : null,
+        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+        trialStart: (stripeSubscription as any).trial_start ? new Date((stripeSubscription as any).trial_start * 1000) : null,
+        trialEnd: (stripeSubscription as any).trial_end ? new Date((stripeSubscription as any).trial_end * 1000) : null,
         contractId,
         customPricing,
         billingContact,
         purchaseOrder,
-        latestInvoiceId: stripeSubscription.latest_invoice?.toString(),
+        latestInvoiceId: (stripeSubscription as any).latest_invoice?.toString(),
         defaultPaymentMethodId: paymentMethodId
       },
       include: {
@@ -230,10 +230,10 @@ export class BillingService {
       where: { id: subscriptionId },
       data: {
         status: stripeSubscription.status as SubscriptionStatus,
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-        canceledAt: stripeSubscription.canceled_at ? new Date(stripeSubscription.canceled_at * 1000) : null
+        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+        cancelAtPeriodEnd: (stripeSubscription as any).cancel_at_period_end,
+        canceledAt: (stripeSubscription as any).canceled_at ? new Date((stripeSubscription as any).canceled_at * 1000) : null
       }
     });
 
@@ -361,7 +361,7 @@ export class BillingService {
 
     try {
       // Create Stripe usage record
-      const stripeUsageRecord = await stripe.subscriptionItems.createUsageRecord(
+      const stripeUsageRecord = await (stripe.subscriptionItems as any).createUsageRecord(
         subscriptionItem.stripeSubscriptionItemId,
         {
           quantity: usageRecord.quantity,
@@ -426,23 +426,23 @@ export class BillingService {
     });
 
     // Finalize invoice
-    const finalizedInvoice = await stripe.invoices.finalizeInvoice(stripeInvoice.id);
+    const finalizedInvoice = await stripe.invoices.finalizeInvoice(stripeInvoice.id!);
 
     // Create database record
     const invoice = await prisma.invoice.create({
       data: {
         userId,
         subscriptionId,
-        stripeInvoiceId: finalizedInvoice.id,
+        stripeInvoiceId: finalizedInvoice.id!,
         number: StripeHelpers.generateInvoiceNumber(),
-        amount: finalizedInvoice.amount_due,
-        currency: finalizedInvoice.currency,
-        status: finalizedInvoice.status as InvoiceStatus,
+        amount: (finalizedInvoice as any).amount_due,
+        currency: (finalizedInvoice as any).currency,
+        status: (finalizedInvoice as any).status as InvoiceStatus,
         dueDate,
         purchaseOrder,
         customFields,
-        invoicePdfUrl: finalizedInvoice.invoice_pdf,
-        hostedInvoiceUrl: finalizedInvoice.hosted_invoice_url
+        invoicePdfUrl: (finalizedInvoice as any).invoice_pdf,
+        hostedInvoiceUrl: (finalizedInvoice as any).hosted_invoice_url
       }
     });
 

@@ -106,7 +106,7 @@ class WebApplicationFirewall {
     const method = req.method;
 
     // Check each active rule
-    for (const rule of this.rules.values()) {
+    for (const rule of Array.from(this.rules.values())) {
       if (!rule.enabled) continue;
 
       const ruleResult = await this.checkRule(rule, {
@@ -131,7 +131,7 @@ class WebApplicationFirewall {
         if (rule.action === 'block') {
           action = 'block';
           break; // Block immediately
-        } else if (rule.action === 'challenge' && action !== 'block') {
+        } else if (rule.action === 'challenge' && action === 'allow') {
           action = 'challenge';
         }
       }
@@ -747,7 +747,7 @@ export class ProductionSecurityManager {
           await this.logSecurityEvent({
             type: 'request_blocked',
             severity: wafResult.risk,
-            source: this.waf.getClientIP(req),
+            source: req.ip || req.headers.get('x-forwarded-for') || 'unknown',
             details: {
               threats: wafResult.threats,
               url: req.nextUrl.href,
@@ -785,7 +785,7 @@ export class ProductionSecurityManager {
           await this.logSecurityEvent({
             type: 'threat_detected',
             severity: wafResult.risk,
-            source: this.waf.getClientIP(req),
+            source: req.ip || req.headers.get('x-forwarded-for') || 'unknown',
             details: {
               threats: wafResult.threats,
               url: req.nextUrl.href,
@@ -845,7 +845,7 @@ export class ProductionSecurityManager {
         await this.logSecurityEvent({
           type: 'validation_error',
           severity: 'low',
-          source: this.waf.getClientIP(req),
+          source: req.ip || req.headers.get('x-forwarded-for') || 'unknown',
           details: {
             errors: validation.errors,
             url: req.nextUrl.href,
@@ -854,7 +854,11 @@ export class ProductionSecurityManager {
         });
       }
 
-      return validation;
+      return {
+        valid: validation.valid,
+        data: validation.sanitized || {},
+        errors: validation.errors,
+      };
     } catch (error) {
       return {
         valid: false,

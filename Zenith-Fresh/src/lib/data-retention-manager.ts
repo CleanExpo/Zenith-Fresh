@@ -117,39 +117,47 @@ export class DataRetentionManager {
   }
 
   private async cleanupPerformanceMetrics(cutoffDate: Date): Promise<number> {
-    // Clean up orphaned performance metrics (those without a parent analysis)
-    const result = await prisma.performanceMetrics.deleteMany({
+    // Performance metrics are automatically cleaned up via cascade delete when WebsiteAnalysis is deleted
+    // So we just need to count how many would be deleted based on old analyses
+    const count = await prisma.performanceMetrics.count({
       where: {
         createdAt: { lt: cutoffDate },
-        websiteAnalysis: null,
+        websiteAnalysis: {
+          createdAt: { lt: cutoffDate }
+        }
       },
     });
 
-    return result.count;
+    // The actual deletion happens automatically via cascade when websiteAnalysis records are deleted
+    return count;
   }
 
   private async cleanupCoreWebVitals(cutoffDate: Date): Promise<number> {
-    // Clean up orphaned core web vitals
-    const result = await prisma.coreWebVitals.deleteMany({
+    // Core web vitals are automatically cleaned up via cascade delete when WebsiteAnalysis is deleted
+    const count = await prisma.coreWebVitals.count({
       where: {
         createdAt: { lt: cutoffDate },
-        websiteAnalysis: null,
+        websiteAnalysis: {
+          createdAt: { lt: cutoffDate }
+        }
       },
     });
 
-    return result.count;
+    return count;
   }
 
   private async cleanupTechnicalChecks(cutoffDate: Date): Promise<number> {
-    // Clean up orphaned technical checks
-    const result = await prisma.technicalChecks.deleteMany({
+    // Technical checks are automatically cleaned up via cascade delete when WebsiteAnalysis is deleted
+    const count = await prisma.technicalChecks.count({
       where: {
         createdAt: { lt: cutoffDate },
-        websiteAnalysis: null,
+        websiteAnalysis: {
+          createdAt: { lt: cutoffDate }
+        }
       },
     });
 
-    return result.count;
+    return count;
   }
 
   private async cleanupAnalysisAlerts(cutoffDate: Date): Promise<number> {

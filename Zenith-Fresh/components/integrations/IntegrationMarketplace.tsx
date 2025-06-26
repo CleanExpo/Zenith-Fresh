@@ -32,7 +32,8 @@ import {
   BookOpen,
   MessageSquare,
   DollarSign,
-  Gift
+  Gift,
+  Settings
 } from 'lucide-react';
 import { MarketplaceConnector } from '@/types/integrations';
 

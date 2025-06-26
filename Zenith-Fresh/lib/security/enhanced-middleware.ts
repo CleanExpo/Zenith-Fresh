@@ -154,7 +154,7 @@ export async function enhancedSecurityMiddleware(request: NextRequest): Promise<
     // Step 5: Authorization - Check API scopes for protected endpoints
     if (context.apiKey && isProtectedEndpoint(pathname)) {
       const requiredScope = getRequiredScope(pathname);
-      if (requiredScope && !hasScope(context.apiKey, requiredScope)) {
+      if (requiredScope && !hasScope(context.apiKey, requiredScope as any)) {
         await logSecurityEvent({
           type: 'UNAUTHORIZED_ACCESS',
           severity: 'HIGH',

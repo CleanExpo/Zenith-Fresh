@@ -40,7 +40,10 @@ export async function GET(request: NextRequest) {
     
     // Get security events
     const events = await getSecurityEvents({
-      ...filters,
+      type: filters.type as any,
+      severity: filters.severity as any,
+      limit: filters.limit,
+      offset: filters.offset,
       startDate,
       endDate: now,
     });

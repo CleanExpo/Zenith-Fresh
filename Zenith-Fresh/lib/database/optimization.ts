@@ -191,8 +191,8 @@ export class DatabaseOptimizer {
    */
   private async getQueryPlan(sql: string): Promise<any> {
     try {
-      const result = await this.prisma.$queryRaw`EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${sql}`;
-      return result[0]?.['QUERY PLAN']?.[0];
+      const result = await this.prisma.$queryRaw`EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${sql}` as any[];
+      return (result as any)?.[0]?.['QUERY PLAN']?.[0];
     } catch (error) {
       console.error('Error getting query plan:', error);
       return null;
@@ -240,7 +240,7 @@ export class DatabaseOptimizer {
   private analyzeQueryPatterns() {
     const patterns: any[] = [];
 
-    for (const [query, metrics] of this.queryMetrics.entries()) {
+    for (const [query, metrics] of Array.from(this.queryMetrics.entries())) {
       const [model, action] = query.split('.');
       const avgDuration = metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length;
       
@@ -408,7 +408,7 @@ export class DatabaseOptimizer {
   private getQueryTypeDistribution() {
     const distribution: Record<string, number> = {};
     
-    for (const [query, metrics] of this.queryMetrics.entries()) {
+    for (const [query, metrics] of Array.from(this.queryMetrics.entries())) {
       const action = query.split('.')[1];
       distribution[action] = (distribution[action] || 0) + metrics.length;
     }
@@ -431,7 +431,7 @@ export class DatabaseOptimizer {
     }
 
     // Count queries by hour
-    for (const metrics of this.queryMetrics.values()) {
+    for (const metrics of Array.from(this.queryMetrics.values())) {
       for (const metric of metrics) {
         const hourKey = metric.executedAt.toISOString().substring(0, 13);
         if (hourlyData.hasOwnProperty(hourKey)) {
@@ -460,7 +460,7 @@ export class DatabaseOptimizer {
         
         await this.prisma.$executeRawUnsafe(sql);
         applied.push(`${indexName} on ${rec.table}(${rec.columns.join(', ')})`);
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Failed to create index for ${rec.table}:`, error);
         failed.push(`${rec.table}(${rec.columns.join(', ')}): ${error.message}`);
       }
@@ -538,7 +538,7 @@ export class DatabaseOptimizer {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
 
-    for (const [query, metrics] of this.queryMetrics.entries()) {
+    for (const [query, metrics] of Array.from(this.queryMetrics.entries())) {
       const filteredMetrics = metrics.filter(m => m.executedAt > cutoffDate);
       this.queryMetrics.set(query, filteredMetrics);
     }

@@ -108,20 +108,22 @@ export class PerformanceAudit {
       const jsScripts = this.extractResources(html, /<script[^>]+src=["']([^"']+)["'][^>]*>/gi);
       const images = this.extractResources(html, /<img[^>]+src=["']([^"']+)["'][^>]*>/gi);
       
+      // Sample resource sizes (in production, would fetch each resource)
+      const estimatedCssSize = cssLinks.length * 50000; // Estimate 50KB per CSS file
+      const estimatedJsSize = jsScripts.length * 100000; // Estimate 100KB per JS file
+      const estimatedImageSize = images.length * 200000; // Estimate 200KB per image
+      
       const checks = {
         totalResources: cssLinks.length + jsScripts.length + images.length,
         cssFiles: cssLinks.length,
         jsFiles: jsScripts.length,
         imageFiles: images.length,
         htmlSize: html.length,
-        estimatedTotalSize: html.length // Base HTML size
+        estimatedCssSize,
+        estimatedJsSize,
+        estimatedImageSize,
+        estimatedTotalSize: html.length + estimatedCssSize + estimatedJsSize + estimatedImageSize
       };
-
-      // Sample resource sizes (in production, would fetch each resource)
-      checks.estimatedCssSize = cssLinks.length * 50000; // Estimate 50KB per CSS file
-      checks.estimatedJsSize = jsScripts.length * 100000; // Estimate 100KB per JS file
-      checks.estimatedImageSize = images.length * 200000; // Estimate 200KB per image
-      checks.estimatedTotalSize += checks.estimatedCssSize + checks.estimatedJsSize + checks.estimatedImageSize;
 
       results.checks.resourceSizes = {
         score: this.calculateResourceSizeScore(checks),
@@ -154,19 +156,24 @@ export class PerformanceAudit {
   async checkCoreWebVitals(url: string, results: any) {
     try {
       // Simulate Core Web Vitals (in production, use real measurement tools)
+      const lcp = this.simulateLCP();
+      const fid = this.simulateFID();
+      const cls = this.simulateCLS();
+      const fcp = this.simulateFCP();
+      const tti = this.simulateTTI();
+      
       const checks = {
-        largestContentfulPaint: this.simulateLCP(),
-        firstInputDelay: this.simulateFID(),
-        cumulativeLayoutShift: this.simulateCLS(),
-        firstContentfulPaint: this.simulateFCP(),
-        timeToInteractive: this.simulateTTI()
+        largestContentfulPaint: lcp,
+        firstInputDelay: fid,
+        cumulativeLayoutShift: cls,
+        firstContentfulPaint: fcp,
+        timeToInteractive: tti,
+        lcpGood: lcp < 2500,
+        fidGood: fid < 100,
+        clsGood: cls < 0.1,
+        fcpGood: fcp < 1800,
+        ttiGood: tti < 3800
       };
-
-      checks.lcpGood = checks.largestContentfulPaint < 2500;
-      checks.fidGood = checks.firstInputDelay < 100;
-      checks.clsGood = checks.cumulativeLayoutShift < 0.1;
-      checks.fcpGood = checks.firstContentfulPaint < 1800;
-      checks.ttiGood = checks.timeToInteractive < 3800;
 
       results.metrics.coreWebVitals = checks;
       results.checks.coreWebVitals = {
@@ -214,24 +221,31 @@ export class PerformanceAudit {
       
       const imageMatches = html.match(/<img[^>]*>/gi) || [];
       
-      const checks = {
-        totalImages: imageMatches.length,
-        imagesWithAlt: 0,
-        imagesWithLazyLoad: 0,
-        modernFormats: 0,
-        imagesWithDimensions: 0
-      };
+      // Count various image attributes
+      let imagesWithAlt = 0;
+      let imagesWithLazyLoad = 0;
+      let modernFormats = 0;
+      let imagesWithDimensions = 0;
 
       imageMatches.forEach(img => {
-        if (/alt=/i.test(img)) checks.imagesWithAlt++;
-        if (/loading=["']lazy["']/i.test(img)) checks.imagesWithLazyLoad++;
-        if (/\.(webp|avif)/i.test(img)) checks.modernFormats++;
-        if (/width=|height=/i.test(img)) checks.imagesWithDimensions++;
+        if (/alt=/i.test(img)) imagesWithAlt++;
+        if (/loading=["']lazy["']/i.test(img)) imagesWithLazyLoad++;
+        if (/\.(webp|avif)/i.test(img)) modernFormats++;
+        if (/width=|height=/i.test(img)) imagesWithDimensions++;
       });
 
-      checks.altOptimization = checks.totalImages > 0 ? (checks.imagesWithAlt / checks.totalImages) * 100 : 100;
-      checks.lazyLoadOptimization = checks.totalImages > 0 ? (checks.imagesWithLazyLoad / checks.totalImages) * 100 : 100;
-      checks.dimensionOptimization = checks.totalImages > 0 ? (checks.imagesWithDimensions / checks.totalImages) * 100 : 100;
+      const totalImages = imageMatches.length;
+      
+      const checks = {
+        totalImages,
+        imagesWithAlt,
+        imagesWithLazyLoad,
+        modernFormats,
+        imagesWithDimensions,
+        altOptimization: totalImages > 0 ? (imagesWithAlt / totalImages) * 100 : 100,
+        lazyLoadOptimization: totalImages > 0 ? (imagesWithLazyLoad / totalImages) * 100 : 100,
+        dimensionOptimization: totalImages > 0 ? (imagesWithDimensions / totalImages) * 100 : 100
+      };
 
       results.checks.imageOptimization = {
         score: this.calculateImageOptimizationScore(checks),
@@ -265,23 +279,30 @@ export class PerformanceAudit {
     try {
       const response = await fetch(url);
       
+      const cacheControlValue = response.headers.get('cache-control') || '';
+      let maxAge = 0;
+      let hasMaxAge = false;
+      let maxAgeOptimal = false;
+
+      if (response.headers.has('cache-control')) {
+        const maxAgeMatch = cacheControlValue.match(/max-age=(\d+)/);
+        if (maxAgeMatch) {
+          maxAge = parseInt(maxAgeMatch[1]);
+          hasMaxAge = true;
+          maxAgeOptimal = maxAge >= 86400; // At least 1 day
+        }
+      }
+
       const checks = {
         hasCacheControl: response.headers.has('cache-control'),
         hasEtag: response.headers.has('etag'),
         hasLastModified: response.headers.has('last-modified'),
         hasExpires: response.headers.has('expires'),
-        cacheControlValue: response.headers.get('cache-control') || '',
-        maxAge: 0
+        cacheControlValue,
+        maxAge,
+        hasMaxAge,
+        maxAgeOptimal
       };
-
-      if (checks.hasCacheControl) {
-        const maxAgeMatch = checks.cacheControlValue.match(/max-age=(\d+)/);
-        if (maxAgeMatch) {
-          checks.maxAge = parseInt(maxAgeMatch[1]);
-          checks.hasMaxAge = true;
-          checks.maxAgeOptimal = checks.maxAge >= 86400; // At least 1 day
-        }
-      }
 
       results.checks.caching = {
         score: this.calculateCachingScore(checks),
@@ -319,23 +340,29 @@ export class PerformanceAudit {
       const scriptMatches = html.match(/<script[^>]*>[\s\S]*?<\/script>|<script[^>]*\/>/gi) || [];
       const externalScripts = html.match(/<script[^>]+src=["']([^"']+)["'][^>]*>/gi) || [];
       
-      const checks = {
-        totalScripts: scriptMatches.length,
-        externalScripts: externalScripts.length,
-        inlineScripts: scriptMatches.length - externalScripts.length,
-        asyncScripts: 0,
-        deferScripts: 0,
-        estimatedJsSize: 0
-      };
+      // Count async and defer scripts
+      let asyncScripts = 0;
+      let deferScripts = 0;
 
       scriptMatches.forEach(script => {
-        if (/async/i.test(script)) checks.asyncScripts++;
-        if (/defer/i.test(script)) checks.deferScripts++;
+        if (/async/i.test(script)) asyncScripts++;
+        if (/defer/i.test(script)) deferScripts++;
       });
 
-      checks.estimatedJsSize = checks.externalScripts * 100000; // Estimate 100KB per script
-      checks.asyncOptimization = checks.externalScripts > 0 ? 
-        ((checks.asyncScripts + checks.deferScripts) / checks.externalScripts) * 100 : 100;
+      const externalScriptsCount = externalScripts.length;
+      const estimatedJsSize = externalScriptsCount * 100000; // Estimate 100KB per script
+      const asyncOptimization = externalScriptsCount > 0 ? 
+        ((asyncScripts + deferScripts) / externalScriptsCount) * 100 : 100;
+      
+      const checks = {
+        totalScripts: scriptMatches.length,
+        externalScripts: externalScriptsCount,
+        inlineScripts: scriptMatches.length - externalScriptsCount,
+        asyncScripts,
+        deferScripts,
+        estimatedJsSize,
+        asyncOptimization
+      };
 
       results.checks.javascript = {
         score: this.calculateJavaScriptScore(checks),
@@ -468,14 +495,16 @@ export class PerformanceAudit {
     try {
       const response = await fetch(url);
       
+      const hasGzip = response.headers.get('content-encoding') === 'gzip';
+      const hasBrotli = response.headers.get('content-encoding') === 'br';
+      
       const checks = {
-        hasGzip: response.headers.get('content-encoding') === 'gzip',
-        hasBrotli: response.headers.get('content-encoding') === 'br',
+        hasGzip,
+        hasBrotli,
         contentEncoding: response.headers.get('content-encoding') || 'none',
-        contentLength: parseInt(response.headers.get('content-length') || '0')
+        contentLength: parseInt(response.headers.get('content-length') || '0'),
+        hasCompression: hasGzip || hasBrotli
       };
-
-      checks.hasCompression = checks.hasGzip || checks.hasBrotli;
 
       results.checks.compression = {
         score: this.calculateCompressionScore(checks),

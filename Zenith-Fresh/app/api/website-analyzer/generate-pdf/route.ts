@@ -63,7 +63,7 @@ async function generatePDFReport(analysisResults: AnalysisResults, reportConfig:
     const pdfDocument = PDFReport({ analysisResults, reportConfig });
     
     // Render to buffer
-    const pdfBuffer = await renderToBuffer(pdfDocument);
+    const pdfBuffer = await renderToBuffer(pdfDocument as any);
     
     return Buffer.from(pdfBuffer);
   } catch (error) {

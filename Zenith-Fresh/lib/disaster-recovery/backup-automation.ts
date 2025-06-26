@@ -702,7 +702,7 @@ class DisasterRecoveryManager {
     }
 
     // Check if any disaster recovery plans should be triggered
-    for (const plan of this.plans.values()) {
+    for (const plan of Array.from(this.plans.values())) {
       if (!plan.enabled) continue;
 
       const shouldTrigger = this.shouldTriggerPlan(plan, healthChecks);
@@ -1256,7 +1256,7 @@ export class BackupDisasterRecoveryManager {
   private async checkScheduledBackups(): Promise<void> {
     const now = new Date();
     
-    for (const config of this.backupConfigs.values()) {
+    for (const config of Array.from(this.backupConfigs.values())) {
       if (!config.enabled) continue;
       
       const shouldRun = this.shouldRunBackup(config, now);

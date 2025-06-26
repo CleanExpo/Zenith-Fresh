@@ -43,7 +43,8 @@ import {
   HardDrive,
   BarChart3,
   TrendingUp,
-  Clock
+  Clock,
+  RefreshCw
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -444,7 +445,7 @@ export default function EnterpriseDeployment() {
 function DeploymentManagement({ deployments, onSelect, onControl, onScale }: {
   deployments: Deployment[];
   onSelect: (deployment: Deployment) => void;
-  onControl: (deploymentId: string, action: string) => void;
+  onControl: (deploymentId: string, action: 'start' | 'stop' | 'restart' | 'scale') => void;
   onScale: (deploymentId: string, instances: number) => void;
 }) {
   const environments = ['development', 'staging', 'production'];
@@ -491,7 +492,7 @@ function DeploymentManagement({ deployments, onSelect, onControl, onScale }: {
 function DeploymentCard({ deployment, onSelect, onControl, onScale }: {
   deployment: Deployment;
   onSelect: (deployment: Deployment) => void;
-  onControl: (deploymentId: string, action: string) => void;
+  onControl: (deploymentId: string, action: 'start' | 'stop' | 'restart' | 'scale') => void;
   onScale: (deploymentId: string, instances: number) => void;
 }) {
   return (
@@ -891,7 +892,7 @@ function DeploymentDetailsDialog({ deployment, isOpen, onClose, onControl, onSca
   deployment: Deployment;
   isOpen: boolean;
   onClose: () => void;
-  onControl: (deploymentId: string, action: string) => void;
+  onControl: (deploymentId: string, action: 'start' | 'stop' | 'restart' | 'scale') => void;
   onScale: (deploymentId: string, instances: number) => void;
 }) {
   return (

@@ -265,7 +265,7 @@ export async function POST(request: NextRequest) {
       };
 
       try {
-        let result;
+        let result: any;
         
         switch (channel) {
           case 'email':
@@ -298,6 +298,10 @@ export async function POST(request: NextRequest) {
             const customWebhookUrl = webhookUrl || preferences.webhookUrl;
             if (!customWebhookUrl) {
               throw new Error('Webhook URL not configured');
+            }
+            // Ensure the method is available and properly typed
+            if (typeof notificationService.sendWebhookNotification !== 'function') {
+              throw new Error('Webhook notification method not available');
             }
             result = await notificationService.sendWebhookNotification(testData, customWebhookUrl);
             break;

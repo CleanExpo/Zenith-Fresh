@@ -545,7 +545,7 @@ export default function MarketingAutomation() {
                           <div>
                             <h4 className="font-semibold">{campaign.name}</h4>
                             <p className="text-sm text-gray-600">
-                              {campaign.startDate.toLocaleDateString()} - {campaign.endDate?.toLocaleDateString()}
+                              {campaign.startDate?.toLocaleDateString()} - {campaign.endDate?.toLocaleDateString()}
                             </p>
                           </div>
                         </div>

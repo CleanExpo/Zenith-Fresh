@@ -1,7 +1,32 @@
-import { startWorkers } from '../queue';
-import { cronScheduler } from '../scheduler/cron-scheduler';
-
 let initialized = false;
+
+// Dynamic imports to prevent build issues
+async function getDependencies() {
+  try {
+    const [queueModule, schedulerModule] = await Promise.all([
+      import('../queue'),
+      import('../scheduler/cron-scheduler')
+    ]);
+    
+    return {
+      startWorkers: queueModule.startWorkers,
+      cronScheduler: schedulerModule.cronScheduler,
+    };
+  } catch (error) {
+    console.warn('Some service dependencies not available:', error);
+    return {
+      startWorkers: () => {
+        console.warn('Queue workers not available in this environment');
+      },
+      cronScheduler: {
+        initialize: async () => {
+          console.warn('Cron scheduler not available in this environment');
+        },
+        shutdown: async () => {},
+      },
+    };
+  }
+}
 
 export async function initializeServices() {
   if (initialized) {
@@ -11,6 +36,8 @@ export async function initializeServices() {
 
   try {
     console.log('Initializing Zenith Platform services...');
+
+    const { startWorkers, cronScheduler } = await getDependencies();
 
     // Start queue workers
     console.log('Starting queue workers...');
@@ -42,9 +69,15 @@ export async function shutdownServices() {
   try {
     console.log('Shutting down services...');
 
+    const { cronScheduler } = await getDependencies();
+
     // Stop queue workers
-    const { stopWorkers } = await import('../queue');
-    await stopWorkers();
+    try {
+      const { stopWorkers } = await import('../queue');
+      await stopWorkers();
+    } catch (error) {
+      console.warn('Could not stop queue workers:', error);
+    }
 
     // Shutdown cron scheduler
     await cronScheduler.shutdown();

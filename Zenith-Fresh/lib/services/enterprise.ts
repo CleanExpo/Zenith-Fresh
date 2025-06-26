@@ -6,7 +6,7 @@
 import { prisma } from '@/lib/prisma';
 import { StripeHelpers } from '@/lib/stripe';
 import { QuoteStatus, ContractStatus, BillingInterval } from '@prisma/client';
-import { generatePDF } from '@/lib/utils/pdf';
+// import { generatePDF } from '@/lib/utils/pdf';
 
 export class EnterpriseService {
   /**
@@ -283,81 +283,16 @@ export class EnterpriseService {
   }) {
     const { userId, quoteId, purchaseOrderNumber, approvers, requirements, deliverables } = params;
 
-    // Create workflow record
-    const workflow = await prisma.procurementWorkflow.create({
-      data: {
-        userId,
-        quoteId,
-        purchaseOrderNumber,
-        status: 'PENDING_APPROVAL',
-        approvers,
-        requirements,
-        deliverables,
-        currentStep: 0,
-        totalSteps: approvers.length + Object.values(requirements).filter(Boolean).length
-      }
-    });
-
-    // Send approval requests
-    await this.sendApprovalRequests(workflow.id);
-
-    return workflow;
+    // Procurement workflow model not implemented
+    throw new Error('Procurement workflow not implemented - Prisma model missing');
   }
 
   /**
    * Process approval step
    */
   static async processApproval(workflowId: string, approverEmail: string, approved: boolean, comments?: string) {
-    const workflow = await prisma.procurementWorkflow.findUnique({
-      where: { id: workflowId }
-    });
-
-    if (!workflow) {
-      throw new Error('Procurement workflow not found');
-    }
-
-    // Update approval status
-    const approvers = workflow.approvers as any[];
-    const approverIndex = approvers.findIndex(a => a.email === approverEmail);
-    
-    if (approverIndex === -1) {
-      throw new Error('Approver not found in workflow');
-    }
-
-    approvers[approverIndex] = {
-      ...approvers[approverIndex],
-      approved,
-      approvedAt: new Date(),
-      comments
-    };
-
-    const currentStep = workflow.currentStep + 1;
-    const allApproved = approvers.every(a => a.approved === true);
-    const anyRejected = approvers.some(a => a.approved === false);
-
-    let status = workflow.status;
-    if (anyRejected) {
-      status = 'REJECTED';
-    } else if (allApproved && currentStep >= workflow.totalSteps) {
-      status = 'APPROVED';
-    }
-
-    const updatedWorkflow = await prisma.procurementWorkflow.update({
-      where: { id: workflowId },
-      data: {
-        approvers,
-        currentStep,
-        status,
-        completedAt: status === 'APPROVED' || status === 'REJECTED' ? new Date() : null
-      }
-    });
-
-    // If approved, proceed with contract creation
-    if (status === 'APPROVED') {
-      await this.updateQuoteStatus(workflow.quoteId, 'ACCEPTED');
-    }
-
-    return updatedWorkflow;
+    // Procurement workflow model not implemented
+    throw new Error('Procurement workflow not implemented - Prisma model missing');
   }
 
   /**
@@ -393,7 +328,8 @@ export class EnterpriseService {
       totalAmount: StripeHelpers.formatAmount(quote.totalAmount, quote.currency)
     };
 
-    return generatePDF(pdfData);
+    // return generatePDF(pdfData);
+    throw new Error('PDF generation not implemented');
   }
 
   /**
@@ -430,7 +366,8 @@ export class EnterpriseService {
       totalValue: StripeHelpers.formatAmount(contract.totalValue, contract.currency)
     };
 
-    return generatePDF(pdfData);
+    // return generatePDF(pdfData);
+    throw new Error('PDF generation not implemented');
   }
 
   /**

@@ -298,7 +298,7 @@ export function AlertManagement() {
                         <span>{formatTimestamp(alert.timestamp)}</span>
                       </div>
                       <div>Source: {alert.source}</div>
-                      {alert.acknowledged && (
+                      {alert.acknowledgedBy && (
                         <div className="flex items-center space-x-1">
                           <UserIcon className="h-3 w-3" />
                           <span>Ack: {alert.acknowledgedBy}</span>

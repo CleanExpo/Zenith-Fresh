@@ -76,8 +76,8 @@ export function D3Chart({
   const renderHeatmap = (g: any, data: any[], width: number, height: number) => {
     if (!data || !Array.isArray(data)) return;
 
-    const xValues = [...new Set(data.map(d => d.x))].sort();
-    const yValues = [...new Set(data.map(d => d.y))].sort();
+    const xValues = Array.from(new Set(data.map(d => d.x))).sort();
+    const yValues = Array.from(new Set(data.map(d => d.y))).sort();
 
     const xScale = d3.scaleBand()
       .domain(xValues)
@@ -107,7 +107,7 @@ export function D3Chart({
 
     if (interactive) {
       cells
-        .on('mouseover', function(event: any, d: any) {
+        .on('mouseover', function(this: any, event: any, d: any) {
           d3.select(this).attr('opacity', 0.8);
           setTooltip({
             x: event.pageX,
@@ -116,7 +116,7 @@ export function D3Chart({
           });
           onNodeHover?.(d);
         })
-        .on('mouseout', function() {
+        .on('mouseout', function(this: any) {
           d3.select(this).attr('opacity', 1);
           setTooltip(null);
         })
@@ -172,7 +172,7 @@ export function D3Chart({
 
     if (interactive) {
       leaf
-        .on('mouseover', function(event: any, d: any) {
+        .on('mouseover', function(this: any, event: any, d: any) {
           d3.select(this).select('rect').attr('opacity', 0.8);
           setTooltip({
             x: event.pageX,
@@ -181,7 +181,7 @@ export function D3Chart({
           });
           onNodeHover?.(d.data);
         })
-        .on('mouseout', function() {
+        .on('mouseout', function(this: any) {
           d3.select(this).select('rect').attr('opacity', 1);
           setTooltip(null);
         })
@@ -232,7 +232,7 @@ export function D3Chart({
         .on('end', dragended));
 
       node
-        .on('mouseover', function(event: any, d: any) {
+        .on('mouseover', function(this: any, event: any, d: any) {
           d3.select(this).attr('opacity', 0.8);
           setTooltip({
             x: event.pageX,
@@ -241,7 +241,7 @@ export function D3Chart({
           });
           onNodeHover?.(d);
         })
-        .on('mouseout', function() {
+        .on('mouseout', function(this: any) {
           d3.select(this).attr('opacity', 1);
           setTooltip(null);
         })
@@ -297,16 +297,24 @@ export function D3Chart({
 
     partition(root);
 
+    // Type the partitioned data correctly
+    const partitionedRoot = root as d3.HierarchyNode<any> & {
+      x0: number;
+      x1: number;
+      y0: number;
+      y1: number;
+    };
+
     const arc = d3.arc<any>()
-      .startAngle(d => d.x0)
-      .endAngle(d => d.x1)
-      .innerRadius(d => d.y0)
-      .outerRadius(d => d.y1);
+      .startAngle((d: any) => d.x0)
+      .endAngle((d: any) => d.x1)
+      .innerRadius((d: any) => d.y0)
+      .outerRadius((d: any) => d.y1);
 
     const slices = g.append('g')
       .attr('transform', `translate(${width / 2},${height / 2})`)
       .selectAll('path')
-      .data(root.descendants())
+      .data(partitionedRoot.descendants())
       .enter().append('path')
       .attr('d', arc)
       .attr('fill', (d: any) => colorScale(d.data.name))
@@ -315,7 +323,7 @@ export function D3Chart({
 
     if (interactive) {
       slices
-        .on('mouseover', function(event: any, d: any) {
+        .on('mouseover', function(this: any, event: any, d: any) {
           d3.select(this).attr('opacity', 0.8);
           setTooltip({
             x: event.pageX,
@@ -324,7 +332,7 @@ export function D3Chart({
           });
           onNodeHover?.(d.data);
         })
-        .on('mouseout', function() {
+        .on('mouseout', function(this: any) {
           d3.select(this).attr('opacity', 1);
           setTooltip(null);
         })
@@ -337,7 +345,7 @@ export function D3Chart({
     g.append('g')
       .attr('transform', `translate(${width / 2},${height / 2})`)
       .selectAll('text')
-      .data(root.descendants().filter(d => (d.x1 - d.x0) > 0.1))
+      .data(partitionedRoot.descendants().filter((d: any) => (d.x1 - d.x0) > 0.1))
       .enter().append('text')
       .attr('transform', (d: any) => {
         const angle = (d.x0 + d.x1) / 2;

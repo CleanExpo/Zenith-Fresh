@@ -827,7 +827,7 @@ export default function AnalyticsIntegrations() {
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h4 className="font-semibold">High-Value Customers</h4>
-                        <p className="text-sm text-gray-600">Users with LTV > $1000</p>
+                        <p className="text-sm text-gray-600">Users with LTV &gt; $1000</p>
                       </div>
                       <Badge className="bg-blue-100 text-blue-800">Active</Badge>
                     </div>

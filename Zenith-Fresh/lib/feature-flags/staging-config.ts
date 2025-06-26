@@ -525,6 +525,10 @@ export class StagingFeatureFlags {
   private checkUserTargeting(flagName: string, userContext: UserContext): boolean {
     const targeting = this.config.userTargeting;
     
+    if (!targeting) {
+      return false;
+    }
+    
     // Check each targeting rule
     for (const [ruleName, rule] of Object.entries(targeting)) {
       if (!rule.enabled) continue;

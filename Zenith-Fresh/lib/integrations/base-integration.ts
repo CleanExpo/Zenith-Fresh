@@ -5,7 +5,7 @@
 
 import { BaseIntegration, IntegrationConfig, IntegrationEvent, SyncJob, IntegrationStats } from '@/types/integrations';
 import { prisma } from '@/lib/prisma';
-import { redis } from '@/lib/redis';
+import { getRedis } from '@/lib/redis';
 
 export abstract class BaseIntegrationService {
   protected integration: BaseIntegration;
@@ -103,6 +103,7 @@ export abstract class BaseIntegrationService {
     
     // Also store in Redis for real-time monitoring
     const eventsKey = `${this.cachePrefix}:events`;
+    const redis = getRedis();
     await redis.lpush(eventsKey, JSON.stringify(event));
     await redis.ltrim(eventsKey, 0, 999); // Keep last 1000 events
     await redis.expire(eventsKey, 86400); // 24 hours
@@ -130,6 +131,7 @@ export abstract class BaseIntegrationService {
    */
   protected async getCached(key: string): Promise<any> {
     try {
+      const redis = getRedis();
       const cached = await redis.get(key);
       return cached ? JSON.parse(cached) : null;
     } catch (error) {
@@ -140,6 +142,7 @@ export abstract class BaseIntegrationService {
 
   protected async setCached(key: string, value: any, ttl: number = 3600): Promise<void> {
     try {
+      const redis = getRedis();
       await redis.setex(key, ttl, JSON.stringify(value));
     } catch (error) {
       console.error('Cache set error:', error);
@@ -148,6 +151,7 @@ export abstract class BaseIntegrationService {
 
   protected async clearCached(key: string): Promise<void> {
     try {
+      const redis = getRedis();
       await redis.del(key);
     } catch (error) {
       console.error('Cache clear error:', error);
@@ -159,6 +163,7 @@ export abstract class BaseIntegrationService {
    */
   protected async checkRateLimit(): Promise<boolean> {
     const rateLimitKey = `${this.cachePrefix}:ratelimit`;
+    const redis = getRedis();
     const current = await redis.incr(rateLimitKey);
     
     if (current === 1) {
@@ -176,7 +181,7 @@ export abstract class BaseIntegrationService {
     maxRetries: number = 3,
     delay: number = 1000
   ): Promise<T> {
-    let lastError: Error;
+    let lastError: Error = new Error('Operation failed');
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -191,8 +196,8 @@ export abstract class BaseIntegrationService {
         await this.logEvent(
           'error',
           'warning',
-          `Retry attempt ${attempt}/${maxRetries} failed: ${error.message}`,
-          { attempt, maxRetries, error: error.message }
+          `Retry attempt ${attempt}/${maxRetries} failed: ${(error as Error).message}`,
+          { attempt, maxRetries, error: (error as Error).message }
         );
         
         await this.sleep(delay * Math.pow(2, attempt - 1)); // Exponential backoff
@@ -372,7 +377,7 @@ export abstract class BaseIntegrationService {
         status: 'unhealthy' as const,
         lastCheck: new Date(),
         details: {
-          error: error.message,
+          error: (error as Error).message,
           responseTime: duration,
           integration: {
             id: this.integration.id,
@@ -386,7 +391,7 @@ export abstract class BaseIntegrationService {
       await this.logEvent(
         'connection',
         'error',
-        `Health check failed: ${error.message}`,
+        `Health check failed: ${(error as Error).message}`,
         result.details,
         duration
       );

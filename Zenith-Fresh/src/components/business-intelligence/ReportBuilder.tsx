@@ -89,7 +89,7 @@ function DraggableComponent({ item }: { item: ComponentItem }) {
 
   return (
     <div
-      ref={drag}
+      ref={drag as any}
       className={`p-4 border border-gray-300 rounded-lg cursor-move hover:bg-gray-50 transition-colors ${
         isDragging ? 'opacity-50' : ''
       }`}
@@ -141,7 +141,10 @@ function DroppableCanvas({
     <div
       ref={(node) => {
         drop(node);
-        canvasRef.current = node;
+        if (canvasRef.current !== node) {
+          // Update ref using proper assignment
+          (canvasRef as any).current = node;
+        }
       }}
       className={`relative min-h-[600px] border-2 border-dashed rounded-lg ${
         isOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300'

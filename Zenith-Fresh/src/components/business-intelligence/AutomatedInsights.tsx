@@ -135,7 +135,7 @@ export function AutomatedInsights({
         type: 'anomaly',
         title: 'Unusual Spike in API Errors',
         description: 'API error rate jumped to 8.5% from normal 1.2%, affecting user authentication and data sync. Issue started 3 hours ago.',
-        impact: 'critical',
+        impact: 'high',
         confidence: 0.98,
         actionable: true,
         metric: 'api_error_rate',
@@ -559,7 +559,7 @@ export function AutomatedInsights({
                                 <span className="ml-1 font-medium">
                                   {typeof value === 'number' 
                                     ? value.toLocaleString() 
-                                    : value.toString()}
+                                    : String(value)}
                                 </span>
                               </div>
                             ))}

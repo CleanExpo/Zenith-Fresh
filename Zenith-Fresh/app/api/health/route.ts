@@ -1,18 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { testRedisConnection } from '@/lib/redis';
+import { PerformanceMonitor } from '@/lib/performance';
 
 // Health check endpoint for CI/CD monitoring
 export async function GET(request: NextRequest) {
+  const timer = PerformanceMonitor.startTimer();
+  
   try {
+    // Parallel health checks for better performance
+    const [dbCheck, redisCheck, memoryCheck] = await Promise.all([
+      checkDatabase(),
+      checkRedis(),
+      Promise.resolve(checkMemory())
+    ]);
+
+    const duration = timer.stop();
+
     const health = {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development',
       version: process.env.npm_package_version || '1.0.0',
       uptime: process.uptime(),
+      responseTime: `${duration.toFixed(2)}ms`,
+      performanceStatus: duration < 200 ? 'optimal' : duration < 500 ? 'acceptable' : 'poor',
       checks: {
-        database: await checkDatabase(),
-        redis: await checkRedis(),
-        memory: checkMemory(),
+        database: dbCheck,
+        redis: redisCheck,
+        memory: memoryCheck,
         disk: checkDisk(),
       }
     };
@@ -25,47 +41,59 @@ export async function GET(request: NextRequest) {
 
     const statusCode = hasFailure ? 503 : 200;
     
+    // Record performance metric
+    PerformanceMonitor.recordMetric({
+      endpoint: '/api/health',
+      method: 'GET',
+      duration,
+      statusCode,
+      timestamp: Date.now()
+    }).catch(console.error);
+    
     return NextResponse.json(health, { 
       status: statusCode,
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'X-Response-Time': `${duration.toFixed(2)}ms`
       }
     });
   } catch (error) {
     console.error('Health check failed:', error);
     
+    const duration = timer.stop();
+    
     return NextResponse.json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
       error: error instanceof Error ? error.message : 'Unknown error',
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
+      responseTime: `${duration.toFixed(2)}ms`
     }, { 
       status: 503,
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'X-Response-Time': `${duration.toFixed(2)}ms`
       }
     });
   }
 }
 
 async function checkDatabase() {
+  const start = Date.now();
+  
   try {
-    // Try to import and use Prisma if available
     if (process.env.DATABASE_URL) {
-      const { PrismaClient } = await import('@prisma/client');
-      const prisma = new PrismaClient();
-      
       // Simple query to test connection
       await prisma.$queryRaw`SELECT 1`;
-      await prisma.$disconnect();
+      const latency = Date.now() - start;
       
       return {
         status: 'healthy',
-        responseTime: Date.now(),
+        latency: `${latency}ms`,
         message: 'Database connection successful'
       };
     } else {
@@ -75,22 +103,27 @@ async function checkDatabase() {
       };
     }
   } catch (error) {
+    const latency = Date.now() - start;
     return {
       status: 'unhealthy',
+      latency: `${latency}ms`,
       message: error instanceof Error ? error.message : 'Database connection failed'
     };
   }
 }
 
 async function checkRedis() {
+  const start = Date.now();
+  
   try {
-    // Try to check Redis if configured
     if (process.env.REDIS_URL) {
-      // Basic Redis connection check would go here
-      // For now, just return a placeholder
+      const isConnected = await testRedisConnection();
+      const latency = Date.now() - start;
+      
       return {
-        status: 'healthy',
-        message: 'Redis connection available'
+        status: isConnected ? 'healthy' : 'unhealthy',
+        latency: `${latency}ms`,
+        message: isConnected ? 'Redis connection successful' : 'Redis ping failed'
       };
     } else {
       return {
@@ -99,8 +132,10 @@ async function checkRedis() {
       };
     }
   } catch (error) {
+    const latency = Date.now() - start;
     return {
       status: 'unhealthy',
+      latency: `${latency}ms`,
       message: error instanceof Error ? error.message : 'Redis connection failed'
     };
   }
