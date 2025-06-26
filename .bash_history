@@ -19,3 +19,4 @@ Once Node.js and npm are installed, install the Claude CLI globally:
 bash
 claude
 claude
+claude
