@@ -1,0 +1,33 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": false,
+    "strict": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "exclude": [
+    "node_modules",
+    ".next",
+    "out",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/app/api/ai/enterprise/**",
+    "**/src/app/api/ai/enterprise/**",
+    "app/api/ai/enterprise/**",
+    "src/app/api/ai/enterprise/**"
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "skipLibCheck": true
+    }
+  }
+}
