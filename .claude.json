@@ -17,6 +17,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "This is part of the deployment plan to deploy with vercel. I am not you and not a coder. I have provided you with all the tools, and explained the entire process to you to have this and all the errors addressed and fixed. You have the ability to look at any and all directions and code from vercel to ensure this is not happening, but you are not performing with the advanced skills inwhich you have been provided with. I need for you to understand what a working and completed running deployment in vercel production actually is and stop causing or missing issues and then not having a reliable result.. Does this finally undertsand the role you have or not?",
+          "pastedContents": {}
+        },
+        {
           "display": "free-analyzer:1 \n            \n            \n            Failed to load resource: the server responded with a status of 404 ()\n[NEW] Explain Console errors by using Copilot in Edge: click\n         \n         to explain an error. \n        Learn more",
           "pastedContents": {}
         },
@@ -660,10 +664,6 @@
         },
         {
           "display": "pwd",
-          "pastedContents": {}
-        },
-        {
-          "display": "which file am i working from on my computer?",
           "pastedContents": {}
         }
       ],

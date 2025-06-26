@@ -7,12 +7,12 @@ const SKIP_REDIS = process.env.SKIP_REDIS === 'true';
 // Performance monitoring with conditional Redis dependency
 class ConditionalPerformanceMonitor {
   static startTimer(): { stop: () => number } {
-    const startTime = process.hrtime.bigint();
+    const startTime = Date.now();
     
     return {
       stop: () => {
-        const endTime = process.hrtime.bigint();
-        const duration = Number(endTime - startTime) / 1_000_000; // Convert to milliseconds
+        const endTime = Date.now();
+        const duration = endTime - startTime; // Duration in milliseconds
         return duration;
       }
     };
