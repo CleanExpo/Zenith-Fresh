@@ -383,4 +383,27 @@ export function createRateLimitMiddleware(configName: string = 'default') {
   };
 }
 
+// Export convenience wrapper for API routes
+export const rateLimit = {
+  async check(identifier: string, configName: string, requests?: number, window?: string): Promise<{ success: boolean; remaining: number; resetTime: number }> {
+    // Configure if custom parameters provided
+    if (requests !== undefined && window !== undefined) {
+      rateLimiter.configure(configName, {
+        requests,
+        window: window.endsWith('m') || window.endsWith('s') || window.endsWith('h') || window.endsWith('d') 
+          ? window 
+          : `${window}ms`,
+        keyGenerator: (req: any) => identifier,
+      });
+    }
+    
+    const result = await rateLimiter.checkLimit(identifier, configName);
+    return {
+      success: result.allowed,
+      remaining: result.remaining,
+      resetTime: result.resetTime,
+    };
+  }
+};
+
 export { RateLimitConfig, RateLimitResult };

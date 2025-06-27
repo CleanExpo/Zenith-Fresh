@@ -16,7 +16,7 @@ import {
   Webhook,
   Slack,
   Github,
-  MicrosoftTeams,
+  Users,
   Palette,
   Globe,
   Settings,
@@ -165,7 +165,7 @@ export default function EnterpriseIntegrationDashboard() {
       case 'slack':
         return <Slack className="h-4 w-4" />;
       case 'teams':
-        return <MicrosoftTeams className="h-4 w-4" />;
+        return <Users className="h-4 w-4" />;
       case 'github':
         return <Github className="h-4 w-4" />;
       default:

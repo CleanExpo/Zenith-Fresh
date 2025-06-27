@@ -674,6 +674,26 @@ class EnhancedSentryMonitoring {
 
 export const enhancedSentryMonitoring = new EnhancedSentryMonitoring();
 
+// Export logger convenience wrapper
+export const logger = {
+  error: (message: string, context?: any) => {
+    console.error(message, context);
+    Sentry.captureException(new Error(message), {
+      extra: context
+    });
+  },
+  warn: (message: string, context?: any) => {
+    console.warn(message, context);
+    Sentry.captureMessage(message, 'warning');
+  },
+  info: (message: string, context?: any) => {
+    console.info(message, context);
+  },
+  debug: (message: string, context?: any) => {
+    console.debug(message, context);
+  }
+};
+
 // Export types
 export type {
   ErrorContext,
