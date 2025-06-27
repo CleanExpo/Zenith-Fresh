@@ -14,9 +14,10 @@
     "env": {
       "NODE_ENV": "production",
       "FORCE_BUILD": "true",
-      "CACHE_BUST": "20250625-120000",
+      "CACHE_BUST": "20250627-120000",
       "NODE_OPTIONS": "--max-old-space-size=8192",
-      "NEXT_TELEMETRY_DISABLED": "1"
+      "NEXT_TELEMETRY_DISABLED": "1",
+      "NODE_VERSION": "18.17.0"
     }
   },
   "functions": {
