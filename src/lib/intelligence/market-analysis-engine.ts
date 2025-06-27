@@ -4,7 +4,7 @@
 import { dataForSEO } from '@/lib/dataforseo';
 import { redis } from '@/lib/redis';
 import { PrismaClient } from '@prisma/client';
-import { WebSearch } from '@/lib/tools/web-fetch';
+import { WebFetch } from '@/lib/tools/web-fetch';
 
 const prisma = new PrismaClient();
 
@@ -168,7 +168,7 @@ export interface ComprehensiveMarketIntelligence {
 export class MarketAnalysisEngine {
   private cachePrefix = 'market_analysis:';
   private cacheTTL = 43200; // 12 hours
-  private webSearch = new WebSearch();
+  private webSearch = new WebFetch();
 
   /**
    * 1. COMPREHENSIVE MARKET TREND ANALYSIS
