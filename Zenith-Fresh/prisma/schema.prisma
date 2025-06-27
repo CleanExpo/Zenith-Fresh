@@ -105,6 +105,17 @@ model User {
   emailDeliveries EmailDelivery[]
   articleFeedback ArticleFeedback[]
 
+  // A/B Testing relations
+  experiments                Experiment[]
+  experimentAllocations      ExperimentAllocation[]
+  experimentEvents           ExperimentEvent[]
+  holdoutMemberships         HoldoutMembership[]
+  experimentContaminations   ExperimentContamination[]
+
+  // Funnel relations
+  funnels                    Funnel[]
+  funnelEvents               FunnelEvent[]
+
   @@map("users")
 }
 
@@ -142,6 +153,9 @@ model Project {
   competitiveAnalysisResults CompetitiveAnalysisResult[]
   competitiveReports         CompetitiveReport[]
   competitorMonitoring       CompetitorMonitoring[]
+
+  // Funnel relations
+  funnels                    Funnel[]
 
   @@map("projects")
 }
@@ -602,6 +616,9 @@ model Team {
   // AI Orchestration relations
   aiAgents  AIAgent[]
   aiBudgets AIBudget[]
+
+  // Funnel relations
+  funnels   Funnel[]
 
   @@map("teams")
 }
@@ -2610,4 +2627,684 @@ model EmailDelivery {
   @@index([emailId, status])
   @@index([userId, sentAt])
   @@map("email_deliveries")
+}
+
+// ================================
+// A/B TESTING FRAMEWORK MODELS
+// ================================
+
+// Experiments for A/B testing
+model Experiment {
+  id           String  @id @default(cuid())
+  name         String
+  description  String?
+  hypothesis   String? // What you're testing and expected outcome
+  
+  // Experiment configuration
+  type              ExperimentType @default(AB_TEST) // AB_TEST, MULTIVARIATE, HOLDOUT
+  status            ExperimentStatus @default(DRAFT)
+  trafficSplit      Json // Traffic allocation per variant (e.g., {"A": 0.5, "B": 0.5})
+  minimumSampleSize Int @default(100)
+  minimumRuntime    Int @default(7) // Minimum days to run
+  maxRuntime        Int @default(30) // Maximum days to run
+  
+  // Statistical configuration
+  confidenceLevel     Float @default(0.95) // 95% confidence level
+  minimumDetectableEffect Float @default(0.05) // 5% minimum effect to detect
+  statisticalPower    Float @default(0.8) // 80% statistical power
+  
+  // Primary and secondary metrics
+  primaryMetric     String // Main success metric (e.g., "conversion_rate", "retention")
+  secondaryMetrics  Json? // Array of secondary metrics to track
+  
+  // Targeting and segmentation
+  targetingRules    Json? // User targeting criteria
+  inclusionRules    Json? // Who gets included in the experiment
+  exclusionRules    Json? // Who gets excluded from the experiment
+  
+  // Feature flag integration
+  featureFlagKey    String? // Associated feature flag
+  featureFlagConfig Json? // Feature flag configuration
+  
+  // Winner and results
+  winningVariant     String? // Variant key of the winner
+  winnerConfidence   Float? // Statistical confidence in winner
+  effectSize         Float? // Measured effect size
+  achievedStatisticalPower   Float? // Achieved statistical power
+  
+  // Timing
+  startDate   DateTime?
+  endDate     DateTime?
+  archivedAt  DateTime?
+  
+  // User assignment tracking
+  totalParticipants     Int @default(0)
+  participantsByVariant Json? // Participant count per variant
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  
+  // Relations
+  creator         User                        @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  variants        ExperimentVariant[]
+  allocations     ExperimentAllocation[]
+  events          ExperimentEvent[]
+  results         ExperimentResult[]
+  analyses        ExperimentAnalysis[]
+  contaminations  ExperimentContamination[]
+  
+  @@index([status, startDate])
+  @@index([type, status])
+  @@index([featureFlagKey])
+  @@map("experiments")
+}
+
+// Experiment variants (A, B, C, etc.)
+model ExperimentVariant {
+  id           String @id @default(cuid())
+  experimentId String
+  name         String // "A", "B", "Control", "Treatment", etc.
+  description  String?
+  isControl    Boolean @default(false)
+  
+  // Configuration for this variant
+  configuration Json? // Variant-specific configuration
+  featureFlags  Json? // Feature flag overrides for this variant
+  
+  // Traffic allocation
+  trafficWeight Float @default(0.5) // 0.0 to 1.0
+  
+  // Performance tracking
+  participants     Int   @default(0)
+  conversions      Int   @default(0)
+  conversionRate   Float @default(0.0)
+  totalEvents      Int   @default(0)
+  uniqueUsers      Int   @default(0)
+  
+  // Statistical metrics
+  mean           Float? // Mean of primary metric
+  standardDev    Float? // Standard deviation
+  standardError  Float? // Standard error
+  confidenceInterval Json? // Lower and upper bounds
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  experiment   Experiment             @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  allocations  ExperimentAllocation[]
+  events       ExperimentEvent[]
+  
+  @@unique([experimentId, name])
+  @@index([experimentId, trafficWeight])
+  @@map("experiment_variants")
+}
+
+// User allocation to experiment variants
+model ExperimentAllocation {
+  id           String @id @default(cuid())
+  experimentId String
+  variantId    String
+  userId       String?
+  sessionId    String? // For anonymous users
+  
+  // Bucketing information
+  bucketValue   Float // 0.0 to 1.0, used for consistent allocation
+  allocationKey String // Hash key used for bucketing (user ID, session ID, etc.)
+  
+  // Tracking
+  firstExposure DateTime @default(now())
+  lastExposure  DateTime @default(now())
+  exposureCount Int      @default(1)
+  
+  // User context at allocation time
+  userAgent    String?
+  ipAddress    String?
+  country      String?
+  platform     String? // web, mobile, api
+  userSegment  String? // free, paid, enterprise, etc.
+  
+  // Metadata
+  metadata Json? // Additional context data
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  experiment Experiment        @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  variant    ExperimentVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  user       User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([experimentId, allocationKey])
+  @@index([experimentId, variantId])
+  @@index([userId, experimentId])
+  @@index([sessionId, experimentId])
+  @@map("experiment_allocations")
+}
+
+// Event tracking for experiments
+model ExperimentEvent {
+  id           String @id @default(cuid())
+  experimentId String
+  variantId    String
+  allocationId String? // Link to specific allocation
+  
+  // Event details
+  eventType    String // "conversion", "click", "signup", "purchase", custom events
+  eventValue   Float? // Numeric value for the event (revenue, time, etc.)
+  eventData    Json? // Additional event properties
+  
+  // User identification
+  userId    String?
+  sessionId String?
+  
+  // Context
+  page      String? // Page/screen where event occurred
+  userAgent String?
+  ipAddress String?
+  
+  // Timing
+  timestamp DateTime @default(now())
+  
+  // Relations
+  experiment Experiment        @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  variant    ExperimentVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  user       User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([experimentId, eventType, timestamp])
+  @@index([variantId, eventType])
+  @@index([userId, experimentId])
+  @@index([timestamp])
+  @@map("experiment_events")
+}
+
+// Statistical analysis results
+model ExperimentResult {
+  id           String @id @default(cuid())
+  experimentId String
+  metric       String // Primary or secondary metric name
+  analysisType String @default("frequentist") // "frequentist", "bayesian"
+  
+  // Overall results
+  isStatisticallySignificant Boolean @default(false)
+  pValue                     Float?
+  confidenceLevel           Float   @default(0.95)
+  effectSize                Float? // Cohen's d or relative lift
+  
+  // Variant comparisons
+  controlVariant   String? // Control variant name
+  treatmentVariant String? // Treatment variant name
+  controlMean      Float?
+  treatmentMean    Float?
+  lift             Float? // Percentage lift vs control
+  liftLowerBound   Float? // Lower bound of lift confidence interval
+  liftUpperBound   Float? // Upper bound of lift confidence interval
+  
+  // Test statistics
+  testStatistic    Float? // t-statistic, z-statistic, etc.
+  degreesOfFreedom Int?
+  standardError    Float?
+  
+  // Bayesian analysis (if applicable)
+  bayesianProbability Float? // Probability that treatment is better than control
+  credibleInterval    Json? // Bayesian credible interval
+  
+  // Sample size and power
+  sampleSizeControl   Int?
+  sampleSizeTreatment Int?
+  achievedPower       Float?
+  
+  // Timestamps
+  analysisDate DateTime @default(now())
+  dataStartDate DateTime? // Start of data used in analysis
+  dataEndDate   DateTime? // End of data used in analysis
+  
+  // Metadata
+  notes        String?
+  isRealTime   Boolean @default(false) // Real-time vs batch analysis
+  
+  createdAt DateTime @default(now())
+  
+  // Relations
+  experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  
+  @@index([experimentId, metric, analysisDate])
+  @@index([isStatisticallySignificant, metric])
+  @@map("experiment_results")
+}
+
+// Sequential testing and analysis
+model ExperimentAnalysis {
+  id             String @id @default(cuid())
+  experimentId   String
+  analysisNumber Int // Sequential analysis number (1, 2, 3, etc.)
+  
+  // Analysis configuration
+  analysisType        String @default("interim") // "interim", "final", "early_stopping"
+  lookbackDays        Int? // Days of data included in analysis
+  participantsIncluded Int
+  
+  // Early stopping decision
+  shouldStop          Boolean @default(false)
+  stopReason          String? // "futility", "superiority", "harm", "external"
+  stopRecommendation  String? // "stop_for_success", "stop_for_futility", "continue"
+  
+  // Sequential testing
+  spentAlpha          Float? // Alpha spent so far
+  remainingAlpha      Float? // Alpha remaining
+  informationFraction Float? // Fraction of planned information
+  
+  // Group sequential boundaries
+  efficacyBoundary   Float? // Upper boundary for efficacy
+  futilityBoundary   Float? // Lower boundary for futility
+  
+  // Contamination detection
+  contaminationRate   Float? // Rate of cross-variant contamination
+  contaminationImpact String? // "low", "medium", "high"
+  
+  // Data quality
+  dataQualityScore   Float? // 0-1 score of data quality
+  dataQualityIssues  Json? // Array of data quality issues found
+  outlierRate        Float? // Rate of outlier events
+  
+  // Results summary
+  primaryMetricResult Json? // Primary metric analysis results
+  secondaryResults    Json? // Secondary metrics results
+  segmentAnalysis     Json? // Analysis by user segments
+  
+  createdAt DateTime @default(now())
+  
+  // Relations
+  experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  
+  @@index([experimentId, analysisNumber])
+  @@index([analysisType, createdAt])
+  @@map("experiment_analyses")
+}
+
+// Holdout groups for long-term impact measurement
+model HoldoutGroup {
+  id          String @id @default(cuid())
+  name        String
+  description String?
+  
+  // Configuration
+  holdoutPercent    Float @default(0.05) // 5% holdout by default
+  isGlobalHoldout   Boolean @default(false) // Global vs experiment-specific
+  experimentTypes   Json? // Which experiment types this applies to
+  
+  // Targeting
+  userSegments     Json? // Which user segments are eligible
+  exclusionRules   Json? // Rules for excluding users
+  
+  // Tracking
+  totalUsers         Int @default(0)
+  activeUsers        Int @default(0)
+  enrollmentStarted  DateTime?
+  enrollmentEnded    DateTime?
+  
+  // Status
+  isActive Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  memberships HoldoutMembership[]
+  
+  @@map("holdout_groups")
+}
+
+// User membership in holdout groups
+model HoldoutMembership {
+  id            String @id @default(cuid())
+  holdoutGroupId String
+  userId         String?
+  sessionId      String?
+  
+  // Enrollment details
+  enrolledAt    DateTime @default(now())
+  bucketValue   Float // For consistent assignment
+  allocationKey String // Hash key for assignment
+  
+  // Status
+  isActive   Boolean   @default(true)
+  exitedAt   DateTime?
+  exitReason String? // "experiment_exposure", "manual_removal", "expired"
+  
+  // Relations
+  holdoutGroup HoldoutGroup @relation(fields: [holdoutGroupId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([holdoutGroupId, allocationKey])
+  @@index([holdoutGroupId, isActive])
+  @@index([userId, isActive])
+  @@map("holdout_memberships")
+}
+
+// Experiment contamination tracking
+model ExperimentContamination {
+  id              String @id @default(cuid())
+  experimentId    String
+  contaminationType String // "cross_variant_exposure", "external_influence", "carryover_effect"
+  
+  // Contamination details
+  affectedUserId    String?
+  sourceVariant     String?
+  targetVariant     String?
+  contaminationDate DateTime
+  severity          String @default("medium") // "low", "medium", "high"
+  
+  // Detection method
+  detectionMethod   String? // "automated", "manual", "user_report"
+  description       String?
+  
+  // Impact assessment
+  impactAssessment  String? // Assessment of how this affects results
+  mitigationAction  String? // Action taken to mitigate
+  
+  createdAt DateTime @default(now())
+  
+  // Relations
+  experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  user       User?      @relation(fields: [affectedUserId], references: [id], onDelete: SetNull)
+  
+  @@index([experimentId, contaminationType])
+  @@index([severity, contaminationDate])
+  @@map("experiment_contaminations")
+}
+
+// ENUMS for A/B Testing
+enum ExperimentType {
+  AB_TEST      // Standard A/B test
+  MULTIVARIATE // A/B/C/D test
+  HOLDOUT      // Holdout group test
+  SEQUENTIAL   // Sequential testing
+  BANDIT       // Multi-armed bandit
+}
+
+enum ExperimentStatus {
+  DRAFT        // Being configured
+  REVIEW       // Under review
+  APPROVED     // Approved to run
+  RUNNING      // Currently running
+  PAUSED       // Temporarily paused
+  COMPLETED    // Completed successfully
+  STOPPED      // Stopped early
+  ARCHIVED     // Archived/deleted
+}
+
+// ===== CONVERSION FUNNEL MODELS =====
+
+model Funnel {
+  id                String      @id @default(cuid())
+  name              String
+  description       String?
+  ownerId           String
+  teamId            String?
+  projectId         String?
+  
+  // Funnel configuration
+  steps             FunnelStep[]
+  goals             FunnelGoal[]
+  
+  // Funnel metadata
+  category          String?      // "signup", "purchase", "activation", "custom"
+  isActive          Boolean      @default(true)
+  
+  // Optimization settings
+  optimizationGoal  String?      // "conversion_rate", "revenue", "time_to_convert"
+  benchmarkData     Json?        // Industry benchmark data
+  
+  // Time settings
+  timeWindow        Int          @default(2592000) // 30 days in seconds
+  attributionWindow Int          @default(86400)   // 24 hours in seconds
+  
+  // Advanced settings
+  allowParallelPaths Boolean     @default(false)
+  requireSequential  Boolean     @default(true)
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  // Relations
+  owner             User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  team              Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  project           Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  // Tracking relations
+  events            FunnelEvent[]
+  analyses          FunnelAnalysis[]
+  optimizations     FunnelOptimization[]
+  
+  @@index([ownerId, isActive])
+  @@index([teamId, category])
+  @@index([projectId, createdAt])
+  @@map("funnels")
+}
+
+model FunnelStep {
+  id                String   @id @default(cuid())
+  funnelId          String
+  stepNumber        Int
+  name              String
+  description       String?
+  
+  // Step configuration
+  eventType         String   // "page_view", "click", "form_submit", "custom"
+  eventCriteria     Json     // Criteria for this step (URL patterns, element selectors, etc.)
+  
+  // Step metadata
+  isRequired        Boolean  @default(true)
+  timeLimit         Int?     // Maximum time allowed for this step (seconds)
+  
+  // Revenue tracking
+  revenueValue      Decimal? @default(0) @db.Decimal(10, 2)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  funnel            Funnel   @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  events            FunnelEvent[]
+  
+  @@unique([funnelId, stepNumber])
+  @@index([funnelId, stepNumber])
+  @@map("funnel_steps")
+}
+
+model FunnelGoal {
+  id                String      @id @default(cuid())
+  funnelId          String
+  name              String
+  description       String?
+  
+  // Goal configuration
+  targetMetric      String      // "conversion_rate", "completion_time", "revenue_per_user"
+  targetValue       Decimal     @db.Decimal(10, 4)
+  comparisonType    String      @default("greater_than") // "greater_than", "less_than", "equals"
+  
+  // Goal metadata
+  priority          String      @default("medium") // "low", "medium", "high"
+  isActive          Boolean     @default(true)
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations
+  funnel            Funnel      @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  
+  @@index([funnelId, isActive])
+  @@map("funnel_goals")
+}
+
+model FunnelEvent {
+  id                String      @id @default(cuid())
+  funnelId          String
+  stepId            String
+  userId            String?
+  sessionId         String
+  
+  // Event data
+  eventType         String
+  eventData         Json?
+  timestamp         DateTime    @default(now())
+  
+  // User journey data
+  userAgent         String?
+  ipAddress         String?
+  referrer          String?
+  
+  // Attribution data
+  utmSource         String?
+  utmMedium         String?
+  utmCampaign       String?
+  utmTerm           String?
+  utmContent        String?
+  
+  // Revenue data
+  revenueValue      Decimal?    @default(0) @db.Decimal(10, 2)
+  
+  // Metadata
+  properties        Json?       // Additional event properties
+  
+  createdAt         DateTime    @default(now())
+  
+  // Relations
+  funnel            Funnel      @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  step              FunnelStep  @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  user              User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([funnelId, stepId, timestamp])
+  @@index([userId, sessionId])
+  @@index([sessionId, timestamp])
+  @@index([timestamp])
+  @@map("funnel_events")
+}
+
+model FunnelAnalysis {
+  id                String      @id @default(cuid())
+  funnelId          String
+  analysisType      String      // "conversion_rate", "dropoff_analysis", "cohort_analysis", "time_analysis"
+  
+  // Analysis period
+  periodStart       DateTime
+  periodEnd         DateTime
+  
+  // Analysis results
+  results           Json        // Analysis results data
+  metrics           Json        // Key metrics and KPIs
+  
+  // Metadata
+  generatedBy       String?     // "system", "user", "scheduler"
+  generatedAt       DateTime    @default(now())
+  
+  // Relations
+  funnel            Funnel      @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  
+  @@index([funnelId, analysisType, periodStart])
+  @@index([generatedAt])
+  @@map("funnel_analyses")
+}
+
+model FunnelOptimization {
+  id                String      @id @default(cuid())
+  funnelId          String
+  type              String      // "ai_suggestion", "manual_change", "ab_test_result"
+  
+  // Optimization details
+  title             String
+  description       String
+  recommendations   Json        // Detailed recommendations
+  
+  // Impact prediction
+  predictedImpact   Decimal?    @db.Decimal(10, 4)
+  confidenceScore   Decimal?    @db.Decimal(3, 2)
+  
+  // Implementation
+  status            String      @default("pending") // "pending", "implemented", "testing", "rejected"
+  implementedAt     DateTime?
+  implementedBy     String?
+  
+  // Results tracking
+  actualImpact      Decimal?    @db.Decimal(10, 4)
+  measurementPeriod Int?        // Days measured
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations
+  funnel            Funnel      @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  
+  @@index([funnelId, status])
+  @@index([createdAt, type])
+  @@map("funnel_optimizations")
+}
+
+model FunnelCohort {
+  id                String      @id @default(cuid())
+  name              String
+  description       String?
+  
+  // Cohort definition
+  criteria          Json        // Cohort criteria (user properties, behaviors, etc.)
+  
+  // Metadata
+  isActive          Boolean     @default(true)
+  userCount         Int         @default(0)
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations
+  comparisons       FunnelComparison[]
+  
+  @@index([isActive, userCount])
+  @@map("funnel_cohorts")
+}
+
+model FunnelComparison {
+  id                String        @id @default(cuid())
+  funnelId          String
+  cohortId          String
+  comparisonType    String        // "cohort_vs_overall", "time_period", "ab_test"
+  
+  // Comparison period
+  periodStart       DateTime
+  periodEnd         DateTime
+  
+  // Results
+  results           Json          // Detailed comparison results
+  significance      Decimal?      @db.Decimal(5, 4)
+  winnerDetermined  Boolean       @default(false)
+  
+  createdAt         DateTime      @default(now())
+  
+  // Relations
+  cohort            FunnelCohort  @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  
+  @@index([funnelId, cohortId])
+  @@index([createdAt, comparisonType])
+  @@map("funnel_comparisons")
+}
+
+// Enums for Funnel System
+enum FunnelEventType {
+  PAGE_VIEW
+  BUTTON_CLICK
+  FORM_SUBMIT
+  PURCHASE
+  SIGNUP
+  LOGIN
+  CUSTOM
+}
+
+enum FunnelAnalysisType {
+  CONVERSION_RATE
+  DROPOFF_ANALYSIS
+  COHORT_ANALYSIS
+  TIME_ANALYSIS
+  ATTRIBUTION_ANALYSIS
+  REVENUE_ANALYSIS
 }
