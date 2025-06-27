@@ -112,9 +112,9 @@ export async function POST(request: NextRequest) {
         });
 
       case 'deploy':
-        const { modelId, ...deployConfig } = requestData;
+        const { modelId: deployModelId, ...deployConfig } = requestData;
         const deployRequest = DeployModelRequestSchema.parse(deployConfig);
-        const endpointUrl = await modelTrainingEngine.deployModel(modelId, deployRequest);
+        const endpointUrl = await modelTrainingEngine.deployModel(deployModelId, deployRequest);
         
         return NextResponse.json({
           success: true,

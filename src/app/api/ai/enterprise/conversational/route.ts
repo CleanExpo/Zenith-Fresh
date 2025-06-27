@@ -166,8 +166,8 @@ export async function POST(request: NextRequest) {
         });
 
       case 'process_voice_input':
-        const { conversationId, audioUrl } = requestData;
-        const voiceResult = await conversationalAIPlatform.processVoiceInput(conversationId, audioUrl);
+        const { conversationId: voiceConversationId, audioUrl } = requestData;
+        const voiceResult = await conversationalAIPlatform.processVoiceInput(voiceConversationId, audioUrl);
         
         return NextResponse.json({
           success: true,
@@ -186,8 +186,8 @@ export async function POST(request: NextRequest) {
         });
 
       case 'update_intent':
-        const { botId, intentName, updates } = requestData;
-        await conversationalAIPlatform.updateIntent(botId, intentName, updates);
+        const { botId: updateBotId, intentName, updates } = requestData;
+        await conversationalAIPlatform.updateIntent(updateBotId, intentName, updates);
         
         return NextResponse.json({
           success: true,
@@ -270,8 +270,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
-    const botId = searchParams.get('botId');
-    const conversationId = searchParams.get('conversationId');
+    const getBotId = searchParams.get('botId');
+    const getConversationId = searchParams.get('conversationId');
     const userId = searchParams.get('userId');
 
     switch (action) {
@@ -284,14 +284,14 @@ export async function GET(request: NextRequest) {
         });
 
       case 'get_chatbot':
-        if (!botId) {
+        if (!getBotId) {
           return NextResponse.json(
             { error: 'botId parameter is required' },
             { status: 400 }
           );
         }
         
-        const chatbot = conversationalAIPlatform.getChatbot(botId);
+        const chatbot = conversationalAIPlatform.getChatbot(getBotId);
         if (!chatbot) {
           return NextResponse.json(
             { error: 'Chatbot not found' },
@@ -306,7 +306,7 @@ export async function GET(request: NextRequest) {
         });
 
       case 'list_conversations':
-        const conversations = conversationalAIPlatform.listConversations(userId || undefined, botId || undefined);
+        const conversations = conversationalAIPlatform.listConversations(userId || undefined, getBotId || undefined);
         return NextResponse.json({
           success: true,
           conversations,
@@ -314,14 +314,14 @@ export async function GET(request: NextRequest) {
         });
 
       case 'get_conversation':
-        if (!conversationId) {
+        if (!getConversationId) {
           return NextResponse.json(
             { error: 'conversationId parameter is required' },
             { status: 400 }
           );
         }
         
-        const conversation = conversationalAIPlatform.getConversation(conversationId);
+        const conversation = conversationalAIPlatform.getConversation(getConversationId);
         if (!conversation) {
           return NextResponse.json(
             { error: 'Conversation not found' },
@@ -336,14 +336,14 @@ export async function GET(request: NextRequest) {
         });
 
       case 'get_messages':
-        if (!conversationId) {
+        if (!getConversationId) {
           return NextResponse.json(
             { error: 'conversationId parameter is required' },
             { status: 400 }
           );
         }
         
-        const messages = conversationalAIPlatform.getConversationMessages(conversationId);
+        const messages = conversationalAIPlatform.getConversationMessages(getConversationId);
         return NextResponse.json({
           success: true,
           messages,
@@ -351,14 +351,14 @@ export async function GET(request: NextRequest) {
         });
 
       case 'get_voice_config':
-        if (!botId) {
+        if (!getBotId) {
           return NextResponse.json(
             { error: 'botId parameter is required' },
             { status: 400 }
           );
         }
         
-        const voiceConfig = conversationalAIPlatform.getVoiceConfig(botId);
+        const voiceConfig = conversationalAIPlatform.getVoiceConfig(getBotId);
         return NextResponse.json({
           success: true,
           voiceConfig,
@@ -366,14 +366,14 @@ export async function GET(request: NextRequest) {
         });
 
       case 'get_intents':
-        if (!botId) {
+        if (!getBotId) {
           return NextResponse.json(
             { error: 'botId parameter is required' },
             { status: 400 }
           );
         }
         
-        const intents = conversationalAIPlatform.getIntents(botId);
+        const intents = conversationalAIPlatform.getIntents(getBotId);
         return NextResponse.json({
           success: true,
           intents,
@@ -381,14 +381,14 @@ export async function GET(request: NextRequest) {
         });
 
       case 'chatbot_analytics':
-        if (!botId) {
+        if (!getBotId) {
           return NextResponse.json(
             { error: 'botId parameter is required' },
             { status: 400 }
           );
         }
         
-        const analytics = conversationalAIPlatform.getChatbotAnalytics(botId);
+        const analytics = conversationalAIPlatform.getChatbotAnalytics(getBotId);
         return NextResponse.json({
           success: true,
           analytics,
@@ -426,7 +426,7 @@ export async function GET(request: NextRequest) {
         });
 
       case 'conversation_history':
-        if (!conversationId) {
+        if (!getConversationId) {
           return NextResponse.json(
             { error: 'conversationId parameter is required' },
             { status: 400 }
@@ -436,7 +436,7 @@ export async function GET(request: NextRequest) {
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');
         
-        const allMessages = conversationalAIPlatform.getConversationMessages(conversationId);
+        const allMessages = conversationalAIPlatform.getConversationMessages(getConversationId);
         const paginatedMessages = allMessages.slice(offset, offset + limit);
         
         return NextResponse.json({
@@ -449,7 +449,7 @@ export async function GET(request: NextRequest) {
         });
 
       case 'export_conversation':
-        if (!conversationId) {
+        if (!getConversationId) {
           return NextResponse.json(
             { error: 'conversationId parameter is required' },
             { status: 400 }
@@ -457,45 +457,45 @@ export async function GET(request: NextRequest) {
         }
         
         const format = searchParams.get('format') || 'json';
-        const conversation = conversationalAIPlatform.getConversation(conversationId);
-        const messages = conversationalAIPlatform.getConversationMessages(conversationId);
+        const exportConversation = conversationalAIPlatform.getConversation(getConversationId);
+        const exportMessages = conversationalAIPlatform.getConversationMessages(getConversationId);
         
-        if (!conversation) {
+        if (!exportConversation) {
           return NextResponse.json(
             { error: 'Conversation not found' },
             { status: 404 }
           );
         }
         
-        const exportData = { conversation, messages };
+        const exportData = { conversation: exportConversation, messages: exportMessages };
         
         switch (format) {
           case 'csv':
             let csvData = 'timestamp,sender,content,type\n';
-            messages.forEach(msg => {
+            exportMessages.forEach(msg => {
               csvData += `${msg.metadata.timestamp.toISOString()},"${msg.sender}","${msg.content.replace(/"/g, '""')}","${msg.type}"\n`;
             });
             
             return new NextResponse(csvData, {
               headers: {
                 'Content-Type': 'text/csv',
-                'Content-Disposition': `attachment; filename="conversation_${conversationId}.csv"`,
+                'Content-Disposition': `attachment; filename="conversation_${getConversationId}.csv"`,
               },
             });
             
           case 'txt':
-            let txtData = `Conversation Export - ${conversation.id}\n`;
-            txtData += `Created: ${conversation.createdAt.toISOString()}\n`;
-            txtData += `Language: ${conversation.language}\n\n`;
+            let txtData = `Conversation Export - ${exportConversation.id}\n`;
+            txtData += `Created: ${exportConversation.createdAt.toISOString()}\n`;
+            txtData += `Language: ${exportConversation.language}\n\n`;
             
-            messages.forEach(msg => {
+            exportMessages.forEach(msg => {
               txtData += `[${msg.metadata.timestamp.toISOString()}] ${msg.sender}: ${msg.content}\n`;
             });
             
             return new NextResponse(txtData, {
               headers: {
                 'Content-Type': 'text/plain',
-                'Content-Disposition': `attachment; filename="conversation_${conversationId}.txt"`,
+                'Content-Disposition': `attachment; filename="conversation_${getConversationId}.txt"`,
               },
             });
             

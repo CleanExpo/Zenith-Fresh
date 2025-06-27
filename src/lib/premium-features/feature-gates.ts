@@ -3,7 +3,7 @@
  * Controls access to premium features based on subscription tier
  */
 
-import { useState, useEffect } from 'react';
+// Removed React hooks import - this file is used server-side
 import { prisma } from '@/lib/prisma';
 import { auditLogger } from '@/lib/audit/audit-logger';
 

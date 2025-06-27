@@ -20,3 +20,4 @@ bash
 claude
 claude
 claude
+claude
