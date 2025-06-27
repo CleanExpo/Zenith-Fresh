@@ -101,6 +101,10 @@
     "xlsx": "^0.18.5",
     "zod": "^3.25.67"
   },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "devDependencies": {
     "@playwright/test": "^1.53.1",
     "@testing-library/jest-dom": "^6.4.2",

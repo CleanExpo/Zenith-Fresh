@@ -1,14 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "npm ci && node build-optimized.js",
+  "buildCommand": "npm run vercel-build",
   "devCommand": "npm run dev",
-  "installCommand": "npm ci",
+  "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["iad1"],
+  "runtime": "nodejs18.x",
   "env": {
     "NODE_ENV": "production",
     "FORCE_BUILD": "true",
-    "CACHE_BUST": "20250625-003000"
+    "CACHE_BUST": "20250627-001000"
   },
   "build": {
     "env": {
