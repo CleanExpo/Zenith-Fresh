@@ -10,11 +10,11 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
-import { Redis } from 'ioredis';
+// import { Redis } from 'ioredis'; // DISABLED: Causes build errors when Redis is not available
 
 const execAsync = promisify(exec);
 const prisma = new PrismaClient();
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+// const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379'); // DISABLED: Causes build errors when Redis is not available
 
 export interface DeploymentConfig {
   strategy: 'blue-green' | 'canary' | 'rolling' | 'immediate';

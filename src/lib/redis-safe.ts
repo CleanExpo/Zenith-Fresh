@@ -1,26 +1,27 @@
 // Redis connection with build-safe fallbacks
-let redis: any = null;
+import { createClient } from 'redis';
 
-try {
-  if (process.env.REDIS_URL && typeof window === 'undefined') {
-    const Redis = require('ioredis');
-    redis = new Redis(process.env.REDIS_URL, {
-      retryDelayOnFailover: 100,
-      enableReadyCheck: false,
-      maxRetriesPerRequest: 3,
-      lazyConnect: true,
-      connectTimeout: 1000,
-      commandTimeout: 1000,
+const isRedisEnabled = process.env.REDIS_URL && process.env.NODE_ENV !== 'development';
+
+let redis: any = null;
+let isRedisAvailable = false;
+
+async function initRedisSafe() {
+  if (!isRedisEnabled) return;
+  try {
+    redis = createClient({ url: process.env.REDIS_URL });
+    redis.on('error', (err: any) => {
+      console.warn('⚠️ Redis error:', err.message);
+      isRedisAvailable = false;
     });
-    
-    redis.on('error', (error: any) => {
-      console.warn('Redis connection error (using fallback):', error.message);
-      redis = null;
-    });
+    await redis.connect();
+    isRedisAvailable = true;
+    console.log('✅ Connected to Redis');
+  } catch (err: any) {
+    console.warn('🚫 Redis connection failed:', err.message);
+    redis = null;
+    isRedisAvailable = false;
   }
-} catch (error) {
-  console.warn('Redis not available, using memory fallback');
-  redis = null;
 }
 
 export { redis };
@@ -29,7 +30,7 @@ export { redis };
 const memoryStore = new Map();
 
 export function rateLimit(key: string, limit: number, window: number) {
-  if (redis) {
+  if (isRedisAvailable && redis) {
     // Use Redis for distributed rate limiting
     return redis.incr(key).then((count: number) => {
       if (count === 1) {

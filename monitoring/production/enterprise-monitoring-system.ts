@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { Redis } from 'ioredis';
+// import { Redis } from 'ioredis'; // DISABLED: Causes build errors when Redis is not available
 import { PrismaClient } from '@prisma/client';
 import * as Sentry from '@sentry/node';
 

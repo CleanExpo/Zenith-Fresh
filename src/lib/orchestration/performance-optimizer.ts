@@ -196,9 +196,9 @@ export interface OptimizationAction {
  */
 class MetricsCollector {
   private metrics: Map<string, PerformanceMetric[]> = new Map();
-  private redis: Redis;
+  private redis: any;
 
-  constructor(redis: Redis) {
+  constructor(redis: any) {
     this.redis = redis;
   }
 
@@ -293,7 +293,7 @@ class MetricsCollector {
   private async persistMetric(metric: PerformanceMetric): Promise<void> {
     try {
       const key = `metric:${metric.name}:${metric.timestamp.getTime()}`;
-      await this.redis.setex(key, 86400, JSON.stringify(metric)); // 24 hours TTL
+      await JSONCache.set(key, metric, 86400); // 24 hours TTL
     } catch (error) {
       console.error('Failed to persist metric:', error);
     }
@@ -906,7 +906,7 @@ class AutoOptimizer extends EventEmitter {
  * Performance Optimizer - Main Class
  */
 export class PerformanceOptimizer extends EventEmitter {
-  private redis: Redis;
+  private redis: any;
   private metricsCollector: MetricsCollector;
   private analyzer: PerformanceAnalyzer;
   private autoOptimizer: AutoOptimizer;
@@ -914,7 +914,7 @@ export class PerformanceOptimizer extends EventEmitter {
 
   constructor(redisUrl: string) {
     super();
-    this.redis = new Redis(redisUrl);
+    this.redis = null; // Will use cache interface instead of direct Redis
     this.metricsCollector = new MetricsCollector(this.redis);
     this.analyzer = new PerformanceAnalyzer(this.metricsCollector);
     this.autoOptimizer = new AutoOptimizer(this.analyzer);
@@ -926,8 +926,8 @@ export class PerformanceOptimizer extends EventEmitter {
    */
   async initialize(): Promise<void> {
     try {
-      await this.redis.ping();
-      console.log('✅ Performance Optimizer: Redis connection established');
+      await initRedis();
+      console.log('✅ Performance Optimizer: Cache system ready');
 
       this.isRunning = true;
       this.emit('initialized');
@@ -1026,7 +1026,7 @@ export class PerformanceOptimizer extends EventEmitter {
     this.isRunning = false;
     this.autoOptimizer.stop();
     
-    await this.redis.quit();
+    await cache.disconnect();
     
     this.emit('shutdown');
     console.log('✅ Performance Optimizer: Shutdown complete');

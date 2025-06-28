@@ -10,11 +10,11 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 // Using built-in fetch in Node.js 18+
 import { PrismaClient } from '@prisma/client';
-import { Redis } from 'ioredis';
+// import { Redis } from 'ioredis'; // DISABLED: Causes build errors when Redis is not available
 
 const execAsync = promisify(exec);
 const prisma = new PrismaClient();
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+// const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379'); // DISABLED: Causes build errors when Redis is not available
 
 export interface TestSuite {
   name: string;

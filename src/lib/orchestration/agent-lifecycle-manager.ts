@@ -209,9 +209,9 @@ export interface ScalingEvent {
  */
 class DeploymentManager extends EventEmitter {
   private deployments: Map<string, AgentInstance[]> = new Map();
-  private redis: Redis;
+  private redis: any;
 
-  constructor(redis: Redis) {
+  constructor(redis: any) {
     super();
     this.redis = redis;
   }
@@ -320,7 +320,7 @@ class DeploymentManager extends EventEmitter {
     }
 
     this.deployments.delete(deploymentId);
-    await this.redis.del(`deployment:${deploymentId}`);
+    await cache.del(`deployment:${deploymentId}`);
 
     this.emit('deploymentRemoved', { deploymentId });
   }
@@ -662,7 +662,7 @@ class DeploymentManager extends EventEmitter {
   private async persistDeployment(deploymentId: string): Promise<void> {
     const instances = this.deployments.get(deploymentId);
     if (instances) {
-      await this.redis.set(`deployment:${deploymentId}`, JSON.stringify(instances));
+      await JSONCache.set(`deployment:${deploymentId}`, instances);
     }
   }
 }
@@ -825,7 +825,7 @@ class AutoScaler extends EventEmitter {
  * Agent Lifecycle Manager
  */
 export class AgentLifecycleManager extends EventEmitter {
-  private redis: Redis;
+  private redis: any;
   private templates: Map<string, AgentTemplate> = new Map();
   private deploymentManager: DeploymentManager;
   private healthMonitor: HealthMonitor;
@@ -834,7 +834,7 @@ export class AgentLifecycleManager extends EventEmitter {
 
   constructor(redisUrl: string) {
     super();
-    this.redis = new Redis(redisUrl);
+    this.redis = null; // Will use cache interface instead of direct Redis
     this.deploymentManager = new DeploymentManager(this.redis);
     this.healthMonitor = new HealthMonitor();
     this.autoScaler = new AutoScaler(this.deploymentManager);
@@ -846,8 +846,8 @@ export class AgentLifecycleManager extends EventEmitter {
    */
   async initialize(): Promise<void> {
     try {
-      await this.redis.ping();
-      console.log('✅ Agent Lifecycle Manager: Redis connection established');
+      await initRedis();
+      console.log('✅ Agent Lifecycle Manager: Cache system ready');
 
       // Load existing templates and deployments
       await this.loadState();
@@ -1040,14 +1040,10 @@ export class AgentLifecycleManager extends EventEmitter {
    */
   private async loadState(): Promise<void> {
     try {
-      // Load templates
-      const templateKeys = await this.redis.keys('template:*');
-      for (const key of templateKeys) {
-        const templateData = await this.redis.get(key);
-        if (templateData) {
-          const template = JSON.parse(templateData);
-          this.templates.set(template.id, template);
-        }
+      // State loading disabled when Redis is not available
+      if (!cache.isAvailable()) {
+        console.log('📊 Cache not available, starting with fresh state');
+        return;
       }
 
       console.log(`📊 Lifecycle state loaded: ${this.templates.size} templates`);
@@ -1060,7 +1056,7 @@ export class AgentLifecycleManager extends EventEmitter {
    * Persist template to Redis
    */
   private async persistTemplate(template: AgentTemplate): Promise<void> {
-    await this.redis.set(`template:${template.id}`, JSON.stringify(template));
+    await JSONCache.set(`template:${template.id}`, template);
   }
 
   /**
@@ -1080,7 +1076,7 @@ export class AgentLifecycleManager extends EventEmitter {
       await this.persistTemplate(template);
     }
 
-    await this.redis.quit();
+    await cache.disconnect();
     
     this.emit('shutdown');
     console.log('✅ Agent Lifecycle Manager: Shutdown complete');

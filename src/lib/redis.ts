@@ -1,63 +1,26 @@
 import { createClient } from 'redis';
-import * as Sentry from '@sentry/nextjs';
 
-// Build-time safety: Only create Redis client at runtime, never during build
-const isRedisEnabled = process.env.REDIS_URL && 
-  process.env.NODE_ENV !== 'test' && 
-  process.env.VERCEL_ENV !== undefined; // Only in runtime environments
+const isRedisEnabled = process.env.REDIS_URL && process.env.NODE_ENV !== 'development';
 
-let redisClient: ReturnType<typeof createClient> | null = null;
+let redisClient = null;
 let isRedisAvailable = false;
-let initPromise: Promise<void> | null = null;
 
-// Cache configuration
-const DEFAULT_TTL = 3600; // 1 hour in seconds
-
-async function initRedis() {
-  // Skip if already initialized or not enabled
-  if (initPromise || !isRedisEnabled) {
-    return initPromise;
-  }
-
-  initPromise = (async () => {
-    try {
-      redisClient = createClient({ 
-        url: process.env.REDIS_URL,
-        socket: {
-          connectTimeout: 5000,
-          reconnectStrategy: (retries) => {
-            if (retries > 3) return false;
-            return Math.min(retries * 100, 3000);
-          }
-        }
-      });
-
-      redisClient.on('error', (err) => {
-        console.warn('⚠️ Redis error:', err.message);
-        isRedisAvailable = false;
-        if (typeof Sentry !== 'undefined' && Sentry.captureException) {
-          Sentry.captureException(err, { extra: { context: 'redis-error' } });
-        }
-      });
-
-      redisClient.on('ready', () => {
-        console.log('✅ Redis connected successfully');
-        isRedisAvailable = true;
-      });
-
-      await redisClient.connect();
-      isRedisAvailable = true;
-    } catch (err) {
-      console.warn('🚫 Redis connection failed. Continuing without cache.');
-      if (typeof Sentry !== 'undefined' && Sentry.captureException) {
-        Sentry.captureException(err as Error, { extra: { context: 'redis-init' } });
-      }
-      redisClient = null;
+export async function initRedis() {
+  if (!isRedisEnabled) return;
+  try {
+    redisClient = createClient({ url: process.env.REDIS_URL });
+    redisClient.on('error', (err) => {
+      console.warn('⚠️ Redis error:', err.message);
       isRedisAvailable = false;
-    }
-  })();
-
-  return initPromise;
+    });
+    await redisClient.connect();
+    isRedisAvailable = true;
+    console.log('✅ Connected to Redis');
+  } catch (err) {
+    console.warn('🚫 Redis connection failed:', err.message);
+    redisClient = null;
+    isRedisAvailable = false;
+  }
 }
 
 // Exported cache interface with safe fallbacks
@@ -74,13 +37,12 @@ export const cache = {
     return null;
   },
 
-  async set(key: string, value: string, ttl: number = DEFAULT_TTL): Promise<void> {
+  async set(key: string, value: string, ttl: number = 3600): Promise<void> {
     if (isRedisAvailable && redisClient) {
       try {
         await redisClient.setEx(key, ttl, value);
       } catch (error) {
         console.warn('Redis set error:', error);
-        // Ignore cache set errors - continue without caching
       }
     }
   },
@@ -130,4 +92,3 @@ export class JSONCache {
 
 // Export for backward compatibility
 export const redis = redisClient;
-export { initRedis };
