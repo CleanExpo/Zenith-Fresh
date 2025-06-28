@@ -410,11 +410,11 @@ export default function AIPoweredContentAnalysis({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Analysis Input Section */}
-      <Card>
+      <Card className="card-elevated glass-morphism">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-gradient">
             <Brain className="h-5 w-5 text-blue-600" />
             AI Content Analysis Engine
           </CardTitle>
@@ -423,7 +423,7 @@ export default function AIPoweredContentAnalysis({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label htmlFor="keywords">Target Keywords</Label>
               <Input
@@ -467,7 +467,7 @@ export default function AIPoweredContentAnalysis({
           <Button 
             onClick={performAIAnalysis}
             disabled={isAnalyzing}
-            className="w-full"
+            className="w-full btn-glow transition-all duration-300 hover:scale-[1.02]"
           >
             {isAnalyzing ? (
               <>
@@ -487,7 +487,7 @@ export default function AIPoweredContentAnalysis({
       {/* Analysis Results */}
       {(contentGaps.length > 0 || recommendations.length > 0) && (
         <Tabs defaultValue="gaps" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6 md:grid-cols-3 sm:grid-cols-2 overflow-x-auto">
             <TabsTrigger value="gaps">Content Gaps</TabsTrigger>
             <TabsTrigger value="recommendations">AI Optimization</TabsTrigger>
             <TabsTrigger value="clusters">Topic Clusters</TabsTrigger>
@@ -499,7 +499,7 @@ export default function AIPoweredContentAnalysis({
           <TabsContent value="gaps" className="space-y-4">
             <div className="grid gap-4">
               {contentGaps.map((gap, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow">
+                <Card key={index} className="card-elevated hover-lift animate-slide-up" style={{animationDelay: `${index * 100}ms`}}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{gap.topic}</CardTitle>
@@ -514,7 +514,7 @@ export default function AIPoweredContentAnalysis({
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                       <div className="flex items-center gap-2">
                         <Search className="h-4 w-4 text-blue-600" />
                         <div>
@@ -552,7 +552,7 @@ export default function AIPoweredContentAnalysis({
                         ))}
                       </div>
                     </div>
-                    <Progress value={100 - gap.difficultyScore} className="h-2" />
+                    <Progress value={100 - gap.difficultyScore} className="h-2 animate-pulse-glow" />
                     <div className="text-xs text-gray-600">
                       Opportunity Score: {100 - gap.difficultyScore}% (Higher is better)
                     </div>
@@ -574,7 +574,7 @@ export default function AIPoweredContentAnalysis({
               {recommendations
                 .sort((a, b) => b.priority - a.priority)
                 .map((rec, index) => (
-                <Card key={index} className="border-l-4 border-l-blue-500">
+                <Card key={index} className="card-elevated border-l-4 border-l-primary hover-glow animate-slide-up" style={{animationDelay: `${index * 100}ms`}}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -613,7 +613,7 @@ export default function AIPoweredContentAnalysis({
           <TabsContent value="clusters" className="space-y-4">
             <div className="grid gap-4">
               {topicClusters.map((cluster, index) => (
-                <Card key={index}>
+                <Card key={index} className="card-elevated hover-lift animate-slide-up" style={{animationDelay: `${index * 100}ms`}}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
@@ -672,7 +672,7 @@ export default function AIPoweredContentAnalysis({
           <TabsContent value="briefs" className="space-y-4">
             <div className="grid gap-4">
               {contentBriefs.map((brief, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow">
+                <Card key={index} className="card-elevated hover-lift animate-scale-in" style={{animationDelay: `${index * 100}ms`}}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="h-5 w-5 text-blue-600" />
@@ -745,7 +745,7 @@ export default function AIPoweredContentAnalysis({
           <TabsContent value="citations" className="space-y-4">
             <div className="space-y-4">
               {citationOptimizations.map((citation, index) => (
-                <Card key={index}>
+                <Card key={index} className="card-elevated hover-glow animate-slide-up" style={{animationDelay: `${index * 100}ms`}}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">

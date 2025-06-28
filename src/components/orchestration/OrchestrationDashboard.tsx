@@ -561,23 +561,23 @@ export const OrchestrationDashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 space-y-6 bg-gray-50 min-h-screen animate-fade-in">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-slide-down">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Agent Orchestration Dashboard</h1>
-          <p className="text-gray-600">Real-time monitoring and management of 30+ autonomous agents</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gradient">Agent Orchestration Dashboard</h1>
+          <p className="text-gray-600 text-sm sm:text-base">Real-time monitoring and management of 30+ autonomous agents</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <Button
             variant={isMonitoring ? "default" : "outline"}
             onClick={() => setIsMonitoring(!isMonitoring)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 btn-glow hover:scale-105 transition-all duration-300"
           >
             {isMonitoring ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             {isMonitoring ? 'Pause' : 'Resume'} Monitoring
           </Button>
-          <Button onClick={handleRefresh} variant="outline" className="flex items-center gap-2">
+          <Button onClick={handleRefresh} variant="outline" className="flex items-center gap-2 hover:scale-105 transition-all duration-300">
             <RotateCcw className="w-4 h-4" />
             Refresh
           </Button>

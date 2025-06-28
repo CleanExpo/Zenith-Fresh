@@ -247,52 +247,52 @@ export default function EnterpriseIntegrationDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-4 sm:p-6 space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-slide-down">
         <div>
-          <h1 className="text-3xl font-bold">Enterprise Integration</h1>
+          <h1 className="text-3xl font-bold text-gradient">Enterprise Integration</h1>
           <p className="text-muted-foreground">
             Manage SSO, APIs, webhooks, integrations, and white-label settings
           </p>
         </div>
-        <Button>
+        <Button className="btn-glow hover:scale-105 transition-all duration-300">
           <Download className="h-4 w-4 mr-2" />
           Export Settings
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 animate-slide-up">
+        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6 md:grid-cols-3 sm:grid-cols-2 glass-morphism overflow-x-auto">
           <TabsTrigger value="sso" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
-            SSO
+            <span className="hidden sm:inline">SSO</span>
           </TabsTrigger>
           <TabsTrigger value="api" className="flex items-center gap-2">
             <Key className="h-4 w-4" />
-            API Management
+            <span className="hidden sm:inline">API Management</span>
           </TabsTrigger>
           <TabsTrigger value="webhooks" className="flex items-center gap-2">
             <Webhook className="h-4 w-4" />
-            Webhooks
+            <span className="hidden sm:inline">Webhooks</span>
           </TabsTrigger>
           <TabsTrigger value="integrations" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            Integrations
+            <span className="hidden sm:inline">Integrations</span>
           </TabsTrigger>
           <TabsTrigger value="whitelabel" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
-            White Label
+            <span className="hidden sm:inline">White Label</span>
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            Analytics
+            <span className="hidden sm:inline">Analytics</span>
           </TabsTrigger>
         </TabsList>
 
         {/* SSO Configuration */}
         <TabsContent value="sso" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+          <div className="grid gap-6 lg:grid-cols-2 md:grid-cols-1">
+            <Card className="card-elevated hover-lift animate-slide-up">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
@@ -331,8 +331,8 @@ export default function EnterpriseIntegrationDashboard() {
                   <Label htmlFor="saml-enabled">Enable SAML SSO</Label>
                 </div>
                 <div className="flex gap-2">
-                  <Button>Save Configuration</Button>
-                  <Button variant="outline">
+                  <Button className="btn-glow">Save Configuration</Button>
+                  <Button variant="outline" className="hover:scale-105 transition-all duration-300">
                     <Download className="h-4 w-4 mr-2" />
                     Download Metadata
                   </Button>

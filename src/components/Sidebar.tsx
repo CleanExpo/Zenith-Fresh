@@ -24,21 +24,21 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="flex w-64 flex-col border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+    <div className="flex w-64 flex-col border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 glass-morphism animate-slide-up">
       <div className="flex h-16 items-center justify-center border-b border-gray-200 dark:border-gray-700">
-        <span className="text-xl font-bold text-primary">Zenith</span>
+        <span className="text-xl font-bold text-gradient animate-pulse-glow">Zenith</span>
       </div>
-      <nav className="flex-1 space-y-1 px-2 py-4">
+      <nav className="flex-1 space-y-1 px-2 py-4 animate-fade-in">
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.name}
               href={item.href}
-              className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${
+              className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-all duration-300 hover:scale-105 ${
                 isActive
-                  ? 'bg-primary text-white'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                  ? 'bg-primary text-white shadow-glow'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white hover-glow'
               }`}
             >
               <item.icon
