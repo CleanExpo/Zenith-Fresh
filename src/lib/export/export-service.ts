@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+// XLSX removed for security reasons - Excel export temporarily disabled
 
 export interface ExportConfig {
   type: 'dashboard' | 'report' | 'raw_data';
@@ -87,8 +87,7 @@ class ExportService {
           break;
         
         case 'excel':
-          fileBuffer = await this.generateExcel(config);
-          fileName = `export-${Date.now()}.xlsx`;
+          throw new Error('Excel export temporarily disabled for security reasons. Please use CSV or PDF format instead.');
           break;
         
         case 'csv':
@@ -292,93 +291,8 @@ class ExportService {
     return yPosition;
   }
 
-  private async generateExcel(config: ExportConfig): Promise<Buffer> {
-    const workbook = XLSX.utils.book_new();
-
-    if (config.type === 'dashboard') {
-      await this.addDashboardSheetsToWorkbook(workbook, config.data);
-    } else if (config.type === 'report') {
-      await this.addReportSheetsToWorkbook(workbook, config.data);
-    } else {
-      await this.addRawDataSheetToWorkbook(workbook, config.data);
-    }
-
-    // Add metadata sheet
-    if (config.includeMetadata) {
-      const metadata = [
-        ['Report Title', config.title || 'Analytics Export'],
-        ['Generated On', new Date().toLocaleString()],
-        ['Export Type', config.type],
-        ['Format', config.format]
-      ];
-
-      const metadataSheet = XLSX.utils.aoa_to_sheet(metadata);
-      XLSX.utils.book_append_sheet(workbook, metadataSheet, 'Metadata');
-    }
-
-    return Buffer.from(XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }));
-  }
-
-  private async addDashboardSheetsToWorkbook(workbook: XLSX.WorkBook, data: any): Promise<void> {
-    // KPIs sheet
-    if (data.kpis && data.kpis.length > 0) {
-      const kpiData = [
-        ['Metric', 'Value', 'Change (%)', 'Trend', 'Timeframe'],
-        ...data.kpis.map((kpi: any) => [
-          kpi.title,
-          kpi.value,
-          kpi.change || 0,
-          kpi.trend || 'flat',
-          kpi.timeframe || 'N/A'
-        ])
-      ];
-
-      const kpiSheet = XLSX.utils.aoa_to_sheet(kpiData);
-      XLSX.utils.book_append_sheet(workbook, kpiSheet, 'KPIs');
-    }
-
-    // Widgets sheet
-    if (data.widgets && data.widgets.length > 0) {
-      const widgetData = [
-        ['Widget', 'Type', 'Title', 'Description'],
-        ...data.widgets.map((widget: any, index: number) => [
-          index + 1,
-          widget.type,
-          widget.title,
-          widget.description || ''
-        ])
-      ];
-
-      const widgetSheet = XLSX.utils.aoa_to_sheet(widgetData);
-      XLSX.utils.book_append_sheet(workbook, widgetSheet, 'Widgets');
-    }
-  }
-
-  private async addReportSheetsToWorkbook(workbook: XLSX.WorkBook, data: any): Promise<void> {
-    if (data.sections && data.sections.length > 0) {
-      data.sections.forEach((section: any, index: number) => {
-        if (section.data && Array.isArray(section.data) && section.data.length > 0) {
-          const headers = section.columns || Object.keys(section.data[0]);
-          const sheetData = [
-            headers,
-            ...section.data.map((item: any) => 
-              headers.map((header: string) => item[header] || '')
-            )
-          ];
-
-          const sheet = XLSX.utils.aoa_to_sheet(sheetData);
-          XLSX.utils.book_append_sheet(workbook, sheet, section.title.substring(0, 31));
-        }
-      });
-    }
-  }
-
-  private async addRawDataSheetToWorkbook(workbook: XLSX.WorkBook, data: any): Promise<void> {
-    if (Array.isArray(data) && data.length > 0) {
-      const sheet = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(workbook, sheet, 'Data');
-    }
-  }
+  // Excel export methods removed for security reasons
+  // Use CSV export as alternative for spreadsheet data
 
   private async generateCSV(config: ExportConfig): Promise<Buffer> {
     let csvContent = '';
