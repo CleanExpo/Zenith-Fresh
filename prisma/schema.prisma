@@ -54,6 +54,7 @@ model User {
   
   // Enhanced Website Analyzer
   websiteAnalyses WebsiteAnalysis[]
+  scheduledScans  ScheduledScan[]
   
   // Advanced Analytics relations
   dataExportJobs DataExportJob[]
@@ -2186,13 +2187,48 @@ model WebsiteAnalysis {
   recommendationCount   Int       @default(0)
   issueCount           String?    // JSON string for issue breakdown
   analysisData         Json       // Full analysis result data
+  scheduledScanId      String?   // Reference to scheduled scan if this was automated
+  scheduledScan        ScheduledScan? @relation(fields: [scheduledScanId], references: [id])
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
 
   @@index([userId, url, createdAt])
   @@index([overallScore])
   @@index([analysisId])
+  @@index([scheduledScanId])
   @@map("website_analyses")
+}
+
+// Scheduled Website Scans - Week 2 Enhancement
+model ScheduledScan {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id])
+  name                  String    // User-friendly name for the scheduled scan
+  url                   String    // Website URL to scan
+  frequency             String    // 'daily', 'weekly', 'monthly'
+  dayOfWeek            Int?      // 0-6 for weekly scans (0 = Sunday)
+  dayOfMonth           Int?      // 1-31 for monthly scans
+  timeOfDay            String    // HH:MM format (24-hour)
+  timezone             String    @default("UTC")
+  isActive             Boolean   @default(true)
+  emailNotifications   Boolean   @default(true)
+  notificationEmails   String[]  // Array of email addresses to notify
+  scanOptions          Json?     // Scan configuration options
+  lastRunAt            DateTime?
+  nextRunAt            DateTime? // Calculated next run time
+  runCount             Int       @default(0)
+  successCount         Int       @default(0)
+  failureCount         Int       @default(0)
+  lastError            String?   // Last error message if any
+  analyses             WebsiteAnalysis[] // Historical scan results
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@index([userId, isActive, nextRunAt])
+  @@index([nextRunAt, isActive])
+  @@index([url, userId])
+  @@map("scheduled_scans")
 }
 
 // Advanced Analytics - Week 4 Feature
@@ -3241,3 +3277,4 @@ enum ProcessingStatus {
   FAILED
   SKIPPED
 }
+

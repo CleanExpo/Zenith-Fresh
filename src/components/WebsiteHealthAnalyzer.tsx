@@ -19,6 +19,7 @@ import {
   Clock,
   ExternalLink
 } from 'lucide-react';
+import { downloadWebsiteAnalysisPDF } from '../../Zenith-Fresh/lib/pdf-generator';
 
 interface HealthScore {
   overall: number;
@@ -51,6 +52,7 @@ const WebsiteHealthAnalyzer = memo(function WebsiteHealthAnalyzer({ isOpen, onCl
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<'input' | 'analyzing' | 'results'>('input');
   const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -183,6 +185,64 @@ const WebsiteHealthAnalyzer = memo(function WebsiteHealthAnalyzer({ isOpen, onCl
     security: 'Security',
     accessibility: 'Accessibility'
   }), []);
+
+  const handleDownloadPDF = useCallback(async () => {
+    if (!results || !url) return;
+    
+    try {
+      setIsGeneratingPDF(true);
+      
+      // Convert HealthScore to ScanData format for PDF generation
+      const scanData = {
+        id: 'demo-scan-' + Date.now(),
+        url: url,
+        status: 'completed',
+        performanceScore: results.pillars.performance,
+        accessibilityScore: results.pillars.accessibility,
+        bestPracticesScore: Math.round((results.pillars.security + results.pillars.technicalSEO) / 2),
+        seoScore: results.pillars.onPageSEO,
+        createdAt: new Date().toISOString(),
+        completedAt: new Date().toISOString(),
+        project: {
+          id: 'demo-project',
+          name: 'Website Analysis'
+        },
+        alerts: Array.from({ length: results.issueCount.error }, (_, i) => ({
+          id: `error-${i}`,
+          severity: 'critical',
+          title: 'Critical Performance Issue',
+          description: 'Website performance optimization needed to improve user experience and search rankings.'
+        })).concat(
+          Array.from({ length: results.issueCount.warning }, (_, i) => ({
+            id: `warning-${i}`,
+            severity: 'medium',
+            title: 'Performance Warning',
+            description: 'Consider optimizing images, minifying resources, and enabling compression.'
+          }))
+        ).concat(
+          Array.from({ length: results.issueCount.notice }, (_, i) => ({
+            id: `notice-${i}`,
+            severity: 'low',
+            title: 'Optimization Opportunity',
+            description: 'Minor improvements that could enhance website performance and SEO.'
+          }))
+        )
+      };
+      
+      // Add a small delay for UX
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      downloadWebsiteAnalysisPDF(scanData, {
+        includeDetailedMetrics: true,
+        includeBranding: true
+      });
+      
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  }, [results, url]);
 
   if (!isOpen) return null;
 
@@ -477,10 +537,22 @@ const WebsiteHealthAnalyzer = memo(function WebsiteHealthAnalyzer({ isOpen, onCl
                 {/* Action Buttons */}
                 <div className="flex gap-4">
                   <button
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl font-semibold text-white hover:scale-105 transition-all flex items-center justify-center gap-2"
+                    onClick={handleDownloadPDF}
+                    disabled={isGeneratingPDF}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl font-semibold text-white hover:scale-105 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Download className="w-5 h-5" />
-                    Download Report
+                    {isGeneratingPDF ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-5 h-5"
+                      >
+                        <Download className="w-5 h-5" />
+                      </motion.div>
+                    ) : (
+                      <Download className="w-5 h-5" />
+                    )}
+                    {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
                   </button>
                   <button
                     className="px-6 py-3 border border-white/20 rounded-xl text-gray-300 hover:bg-white/10 transition-colors flex items-center gap-2"

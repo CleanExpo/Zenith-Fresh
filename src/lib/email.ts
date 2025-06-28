@@ -248,6 +248,182 @@ Thank you for your continued trust in Zenith Platform!
 Best regards,
 The Zenith Team`,
   }),
+
+  // Scheduled scan completion notification
+  scanCompletion: (
+    name: string, 
+    scanName: string, 
+    url: string, 
+    overallScore: number, 
+    analysisData: any, 
+    dashboardUrl: string
+  ) => {
+    // Helper functions for scoring
+    const getScoreColor = (score: number) => {
+      if (score >= 80) return '#16a34a'; // green
+      if (score >= 60) return '#f59e0b'; // yellow  
+      return '#dc2626'; // red
+    };
+
+    const getScoreStatus = (score: number) => {
+      if (score >= 80) return 'Excellent';
+      if (score >= 60) return 'Good';
+      return 'Needs Improvement';
+    };
+
+    const scoreColor = getScoreColor(overallScore);
+    const scoreStatus = getScoreStatus(overallScore);
+
+    return {
+      subject: `Website Scan Complete: ${scanName} - ${overallScore}% (${scoreStatus})`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); padding: 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">Website Scan Complete</h1>
+            <p style="color: #e0e7ff; margin: 10px 0 0 0; font-size: 16px;">Your scheduled scan results are ready</p>
+          </div>
+
+          <!-- Content -->
+          <div style="padding: 30px;">
+            <p style="font-size: 16px; color: #374151; margin: 0 0 20px 0;">Hi ${name},</p>
+            
+            <p style="font-size: 16px; color: #374151; line-height: 1.6;">
+              Your scheduled scan "<strong>${scanName}</strong>" has completed successfully. Here's a summary of your website's health:
+            </p>
+
+            <!-- Score Card -->
+            <div style="background-color: #f8fafc; border: 2px solid ${scoreColor}; border-radius: 12px; padding: 25px; margin: 25px 0; text-align: center;">
+              <div style="font-size: 48px; font-weight: bold; color: ${scoreColor}; margin-bottom: 10px;">${overallScore}%</div>
+              <div style="font-size: 18px; color: #374151; font-weight: 600;">${scoreStatus}</div>
+              <div style="font-size: 14px; color: #6b7280; margin-top: 5px;">Overall Health Score</div>
+            </div>
+
+            <!-- URL -->
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">Scanned Website:</div>
+              <div style="font-size: 16px; color: #1f2937; font-weight: 500; word-break: break-all;">${url}</div>
+            </div>
+
+            <!-- Key Metrics -->
+            ${analysisData?.pillars ? `
+            <div style="margin: 25px 0;">
+              <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 18px;">Key Performance Areas:</h3>
+              <div style="display: grid; gap: 15px;">
+                ${Object.entries(analysisData.pillars).map(([key, pillar]: [string, any]) => `
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background-color: #f9fafb; border-radius: 6px;">
+                    <span style="font-weight: 500; color: #374151; text-transform: capitalize;">${key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                    <span style="font-weight: bold; color: ${getScoreColor(pillar.score)};">${pillar.score}%</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            ` : ''}
+
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${dashboardUrl}" 
+                 style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); 
+                        color: white; 
+                        padding: 15px 30px; 
+                        text-decoration: none; 
+                        border-radius: 8px; 
+                        display: inline-block; 
+                        font-weight: 600;
+                        font-size: 16px;">
+                View Full Report
+              </a>
+            </div>
+
+            <p style="font-size: 14px; color: #6b7280; line-height: 1.5; margin: 20px 0;">
+              This scan was automatically generated based on your scheduled scan settings. 
+              You can manage your scheduled scans in your dashboard.
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">
+              This email was sent by Zenith Platform. 
+              <a href="${dashboardUrl}/settings" style="color: #2563eb;">Manage notification preferences</a>
+            </p>
+          </div>
+        </div>
+      `,
+      text: `Website Scan Complete: ${scanName}
+
+Hi ${name},
+
+Your scheduled scan "${scanName}" has completed successfully.
+
+Overall Health Score: ${overallScore}% (${scoreStatus})
+Website: ${url}
+
+${analysisData?.pillars ? Object.entries(analysisData.pillars).map(([key, pillar]: [string, any]) => 
+  `${key.replace(/([A-Z])/g, ' $1').trim()}: ${pillar.score}%`
+).join('\n') : ''}
+
+View your full report: ${dashboardUrl}
+
+This scan was automatically generated based on your scheduled scan settings.
+You can manage your scheduled scans in your dashboard.
+
+-- 
+Zenith Platform
+Manage preferences: ${dashboardUrl}/settings`
+    };
+  },
+
+  // Scheduled scan failure notification
+  scanFailure: (name: string, scanName: string, url: string, errorMessage: string, dashboardUrl: string) => ({
+    subject: `Website Scan Failed: ${scanName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #dc2626; padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">Website Scan Failed</h1>
+          <p style="color: #fecaca; margin: 10px 0 0 0;">Your scheduled scan encountered an error</p>
+        </div>
+        
+        <div style="padding: 30px;">
+          <p>Hi ${name},</p>
+          <p>We encountered an issue while running your scheduled scan "<strong>${scanName}</strong>" for ${url}.</p>
+          
+          <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0;">
+            <h4 style="color: #991b1b; margin: 0 0 10px 0;">Error Details:</h4>
+            <p style="color: #7f1d1d; margin: 0; font-family: monospace; font-size: 14px;">${errorMessage}</p>
+          </div>
+          
+          <p>Don't worry - we'll automatically retry the scan at the next scheduled time. If the issue persists, please check your scan settings or contact our support team.</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${dashboardUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Manage Scheduled Scans
+            </a>
+          </div>
+          
+          <p style="font-size: 14px; color: #6b7280;">
+            If you continue to experience issues, please don't hesitate to reach out to our support team.
+          </p>
+        </div>
+      </div>
+    `,
+    text: `Website Scan Failed: ${scanName}
+
+Hi ${name},
+
+We encountered an issue while running your scheduled scan "${scanName}" for ${url}.
+
+Error Details: ${errorMessage}
+
+Don't worry - we'll automatically retry the scan at the next scheduled time. If the issue persists, please check your scan settings or contact our support team.
+
+Manage your scheduled scans: ${dashboardUrl}
+
+If you continue to experience issues, please don't hesitate to reach out to our support team.
+
+Best regards,
+The Zenith Team`
+  }),
 };
 
 // Helper functions for common email operations
@@ -332,6 +508,54 @@ export async function sendPaymentSuccessEmail(
     tags: [
       { name: 'type', value: 'payment-success' },
       { name: 'plan', value: planName },
+    ],
+  });
+}
+
+export async function sendScanCompletionEmail(
+  to: string,
+  name: string,
+  scanName: string,
+  url: string,
+  overallScore: number,
+  analysisData: any,
+  scanId?: string
+): Promise<EmailResponse> {
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+  const template = EmailTemplates.scanCompletion(name, scanName, url, overallScore, analysisData, dashboardUrl);
+  
+  return sendEmail({
+    to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    tags: [
+      { name: 'type', value: 'scan-completion' },
+      { name: 'scan-id', value: scanId || 'unknown' },
+      { name: 'score', value: overallScore.toString() },
+    ],
+  });
+}
+
+export async function sendScanFailureEmail(
+  to: string,
+  name: string,
+  scanName: string,
+  url: string,
+  errorMessage: string,
+  scanId?: string
+): Promise<EmailResponse> {
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+  const template = EmailTemplates.scanFailure(name, scanName, url, errorMessage, dashboardUrl);
+  
+  return sendEmail({
+    to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    tags: [
+      { name: 'type', value: 'scan-failure' },
+      { name: 'scan-id', value: scanId || 'unknown' },
     ],
   });
 }

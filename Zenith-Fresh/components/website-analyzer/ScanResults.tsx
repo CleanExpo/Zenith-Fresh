@@ -11,6 +11,7 @@ import {
   EyeIcon,
   DocumentArrowDownIcon,
 } from '@heroicons/react/24/outline';
+import { downloadWebsiteAnalysisPDF } from '../../lib/pdf-generator';
 
 interface ScanResultsProps {
   scan: any;
@@ -20,6 +21,29 @@ interface ScanResultsProps {
 
 export default function ScanResults({ scan, onScanUpdated, onRetry }: ScanResultsProps) {
   const [activeSection, setActiveSection] = useState('overview');
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    if (!scan || scan.status !== 'completed') return;
+    
+    try {
+      setIsGeneratingPDF(true);
+      
+      // Add a small delay for UX (shows loading state)
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      downloadWebsiteAnalysisPDF(scan, {
+        includeDetailedMetrics: true,
+        includeBranding: true
+      });
+      
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      // You could add toast notification here
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   if (!scan) {
     return (
@@ -162,9 +186,17 @@ export default function ScanResults({ scan, onScanUpdated, onRetry }: ScanResult
           <EyeIcon className="h-4 w-4 mr-2" />
           View Full Report
         </button>
-        <button className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
-          <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-          Export PDF
+        <button 
+          onClick={handleDownloadPDF}
+          disabled={scan.status !== 'completed' || isGeneratingPDF}
+          className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isGeneratingPDF ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2" />
+          ) : (
+            <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+          )}
+          {isGeneratingPDF ? 'Generating...' : 'Download PDF Report'}
         </button>
       </div>
     </div>
