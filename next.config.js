@@ -12,10 +12,6 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   },
-  // Prevent static optimization issues for API routes
-  async rewrites() {
-    return [];
-  },
 }
 
 module.exports = nextConfig;

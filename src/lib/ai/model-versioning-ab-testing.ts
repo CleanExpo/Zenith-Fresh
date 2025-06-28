@@ -711,6 +711,33 @@ export class ModelVersioningABTestingSystem {
     }, 10000); // Every 10 seconds
   }
 
+  private async collectSystemMetrics(): Promise<void> {
+    try {
+      // Collect basic system metrics
+      const systemMetrics = {
+        timestamp: new Date(),
+        memoryUsage: process.memoryUsage(),
+        cpuUsage: process.cpuUsage(),
+        uptime: process.uptime(),
+        activeModels: this.modelVersions.size,
+        activeTests: this.abTests.size,
+        deployments: this.deploymentRegistry.size
+      };
+
+      // Store metrics
+      if (redis) {
+        await redis.lpush(
+          `${this.cachePrefix}system_metrics`,
+          JSON.stringify(systemMetrics)
+        );
+        // Keep only last 100 entries
+        await redis.ltrim(`${this.cachePrefix}system_metrics`, 0, 99);
+      }
+    } catch (error) {
+      console.warn('Failed to collect system metrics:', error);
+    }
+  }
+
   private async getNextVersionNumber(modelId: string): Promise<number> {
     const versions = this.modelVersions.get(modelId) || [];
     return versions.length + 1;
