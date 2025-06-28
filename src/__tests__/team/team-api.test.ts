@@ -4,7 +4,7 @@
  * permissions, invitations, and analytics
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { GET as getTeams, POST as createTeam } from '@/app/api/teams/route';
@@ -14,77 +14,77 @@ import { PUT as updateMember, DELETE as removeMember } from '@/app/api/teams/[id
 import { GET as getInvitations, POST as sendInvitation } from '@/app/api/teams/[id]/invitations/route';
 
 // Mock dependencies
-vi.mock('@/lib/prisma', () => ({
+jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
     },
     team: {
-      create: vi.fn(),
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
+      create: jest.fn(),
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
     },
     teamMember: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      count: vi.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
     },
     teamInvitation: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
     },
     teamSettings: {
-      create: vi.fn(),
-      findUnique: vi.fn(),
-      upsert: vi.fn(),
+      create: jest.fn(),
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
     },
     teamAnalytics: {
-      create: vi.fn(),
-      findUnique: vi.fn(),
+      create: jest.fn(),
+      findUnique: jest.fn(),
     },
     notifications: {
-      create: vi.fn(),
-      upsert: vi.fn(),
+      create: jest.fn(),
+      upsert: jest.fn(),
     },
     integrations: {
-      create: vi.fn(),
-      upsert: vi.fn(),
+      create: jest.fn(),
+      upsert: jest.fn(),
     },
     project: {
-      findMany: vi.fn(),
-      count: vi.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
     },
     activityLog: {
-      findMany: vi.fn(),
-      count: vi.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
     },
   },
 }));
 
-vi.mock('next-auth', () => ({
-  getServerSession: vi.fn(),
+jest.mock('next-auth', () => ({
+  getServerSession: jest.fn(),
 }));
 
-vi.mock('@/lib/auth', () => ({
+jest.mock('@/lib/auth', () => ({
   authOptions: {},
 }));
 
-vi.mock('@/lib/email', () => ({
-  sendTeamInvitationEmail: vi.fn().mockResolvedValue({ success: true }),
+jest.mock('@/lib/email', () => ({
+  sendTeamInvitationEmail: jest.fn().mockResolvedValue({ success: true }),
 }));
 
-vi.mock('@/lib/audit/audit-logger', () => ({
+jest.mock('@/lib/audit/audit-logger', () => ({
   AuditLogger: {
-    logUserAction: vi.fn(),
+    logUserAction: jest.fn(),
   },
   AuditEventType: {
     CREATE: 'CREATE',
@@ -145,21 +145,21 @@ const mockTeamMember = {
 
 describe('Team Management API', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     // Mock successful authentication
-    vi.mocked(require('next-auth').getServerSession).mockResolvedValue({
+    jest.mocked(require('next-auth').getServerSession).mockResolvedValue({
       user: { email: mockUser.email, name: mockUser.name },
     });
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('Teams CRUD Operations', () => {
     describe('GET /api/teams', () => {
       it('should fetch user teams successfully', async () => {
-        vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        jest.mocked(prisma.user.findUnique).mockResolvedValue({
           ...mockUser,
           teams: [
             {
@@ -180,7 +180,7 @@ describe('Team Management API', () => {
       });
 
       it('should return 401 for unauthenticated requests', async () => {
-        vi.mocked(require('next-auth').getServerSession).mockResolvedValue(null);
+        jest.mocked(require('next-auth').getServerSession).mockResolvedValue(null);
 
         const request = new NextRequest('http://localhost/api/teams');
         const response = await getTeams(request);
@@ -191,8 +191,8 @@ describe('Team Management API', () => {
 
     describe('POST /api/teams', () => {
       it('should create a new team successfully', async () => {
-        vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
-        vi.mocked(prisma.team.create).mockResolvedValue({
+        jest.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+        jest.mocked(prisma.team.create).mockResolvedValue({
           ...mockTeam,
           members: [{ ...mockTeamMember, role: 'OWNER' }],
         });
@@ -234,8 +234,8 @@ describe('Team Management API', () => {
 
     describe('GET /api/teams/[id]', () => {
       it('should fetch team details for authorized user', async () => {
-        vi.mocked(prisma.teamMember.findFirst).mockResolvedValue(mockTeamMember);
-        vi.mocked(prisma.team.findUnique).mockResolvedValue(mockTeam);
+        jest.mocked(prisma.teamMember.findFirst).mockResolvedValue(mockTeamMember);
+        jest.mocked(prisma.team.findUnique).mockResolvedValue(mockTeam);
 
         const request = new NextRequest('http://localhost/api/teams/team-1');
         const response = await getTeam(request, { params: { id: 'team-1' } });
@@ -246,7 +246,7 @@ describe('Team Management API', () => {
       });
 
       it('should return 403 for unauthorized access', async () => {
-        vi.mocked(prisma.teamMember.findFirst).mockResolvedValue(null);
+        jest.mocked(prisma.teamMember.findFirst).mockResolvedValue(null);
 
         const request = new NextRequest('http://localhost/api/teams/team-1');
         const response = await getTeam(request, { params: { id: 'team-1' } });
@@ -257,12 +257,12 @@ describe('Team Management API', () => {
 
     describe('PUT /api/teams/[id]', () => {
       it('should update team for admin user', async () => {
-        vi.mocked(prisma.teamMember.findFirst).mockResolvedValue({
+        jest.mocked(prisma.teamMember.findFirst).mockResolvedValue({
           ...mockTeamMember,
           role: 'ADMIN',
         });
-        vi.mocked(prisma.team.findUnique).mockResolvedValue(mockTeam);
-        vi.mocked(prisma.team.update).mockResolvedValue({
+        jest.mocked(prisma.team.findUnique).mockResolvedValue(mockTeam);
+        jest.mocked(prisma.team.update).mockResolvedValue({
           ...mockTeam,
           name: 'Updated Team',
         });
@@ -283,7 +283,7 @@ describe('Team Management API', () => {
       });
 
       it('should return 403 for non-admin user', async () => {
-        vi.mocked(prisma.teamMember.findFirst).mockResolvedValue({
+        jest.mocked(prisma.teamMember.findFirst).mockResolvedValue({
           ...mockTeamMember,
           role: 'VIEWER',
         });
@@ -301,12 +301,12 @@ describe('Team Management API', () => {
 
     describe('DELETE /api/teams/[id]', () => {
       it('should delete team for owner', async () => {
-        vi.mocked(prisma.teamMember.findFirst).mockResolvedValue({
+        jest.mocked(prisma.teamMember.findFirst).mockResolvedValue({
           ...mockTeamMember,
           role: 'OWNER',
         });
-        vi.mocked(prisma.team.findUnique).mockResolvedValue(mockTeam);
-        vi.mocked(prisma.team.delete).mockResolvedValue(mockTeam);
+        jest.mocked(prisma.team.findUnique).mockResolvedValue(mockTeam);
+        jest.mocked(prisma.team.delete).mockResolvedValue(mockTeam);
 
         const request = new NextRequest('http://localhost/api/teams/team-1', {
           method: 'DELETE',
@@ -321,7 +321,7 @@ describe('Team Management API', () => {
       });
 
       it('should return 403 for non-owner', async () => {
-        vi.mocked(prisma.teamMember.findFirst).mockResolvedValue({
+        jest.mocked(prisma.teamMember.findFirst).mockResolvedValue({
           ...mockTeamMember,
           role: 'ADMIN',
         });
@@ -340,9 +340,9 @@ describe('Team Management API', () => {
   describe('Team Members Management', () => {
     describe('GET /api/teams/[id]/members', () => {
       it('should fetch team members for authorized user', async () => {
-        vi.mocked(prisma.teamMember.findFirst).mockResolvedValue(mockTeamMember);
-        vi.mocked(prisma.teamMember.findMany).mockResolvedValue([mockTeamMember]);
-        vi.mocked(prisma.activityLog.findMany).mockResolvedValue([]);
+        jest.mocked(prisma.teamMember.findFirst).mockResolvedValue(mockTeamMember);
+        jest.mocked(prisma.teamMember.findMany).mockResolvedValue([mockTeamMember]);
+        jest.mocked(prisma.activityLog.findMany).mockResolvedValue([]);
 
         const request = new NextRequest('http://localhost/api/teams/team-1/members');
         const response = await getMembers(request, { params: { id: 'team-1' } });
@@ -355,15 +355,15 @@ describe('Team Management API', () => {
 
     describe('POST /api/teams/[id]/members', () => {
       it('should add member for admin user', async () => {
-        vi.mocked(prisma.teamMember.findFirst)
+        jest.mocked(prisma.teamMember.findFirst)
           .mockResolvedValueOnce({ ...mockTeamMember, role: 'ADMIN' }) // Permission check
           .mockResolvedValueOnce(null); // Existing member check
-        vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        jest.mocked(prisma.user.findUnique).mockResolvedValue({
           ...mockUser,
           id: 'user-2',
           email: 'newuser@example.com',
         });
-        vi.mocked(prisma.teamMember.create).mockResolvedValue({
+        jest.mocked(prisma.teamMember.create).mockResolvedValue({
           ...mockTeamMember,
           id: 'member-2',
           userId: 'user-2',
@@ -385,10 +385,10 @@ describe('Team Management API', () => {
       });
 
       it('should return 400 for existing member', async () => {
-        vi.mocked(prisma.teamMember.findFirst)
+        jest.mocked(prisma.teamMember.findFirst)
           .mockResolvedValueOnce({ ...mockTeamMember, role: 'ADMIN' })
           .mockResolvedValueOnce(mockTeamMember); // Existing member
-        vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+        jest.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
 
         const request = new NextRequest('http://localhost/api/teams/team-1/members', {
           method: 'POST',
@@ -408,8 +408,8 @@ describe('Team Management API', () => {
   describe('Team Invitations', () => {
     describe('GET /api/teams/[id]/invitations', () => {
       it('should fetch pending invitations', async () => {
-        vi.mocked(prisma.teamMember.findFirst).mockResolvedValue(mockTeamMember);
-        vi.mocked(prisma.teamInvitation.findMany).mockResolvedValue([
+        jest.mocked(prisma.teamMember.findFirst).mockResolvedValue(mockTeamMember);
+        jest.mocked(prisma.teamInvitation.findMany).mockResolvedValue([
           {
             id: 'invitation-1',
             email: 'invited@example.com',
@@ -437,17 +437,17 @@ describe('Team Management API', () => {
 
     describe('POST /api/teams/[id]/invitations', () => {
       it('should send invitation for admin user', async () => {
-        vi.mocked(prisma.teamMember.findFirst).mockResolvedValue({
+        jest.mocked(prisma.teamMember.findFirst).mockResolvedValue({
           ...mockTeamMember,
           role: 'ADMIN',
         });
-        vi.mocked(prisma.team.findUnique).mockResolvedValue({
+        jest.mocked(prisma.team.findUnique).mockResolvedValue({
           ...mockTeam,
           members: [mockTeamMember],
         });
-        vi.mocked(prisma.teamInvitation.findFirst).mockResolvedValue(null);
-        vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
-        vi.mocked(prisma.teamInvitation.create).mockResolvedValue({
+        jest.mocked(prisma.teamInvitation.findFirst).mockResolvedValue(null);
+        jest.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+        jest.mocked(prisma.teamInvitation.create).mockResolvedValue({
           id: 'invitation-1',
           email: 'invited@example.com',
           role: 'MEMBER',
@@ -479,15 +479,15 @@ describe('Team Management API', () => {
       });
 
       it('should return 400 for duplicate invitation', async () => {
-        vi.mocked(prisma.teamMember.findFirst).mockResolvedValue({
+        jest.mocked(prisma.teamMember.findFirst).mockResolvedValue({
           ...mockTeamMember,
           role: 'ADMIN',
         });
-        vi.mocked(prisma.team.findUnique).mockResolvedValue({
+        jest.mocked(prisma.team.findUnique).mockResolvedValue({
           ...mockTeam,
           members: [mockTeamMember],
         });
-        vi.mocked(prisma.teamInvitation.findFirst).mockResolvedValue({
+        jest.mocked(prisma.teamInvitation.findFirst).mockResolvedValue({
           id: 'existing-invitation',
           email: 'invited@example.com',
           status: 'pending',
@@ -580,7 +580,7 @@ describe('Team Management API', () => {
 
   describe('Error Handling', () => {
     it('should handle database errors gracefully', async () => {
-      vi.mocked(prisma.team.findUnique).mockRejectedValue(new Error('Database error'));
+      jest.mocked(prisma.team.findUnique).mockRejectedValue(new Error('Database error'));
 
       const request = new NextRequest('http://localhost/api/teams/team-1');
       const response = await getTeam(request, { params: { id: 'team-1' } });
@@ -589,7 +589,7 @@ describe('Team Management API', () => {
     });
 
     it('should handle missing resources', async () => {
-      vi.mocked(prisma.team.findUnique).mockResolvedValue(null);
+      jest.mocked(prisma.team.findUnique).mockResolvedValue(null);
 
       const request = new NextRequest('http://localhost/api/teams/nonexistent');
       const response = await getTeam(request, { params: { id: 'nonexistent' } });

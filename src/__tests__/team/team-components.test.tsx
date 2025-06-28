@@ -3,7 +3,7 @@
  * Tests UI components, user interactions, and integration with API
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TeamDashboard } from '@/components/team/TeamDashboard';
@@ -15,25 +15,25 @@ import { CreateTeamModal } from '@/components/team/CreateTeamModal';
 import { EditTeamModal } from '@/components/team/EditTeamModal';
 
 // Mock API
-vi.mock('@/lib/api', () => ({
+jest.mock('@/lib/api', () => ({
   api: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
   },
 }));
 
 // Mock toast notifications
-vi.mock('sonner', () => ({
+jest.mock('sonner', () => ({
   toast: {
-    success: vi.fn(),
-    error: vi.fn(),
+    success: jest.fn(),
+    error: jest.fn(),
   },
 }));
 
 // Mock recharts
-vi.mock('recharts', () => ({
+jest.mock('recharts', () => ({
   LineChart: ({ children }: any) => <div data-testid="line-chart">{children}</div>,
   Line: () => <div data-testid="line" />,
   XAxis: () => <div data-testid="x-axis" />,
@@ -212,12 +212,12 @@ const createWrapper = () => {
 
 describe('Team Management Components', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('TeamDashboard', () => {
     it('should render team information correctly', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ team: mockTeam });
 
       render(
@@ -233,7 +233,7 @@ describe('Team Management Components', () => {
     });
 
     it('should show correct member and project counts', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ team: mockTeam });
 
       render(
@@ -248,7 +248,7 @@ describe('Team Management Components', () => {
     });
 
     it('should show edit and delete buttons for owners', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ team: mockTeam });
 
       render(
@@ -263,7 +263,7 @@ describe('Team Management Components', () => {
     });
 
     it('should hide management buttons for non-owners', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       const memberTeam = { ...mockTeam, role: 'MEMBER' };
       api.get.mockResolvedValue({ team: memberTeam });
 
@@ -279,12 +279,12 @@ describe('Team Management Components', () => {
     });
 
     it('should handle team deletion with confirmation', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ team: mockTeam });
       api.delete.mockResolvedValue({});
 
       // Mock window.confirm
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+      const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
       // Mock window.location
       Object.defineProperty(window, 'location', {
         value: { href: '' },
@@ -310,7 +310,7 @@ describe('Team Management Components', () => {
 
   describe('TeamMembers', () => {
     it('should render team members list', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ members: mockTeam.members });
 
       render(
@@ -327,7 +327,7 @@ describe('Team Management Components', () => {
     });
 
     it('should show add member button for managers', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ members: mockTeam.members });
 
       render(
@@ -341,7 +341,7 @@ describe('Team Management Components', () => {
     });
 
     it('should hide add member button for non-managers', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ members: mockTeam.members });
 
       render(
@@ -355,7 +355,7 @@ describe('Team Management Components', () => {
     });
 
     it('should handle member addition', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ members: mockTeam.members });
       api.post.mockResolvedValue({ 
         member: {
@@ -396,7 +396,7 @@ describe('Team Management Components', () => {
 
   describe('TeamInvitations', () => {
     it('should render pending invitations', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ invitations: mockTeam.invitations });
 
       render(
@@ -411,7 +411,7 @@ describe('Team Management Components', () => {
     });
 
     it('should handle sending invitations', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ invitations: [] });
       api.post.mockResolvedValue({ 
         invitation: mockTeam.invitations[0],
@@ -451,7 +451,7 @@ describe('Team Management Components', () => {
     });
 
     it('should show empty state when no invitations', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ invitations: [] });
 
       render(
@@ -467,7 +467,7 @@ describe('Team Management Components', () => {
 
   describe('TeamAnalytics', () => {
     it('should render analytics data', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue(mockAnalytics);
 
       render(
@@ -483,7 +483,7 @@ describe('Team Management Components', () => {
     });
 
     it('should render charts', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue(mockAnalytics);
 
       render(
@@ -498,7 +498,7 @@ describe('Team Management Components', () => {
     });
 
     it('should handle timeframe changes', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue(mockAnalytics);
 
       render(
@@ -518,7 +518,7 @@ describe('Team Management Components', () => {
 
   describe('TeamSettings', () => {
     it('should render team settings', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ settings: mockTeam.settings });
 
       render(
@@ -535,7 +535,7 @@ describe('Team Management Components', () => {
     });
 
     it('should handle settings updates', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockResolvedValue({ settings: mockTeam.settings });
       api.put.mockResolvedValue({ settings: { ...mockTeam.settings, timezone: 'America/New_York' } });
 
@@ -557,13 +557,13 @@ describe('Team Management Components', () => {
 
   describe('CreateTeamModal', () => {
     it('should handle team creation', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.post.mockResolvedValue({ 
         team: { ...mockTeam, id: 'new-team-1', name: 'New Team' } 
       });
 
-      const onSuccess = vi.fn();
-      const onClose = vi.fn();
+      const onSuccess = jest.fn();
+      const onClose = jest.fn();
 
       render(
         <CreateTeamModal open={true} onClose={onClose} onSuccess={onSuccess} />,
@@ -590,8 +590,8 @@ describe('Team Management Components', () => {
     });
 
     it('should validate required fields', () => {
-      const onSuccess = vi.fn();
-      const onClose = vi.fn();
+      const onSuccess = jest.fn();
+      const onClose = jest.fn();
 
       render(
         <CreateTeamModal open={true} onClose={onClose} onSuccess={onSuccess} />,
@@ -610,7 +610,7 @@ describe('Team Management Components', () => {
 
   describe('EditTeamModal', () => {
     it('should pre-populate form with team data', () => {
-      const onClose = vi.fn();
+      const onClose = jest.fn();
 
       render(
         <EditTeamModal open={true} onClose={onClose} team={mockTeam} />,
@@ -625,12 +625,12 @@ describe('Team Management Components', () => {
     });
 
     it('should handle team updates', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.put.mockResolvedValue({ 
         team: { ...mockTeam, name: 'Updated Team' } 
       });
 
-      const onClose = vi.fn();
+      const onClose = jest.fn();
 
       render(
         <EditTeamModal open={true} onClose={onClose} team={mockTeam} />,
@@ -653,7 +653,7 @@ describe('Team Management Components', () => {
     });
 
     it('should disable submit when no changes', () => {
-      const onClose = vi.fn();
+      const onClose = jest.fn();
 
       render(
         <EditTeamModal open={true} onClose={onClose} team={mockTeam} />,
@@ -667,7 +667,7 @@ describe('Team Management Components', () => {
 
   describe('Error Handling', () => {
     it('should handle API errors gracefully', async () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockRejectedValue(new Error('API Error'));
 
       render(
@@ -681,7 +681,7 @@ describe('Team Management Components', () => {
     });
 
     it('should show loading states', () => {
-      const api = vi.mocked(require('@/lib/api').api);
+      const api = jest.mocked(require('@/lib/api').api);
       api.get.mockImplementation(() => new Promise(() => {})); // Never resolves
 
       render(

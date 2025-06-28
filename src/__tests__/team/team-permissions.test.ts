@@ -3,7 +3,7 @@
  * Tests role-based access control, permission checks, and security boundaries
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { 
   checkTeamPermission, 
   checkMemberPermission,
@@ -28,7 +28,7 @@ vi.mock('@/lib/prisma', () => ({
 
 describe('Team Permission System', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('Role Hierarchy', () => {
