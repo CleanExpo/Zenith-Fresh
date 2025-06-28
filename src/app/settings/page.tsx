@@ -1,260 +1,341 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
-import Link from 'next/link';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BillingDashboard } from '@/components/billing/BillingDashboard';
 import { 
-  UserIcon, 
-  BellIcon, 
-  ShieldCheckIcon, 
-  KeyIcon,
-  ArrowLeftIcon
-} from '@heroicons/react/24/outline';
+  User, 
+  Bell, 
+  Shield, 
+  Key,
+  CreditCard,
+  Settings as SettingsIcon,
+  Save
+} from 'lucide-react';
 
-async function getUserData(userId: string) {
-  try {
-    const [user, preferences] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          image: true,
-        },
-      }),
-      prisma.userPreferences.findUnique({
-        where: { userId },
-      }),
-    ]);
-
-    return { user, preferences };
-  } catch (error) {
-    console.error('Failed to fetch user data:', error);
-    return { user: null, preferences: null };
-  }
+interface UserPreferences {
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  marketingEmails: boolean;
+  securityAlerts: boolean;
+  theme: 'light' | 'dark' | 'system';
 }
 
-export default async function SettingsPage() {
-  const session = await getServerSession(authOptions);
+export default function SettingsPage() {
+  const { data: session, status } = useSession();
+  const [teamId, setTeamId] = useState<string>('');
+  const [preferences, setPreferences] = useState<UserPreferences>({
+    emailNotifications: true,
+    pushNotifications: true,
+    marketingEmails: false,
+    securityAlerts: true,
+    theme: 'system'
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  if (!session?.user?.id) {
-    redirect('/auth/signin');
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      redirect('/auth/signin');
+    }
+    
+    if (session?.user?.id) {
+      setTeamId(session.user.id);
+      fetchUserPreferences();
+    }
+  }, [session, status]);
+
+  const fetchUserPreferences = async () => {
+    try {
+      const response = await fetch('/api/user/preferences');
+      if (response.ok) {
+        const data = await response.json();
+        setPreferences(data.preferences || preferences);
+      }
+    } catch (error) {
+      console.error('Error fetching preferences:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const savePreferences = async () => {
+    setSaving(true);
+    try {
+      const response = await fetch('/api/user/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(preferences)
+      });
+      
+      if (response.ok) {
+        // Success feedback could be added here
+      }
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
-  const { user, preferences } = await getUserData(session.user.id);
-
-  if (!user) {
-    redirect('/auth/signin');
+  if (!session?.user?.id) {
+    return null;
   }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Link 
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mb-4"
-          >
-            <ArrowLeftIcon className="w-4 h-4" />
-            Back to Dashboard
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Manage your account settings and preferences.
+          <div className="flex items-center gap-3 mb-4">
+            <SettingsIcon className="w-8 h-8 text-gray-600" />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Settings
+            </h1>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage your account preferences, billing, and security settings.
           </p>
         </div>
 
-        <div className="space-y-8">
-          {/* Profile Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <UserIcon className="w-5 h-5" />
-                Profile Information
-              </h2>
-            </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Full Name
-                  </label>
-                  <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <span className="text-gray-900 dark:text-white">{user.name || 'Not set'}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Email Address
-                  </label>
-                  <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <span className="text-gray-900 dark:text-white">{user.email}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Role
-                  </label>
-                  <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      user.role === 'ADMIN' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' :
-                      'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-                    }`}>
-                      {user.role}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Member Since
-                  </label>
-                  <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <span className="text-gray-900 dark:text-white">
-                      {new Date(user.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6">
-                <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                  Edit Profile
-                </button>
-              </div>
-            </div>
-          </div>
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <Bell className="w-4 h-4" />
+              Notifications
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Security
+            </TabsTrigger>
+            <TabsTrigger value="billing" className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4" />
+              Billing
+            </TabsTrigger>
+            <TabsTrigger value="api" className="flex items-center gap-2">
+              <Key className="w-4 h-4" />
+              API Keys
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Preferences Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <BellIcon className="w-5 h-5" />
-                Preferences
-              </h2>
-            </div>
-            <div className="p-6 space-y-6">
-              <div className="flex items-center justify-between">
+          <TabsContent value="profile" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Profile Information
+              </h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      defaultValue={session.user.name || ''}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      defaultValue={session.user.email || ''}
+                      className="mt-1"
+                      disabled
+                    />
+                  </div>
+                </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Theme</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Choose your preferred theme</p>
+                  <Label htmlFor="bio">Bio</Label>
+                  <Input
+                    id="bio"
+                    type="text"
+                    placeholder="Tell us about yourself"
+                    className="mt-1"
+                  />
                 </div>
-                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <span className="text-gray-900 dark:text-white">
-                    {preferences?.theme || 'System'}
-                  </span>
+                <Button onClick={savePreferences} disabled={saving}>
+                  <Save className="w-4 h-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Notification Preferences
+              </h3>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="email-notifications">Email Notifications</Label>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Receive email notifications for important updates
+                    </p>
+                  </div>
+                  <Switch
+                    id="email-notifications"
+                    checked={preferences.emailNotifications}
+                    onCheckedChange={(checked) => 
+                      setPreferences({...preferences, emailNotifications: checked})
+                    }
+                  />
                 </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="push-notifications">Push Notifications</Label>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Receive push notifications in your browser
+                    </p>
+                  </div>
+                  <Switch
+                    id="push-notifications"
+                    checked={preferences.pushNotifications}
+                    onCheckedChange={(checked) => 
+                      setPreferences({...preferences, pushNotifications: checked})
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="marketing-emails">Marketing Emails</Label>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Receive emails about new features and promotions
+                    </p>
+                  </div>
+                  <Switch
+                    id="marketing-emails"
+                    checked={preferences.marketingEmails}
+                    onCheckedChange={(checked) => 
+                      setPreferences({...preferences, marketingEmails: checked})
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="security-alerts">Security Alerts</Label>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Receive alerts about security and account changes
+                    </p>
+                  </div>
+                  <Switch
+                    id="security-alerts"
+                    checked={preferences.securityAlerts}
+                    onCheckedChange={(checked) => 
+                      setPreferences({...preferences, securityAlerts: checked})
+                    }
+                  />
+                </div>
+                <Button onClick={savePreferences} disabled={saving}>
+                  <Save className="w-4 h-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="security" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Security Settings
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="current-password">Current Password</Label>
+                  <Input
+                    id="current-password"
+                    type="password"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirm-password">Confirm New Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    className="mt-1"
+                  />
+                </div>
+                <Button>
+                  <Shield className="w-4 h-4 mr-2" />
+                  Update Password
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="billing" className="space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <CreditCard className="w-6 h-6 text-blue-600" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Billing & Subscription
+                </h3>
               </div>
               
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Email Notifications</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Receive email updates about your projects</p>
-                </div>
-                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  preferences?.emailNotifications ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                }`}>
-                  {preferences?.emailNotifications ? 'Enabled' : 'Disabled'}
-                </div>
-              </div>
+              <BillingDashboard teamId={teamId} />
+            </Card>
+          </TabsContent>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Push Notifications</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Receive push notifications for important updates</p>
-                </div>
-                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  preferences?.pushNotifications ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                }`}>
-                  {preferences?.pushNotifications ? 'Enabled' : 'Disabled'}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Security Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <ShieldCheckIcon className="w-5 h-5" />
-                Security
-              </h2>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Password</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Change your password</p>
-                </div>
-                <button className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  Change Password
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Two-Factor Authentication</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Add an extra layer of security</p>
-                </div>
-                <button className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  Enable 2FA
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* API Keys Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <KeyIcon className="w-5 h-5" />
+          <TabsContent value="api" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 API Keys
-              </h2>
-            </div>
-            <div className="p-6">
-              <div className="text-center py-8">
-                <KeyIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No API keys</h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Create API keys to integrate with external services.
+              </h3>
+              <div className="space-y-4">
+                <p className="text-gray-600 dark:text-gray-400">
+                  Manage your API keys for programmatic access to your data.
                 </p>
-                <div className="mt-6">
-                  <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    Generate API Key
-                  </button>
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm font-medium">Production API Key</Label>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        sk-...••••••••••••••••••••••••••••••••••••••••••••••••••
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      Regenerate
+                    </Button>
+                  </div>
                 </div>
+                <Button>
+                  <Key className="w-4 h-4 mr-2" />
+                  Create New API Key
+                </Button>
               </div>
-            </div>
-          </div>
-
-          {/* Danger Zone */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-red-200 dark:border-red-900">
-            <div className="px-6 py-4 border-b border-red-200 dark:border-red-900">
-              <h2 className="text-lg font-semibold text-red-900 dark:text-red-400">Danger Zone</h2>
-            </div>
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-red-900 dark:text-red-400">Delete Account</h3>
-                  <p className="text-sm text-red-700 dark:text-red-300">
-                    Permanently delete your account and all associated data.
-                  </p>
-                </div>
-                <button className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                  Delete Account
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

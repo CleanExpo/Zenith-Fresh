@@ -10,12 +10,15 @@ import {
   UserGroupIcon,
   BoltIcon,
 } from '@heroicons/react/24/outline';
+import { Target, Brain } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Projects', href: '/projects', icon: FolderIcon },
   { name: 'Teams', href: '/teams', icon: UserGroupIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
+  { name: 'Competitive', href: '/competitive-intelligence', icon: Target },
+  { name: 'AI Content', href: '/ai-content', icon: Brain },
   { name: 'Integrations', href: '/integrations', icon: BoltIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
 ];
