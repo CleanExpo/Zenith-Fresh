@@ -18,6 +18,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "Something is happening and we are not getting the changes through to vercel and deployment. Can you identify the issue and rectify it immediately?",
+          "pastedContents": {}
+        },
+        {
           "display": "push and commit all changes to GitHub repo and then push to Vercel for production",
           "pastedContents": {}
         },
@@ -638,10 +642,6 @@
         },
         {
           "display": "1. fix",
-          "pastedContents": {}
-        },
-        {
-          "display": "is it time to commit all changes to the github repo and then to vercel production for deployment or are  there still more stages to complete before the entire site is ready?",
           "pastedContents": {}
         }
       ],
