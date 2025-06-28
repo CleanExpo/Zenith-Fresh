@@ -12,9 +12,18 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   },
-  // Vercel specific configuration to fix routes-manifest issue
-  generateBuildId: async () => {
-    return 'zenith-build-' + Date.now();
+  // Force Next.js to use standalone output mode for Vercel
+  output: 'standalone',
+  // Disable static optimization for problematic routes
+  async rewrites() {
+    return [];
+  },
+  // Custom webpack configuration to ensure proper build output
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push('@prisma/client');
+    }
+    return config;
   },
 }
 
