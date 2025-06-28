@@ -326,11 +326,11 @@ export default function AIPoweredContentAnalysis({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Analysis Input Section */}
-      <Card>
+      <Card className="card-elevated glass-morphism">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-gradient">
             <Brain className="h-5 w-5 text-blue-600" />
             AI Content Analysis Engine
           </CardTitle>
@@ -371,7 +371,7 @@ export default function AIPoweredContentAnalysis({
           <Button 
             onClick={performAIAnalysis}
             disabled={isAnalyzing}
-            className="w-full"
+            className="w-full btn-modern"
           >
             {isAnalyzing ? (
               <>
@@ -390,8 +390,8 @@ export default function AIPoweredContentAnalysis({
 
       {/* Analysis Results */}
       {(contentGaps.length > 0 || recommendations.length > 0) && (
-        <Tabs defaultValue="gaps" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs defaultValue="gaps" className="space-y-6 animate-slide-up">
+          <TabsList className="grid w-full grid-cols-5 glass-morphism">
             <TabsTrigger value="gaps">Content Gaps</TabsTrigger>
             <TabsTrigger value="recommendations">AI Optimization</TabsTrigger>
             <TabsTrigger value="clusters">Topic Clusters</TabsTrigger>
@@ -402,7 +402,7 @@ export default function AIPoweredContentAnalysis({
           <TabsContent value="gaps" className="space-y-4">
             <div className="grid gap-4">
               {contentGaps.map((gap, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow">
+                <Card key={index} className="card-elevated hover-lift transition-all duration-300" style={{'--stagger': index} as React.CSSProperties}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{gap.topic}</CardTitle>

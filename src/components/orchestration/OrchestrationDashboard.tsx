@@ -561,23 +561,23 @@ export const OrchestrationDashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 space-y-6 bg-gray-50 min-h-screen animate-fade-in">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Agent Orchestration Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gradient">Agent Orchestration Dashboard</h1>
           <p className="text-gray-600">Real-time monitoring and management of 30+ autonomous agents</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             variant={isMonitoring ? "default" : "outline"}
             onClick={() => setIsMonitoring(!isMonitoring)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 btn-modern"
           >
             {isMonitoring ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             {isMonitoring ? 'Pause' : 'Resume'} Monitoring
           </Button>
-          <Button onClick={handleRefresh} variant="outline" className="flex items-center gap-2">
+          <Button onClick={handleRefresh} variant="outline" className="flex items-center gap-2 btn-modern">
             <RotateCcw className="w-4 h-4" />
             Refresh
           </Button>
@@ -595,7 +595,7 @@ export const OrchestrationDashboard: React.FC = () => {
       </div>
 
       {/* System Overview Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-stagger">
         <MetricCard
           title="Active Agents"
           value={systemMetrics.agents.active}
@@ -630,9 +630,9 @@ export const OrchestrationDashboard: React.FC = () => {
       </div>
 
       {/* Resource Utilization */}
-      <Card>
+      <Card className="card-elevated glass-morphism">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-gradient">
             <Gauge className="w-5 h-5" />
             Resource Utilization
           </CardTitle>

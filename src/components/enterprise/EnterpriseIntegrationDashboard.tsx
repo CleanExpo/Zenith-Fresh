@@ -184,15 +184,15 @@ export default function EnterpriseIntegrationDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-4 sm:p-6 space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Enterprise Integration</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gradient">Enterprise Integration</h1>
           <p className="text-muted-foreground">
             Manage SSO, APIs, webhooks, integrations, and white-label settings
           </p>
         </div>
-        <Button>
+        <Button className="btn-modern">
           <Download className="h-4 w-4 mr-2" />
           Export Settings
         </Button>
@@ -229,9 +229,9 @@ export default function EnterpriseIntegrationDashboard() {
         {/* SSO Configuration */}
         <TabsContent value="sso" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+            <Card className="card-elevated hover-lift">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gradient">
                   <Shield className="h-5 w-5" />
                   SAML 2.0 Configuration
                 </CardTitle>
@@ -268,8 +268,8 @@ export default function EnterpriseIntegrationDashboard() {
                   <Label htmlFor="saml-enabled">Enable SAML SSO</Label>
                 </div>
                 <div className="flex gap-2">
-                  <Button>Save Configuration</Button>
-                  <Button variant="outline">
+                  <Button className="btn-modern">Save Configuration</Button>
+                  <Button variant="outline" className="btn-modern">
                     <Download className="h-4 w-4 mr-2" />
                     Download Metadata
                   </Button>
@@ -277,9 +277,9 @@ export default function EnterpriseIntegrationDashboard() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-elevated hover-lift">
               <CardHeader>
-                <CardTitle>OAuth Providers</CardTitle>
+                <CardTitle className="text-gradient">OAuth Providers</CardTitle>
                 <CardDescription>
                   Configure OAuth providers for enterprise SSO
                 </CardDescription>
