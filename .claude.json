@@ -18,6 +18,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "push and commit all changes to GitHub repo and then push to Vercel for production",
+          "pastedContents": {}
+        },
+        {
           "display": "[Pasted text #1 +27 lines] lets continue with the next tasks",
           "pastedContents": {
             "1": {
@@ -650,10 +654,6 @@
         },
         {
           "display": "Already installed in the environment variables in vercel: STRIPE_SECRET_KEY=\"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\"   Updated: ⚡ REDIS CACHE\nREDIS_HOST=redis-10795.c51.ap-southeast-2-1.ec2.redns.redis-cloud.com\nREDIS_PORT=10795\nREDIS_PASSWORD=BDVA5RvxjxSuk0VfxVOFjAq05uytwQ8x\nREDIS_USERNAME=default\nREDIS_URL=redis://default:BDVA5RvxjxSuk0VfxVOFjAq05uytwQ8x@redis-10795.c51.ap-southeast-2-1.ec2.redns.redis-cloud.com:10795\n",
-          "pastedContents": {}
-        },
-        {
-          "display": "double check the available env. variables as these variables are included in vercels environment. Do they need to also be added to the github environement?",
           "pastedContents": {}
         }
       ],
