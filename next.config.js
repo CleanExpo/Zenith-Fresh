@@ -12,8 +12,13 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   },
-  // Remove standalone output for Vercel compatibility
-  // output: 'standalone',
+  // Ensure proper build output generation
+  generateBuildId: async () => {
+    // Use a consistent build ID to avoid manifest issues
+    return process.env.VERCEL_GIT_COMMIT_SHA || 'local-build';
+  },
+  // Explicitly configure for Vercel deployment
+  trailingSlash: false,
   // Disable static optimization for problematic routes
   async rewrites() {
     return [];
@@ -23,6 +28,13 @@ const nextConfig = {
     if (isServer) {
       config.externals.push('@prisma/client');
     }
+    // Ensure proper module resolution
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+    };
     return config;
   },
 }
