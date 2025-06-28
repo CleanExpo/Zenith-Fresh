@@ -5,7 +5,6 @@
 .DS_Store
 Thumbs.db
 node_modules/
-.next/
 out/
 coverage/
 .nyc_output/
