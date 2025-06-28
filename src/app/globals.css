@@ -1,6 +1,4 @@
-/* Zenith Platform Global Styles - Enterprise Grade CSS System */
-/* Optimized for performance, accessibility, and modern user experience */
-
+/* Zenith Platform Global Styles */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
