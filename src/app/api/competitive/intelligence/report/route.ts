@@ -7,6 +7,76 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Helper functions for competitive intelligence calculations
+function calculateCompetitiveScore(report: any): number {
+  const baseScore = 50;
+  const competitorCount = report.competitors.length;
+  const averageAuthorityScore = competitorCount > 0 
+    ? report.competitors.reduce((sum: number, c: any) => sum + c.authorityScore, 0) / competitorCount
+    : 50;
+  
+  // Calculate score based on various factors
+  const authorityBonus = Math.min(averageAuthorityScore / 2, 25);
+  const competitorPenalty = Math.min(competitorCount * 2, 15);
+  const opportunityBonus = Math.min(report.opportunities.filter((o: any) => o.impact === 'high').length * 3, 20);
+  
+  return Math.round(Math.max(10, Math.min(100, baseScore + authorityBonus - competitorPenalty + opportunityBonus)));
+}
+
+function generateExecutiveSummary(report: any, score: number): string {
+  const competitorCount = report.competitors.length;
+  const highImpactOpportunities = report.opportunities.filter((o: any) => o.impact === 'high').length;
+  
+  const scoreCategory = score >= 80 ? 'strong' : score >= 60 ? 'moderate' : 'weak';
+  
+  return `Competitive analysis for ${report.targetDomain} reveals a ${scoreCategory} market position (${score}/100). ` +
+    `Analysis of ${competitorCount} key competitors identified ${highImpactOpportunities} high-impact opportunities ` +
+    `across keyword gaps, content strategy, and backlink acquisition. Focus areas include strengthening domain authority ` +
+    `and capitalizing on competitor content gaps for immediate traffic gains.`;
+}
+
+function generateActionPlan(report: any): any[] {
+  const actions = [];
+  
+  // Add keyword-focused actions
+  const urgentKeywords = report.keywordGaps?.filter((k: any) => k.priority === 'urgent').length || 0;
+  if (urgentKeywords > 0) {
+    actions.push({
+      category: 'SEO',
+      priority: 'urgent',
+      action: `Target ${urgentKeywords} high-priority keyword opportunities`,
+      timeline: '2-4 weeks',
+      expectedImpact: 'high'
+    });
+  }
+  
+  // Add content actions
+  const contentGaps = report.contentGaps?.length || 0;
+  if (contentGaps > 0) {
+    actions.push({
+      category: 'Content',
+      priority: 'high',
+      action: `Create content for ${Math.min(contentGaps, 10)} identified content gaps`,
+      timeline: '4-8 weeks',
+      expectedImpact: 'medium'
+    });
+  }
+  
+  // Add backlink actions
+  const backlinkOpps = report.backlinkGaps?.filter((b: any) => b.priority === 'high').length || 0;
+  if (backlinkOpps > 0) {
+    actions.push({
+      category: 'Link Building',
+      priority: 'medium',
+      action: `Pursue ${Math.min(backlinkOpps, 5)} high-value backlink opportunities`,
+      timeline: '6-12 weeks',
+      expectedImpact: 'high'
+    });
+  }
+  
+  return actions;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -96,10 +166,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate competitive intelligence score
-    const competitiveScore = this.calculateCompetitiveScore(report);
+    const competitiveScore = calculateCompetitiveScore(report);
 
     // Generate executive summary
-    const executiveSummary = this.generateExecutiveSummary(report, competitiveScore);
+    const executiveSummary = generateExecutiveSummary(report, competitiveScore);
 
     // Track API usage for billing
     await prisma.analyticsEvent.create({
@@ -178,7 +248,7 @@ export async function POST(request: NextRequest) {
         },
         opportunities: report.opportunities,
         recommendations: report.recommendations,
-        actionPlan: this.generateActionPlan(report),
+        actionPlan: generateActionPlan(report),
         metadata: {
           generatedAt: new Date().toISOString(),
           analysisDepth: 'comprehensive',

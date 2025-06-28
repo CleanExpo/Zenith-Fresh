@@ -144,8 +144,8 @@ export async function POST(request: NextRequest) {
         });
 
       case 'update_metric':
-        const { metricId, value } = requestData;
-        await businessIntelligenceEngine.updateBusinessMetric(metricId, value);
+        const { metricId: updateMetricId, value } = requestData;
+        await businessIntelligenceEngine.updateBusinessMetric(updateMetricId, value);
         
         return NextResponse.json({
           success: true,
@@ -154,8 +154,8 @@ export async function POST(request: NextRequest) {
         });
 
       case 'sync_data_source':
-        const { dataSourceId } = requestData;
-        await businessIntelligenceEngine.syncDataSource(dataSourceId);
+        const { dataSourceId: syncDataSourceId } = requestData;
+        await businessIntelligenceEngine.syncDataSource(syncDataSourceId);
         
         return NextResponse.json({
           success: true,
@@ -328,7 +328,7 @@ export async function GET(request: NextRequest) {
 
       case 'insights':
         const timeRange = searchParams.get('timeRange') || '24h';
-        const category = searchParams.get('category') || undefined;
+        const insightsCategory = searchParams.get('category') || undefined;
         
         // Generate insights based on recent analysis and prediction results
         const recentAnalyses = businessIntelligenceEngine.listAnalysisResults().slice(0, 10);
@@ -343,7 +343,7 @@ export async function GET(request: NextRequest) {
           success: true,
           insights,
           timeRange,
-          category,
+          category: insightsCategory,
           timestamp: new Date().toISOString(),
         });
 

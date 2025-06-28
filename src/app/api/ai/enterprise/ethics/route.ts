@@ -526,16 +526,16 @@ export async function GET(request: NextRequest) {
 
       case 'compliance_score':
         const timeRange = searchParams.get('timeRange') || '30d';
-        const framework = searchParams.get('framework');
+        const complianceFramework = searchParams.get('framework');
         
         // Calculate compliance score based on recent audits
         const recentAudits = aiEthicsGovernance.listComplianceAudits()
           .filter(audit => audit.status === 'completed');
         
         let filteredAudits = recentAudits;
-        if (framework) {
+        if (complianceFramework) {
           filteredAudits = recentAudits.filter(audit => 
-            audit.frameworks.includes(framework as any)
+            audit.frameworks.includes(complianceFramework as any)
           );
         }
         
@@ -548,7 +548,7 @@ export async function GET(request: NextRequest) {
           complianceScore: averageScore,
           auditsCount: filteredAudits.length,
           timeRange,
-          framework,
+          framework: complianceFramework,
           timestamp: new Date().toISOString(),
         });
 
@@ -581,11 +581,11 @@ export async function GET(request: NextRequest) {
         const violationPeriod = searchParams.get('period') || '30d';
         const violationType = searchParams.get('type');
         
-        const violations = aiEthicsGovernance.listEthicsViolations();
-        let filteredViolations = violations;
+        const trendViolations = aiEthicsGovernance.listEthicsViolations();
+        let filteredViolations = trendViolations;
         
         if (violationType) {
-          filteredViolations = violations.filter(v => v.violationType === violationType);
+          filteredViolations = trendViolations.filter(v => v.violationType === violationType);
         }
         
         const violationTrends = filteredViolations.reduce((acc, violation) => {

@@ -166,8 +166,8 @@ export async function POST(request: NextRequest) {
         });
 
       case 'process_voice_input':
-        const { conversationId, audioUrl } = requestData;
-        const voiceResult = await conversationalAIPlatform.processVoiceInput(conversationId, audioUrl);
+        const { conversationId: voiceConversationId, audioUrl } = requestData;
+        const voiceResult = await conversationalAIPlatform.processVoiceInput(voiceConversationId, audioUrl);
         
         return NextResponse.json({
           success: true,
@@ -186,8 +186,8 @@ export async function POST(request: NextRequest) {
         });
 
       case 'update_intent':
-        const { botId, intentName, updates } = requestData;
-        await conversationalAIPlatform.updateIntent(botId, intentName, updates);
+        const { botId: updateBotId, intentName, updates } = requestData;
+        await conversationalAIPlatform.updateIntent(updateBotId, intentName, updates);
         
         return NextResponse.json({
           success: true,
@@ -457,22 +457,22 @@ export async function GET(request: NextRequest) {
         }
         
         const format = searchParams.get('format') || 'json';
-        const conversation = conversationalAIPlatform.getConversation(conversationId);
-        const messages = conversationalAIPlatform.getConversationMessages(conversationId);
+        const exportConversation = conversationalAIPlatform.getConversation(conversationId);
+        const exportMessages = conversationalAIPlatform.getConversationMessages(conversationId);
         
-        if (!conversation) {
+        if (!exportConversation) {
           return NextResponse.json(
             { error: 'Conversation not found' },
             { status: 404 }
           );
         }
         
-        const exportData = { conversation, messages };
+        const exportData = { conversation: exportConversation, messages: exportMessages };
         
         switch (format) {
           case 'csv':
             let csvData = 'timestamp,sender,content,type\n';
-            messages.forEach(msg => {
+            exportMessages.forEach(msg => {
               csvData += `${msg.metadata.timestamp.toISOString()},"${msg.sender}","${msg.content.replace(/"/g, '""')}","${msg.type}"\n`;
             });
             
@@ -484,11 +484,11 @@ export async function GET(request: NextRequest) {
             });
             
           case 'txt':
-            let txtData = `Conversation Export - ${conversation.id}\n`;
-            txtData += `Created: ${conversation.createdAt.toISOString()}\n`;
-            txtData += `Language: ${conversation.language}\n\n`;
+            let txtData = `Conversation Export - ${exportConversation.id}\n`;
+            txtData += `Created: ${exportConversation.createdAt.toISOString()}\n`;
+            txtData += `Language: ${exportConversation.language}\n\n`;
             
-            messages.forEach(msg => {
+            exportMessages.forEach(msg => {
               txtData += `[${msg.metadata.timestamp.toISOString()}] ${msg.sender}: ${msg.content}\n`;
             });
             

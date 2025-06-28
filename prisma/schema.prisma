@@ -66,6 +66,8 @@ model User {
   deletedAt      DateTime? // Soft delete
   tenantId       String?   // Multi-tenant support
   assignedTasks  Task[]    @relation("TaskAssignee")
+  integrationCredentials IntegrationCredential[]
+  webhookEvents  WebhookEvent[]
 }
 
 model Account {
@@ -2529,14 +2531,15 @@ model WebhookEvent {
   id           String    @id @default(cuid())
   type         String
   data         Json
-  tenantId     String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   resourceId   String?
   resourceType String?
   timestamp    DateTime  @default(now())
   
   deliveries   WebhookDelivery[]
   
-  @@index([tenantId, type])
+  @@index([userId, type])
   @@index([timestamp])
   @@map("webhook_events")
 }
@@ -3277,4 +3280,24 @@ enum ProcessingStatus {
   FAILED
   SKIPPED
 }
+
+// Integration OAuth Credentials Model
+model IntegrationCredential {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider    String    // 'salesforce', 'hubspot', 'slack', etc.
+  accessToken String
+  refreshToken String?
+  instanceUrl String?
+  expiresAt   DateTime?
+  metadata    Json?     // Store additional provider-specific data
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, provider])
+  @@map("integration_credentials")
+}
+
+
 

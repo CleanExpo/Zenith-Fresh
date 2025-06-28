@@ -122,8 +122,8 @@ export async function POST(request: NextRequest) {
         });
 
       case 'cancel_task':
-        const { taskId } = requestData;
-        const cancelled = await documentIntelligence.cancelProcessingTask(taskId);
+        const { taskId: cancelTaskId } = requestData;
+        const cancelled = await documentIntelligence.cancelProcessingTask(cancelTaskId);
         
         return NextResponse.json({
           success: cancelled,

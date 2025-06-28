@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { analytics } from '@/lib/analytics/analytics-enhanced';
 import { featureFlagService } from '@/lib/feature-flags';
-import { rateLimit } from '@/lib/middleware/rate-limit';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {

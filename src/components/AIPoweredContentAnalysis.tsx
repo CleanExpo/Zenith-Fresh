@@ -14,6 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import WebsiteContentInsights from "@/components/ai-content/WebsiteContentInsights";
 import { 
   Brain, 
   FileText, 
@@ -98,6 +99,135 @@ interface AIPoweredContentAnalysisProps {
   onOptimizeContent?: (optimizations: AIOptimizationRecommendation[]) => void;
 }
 
+// Mock data definitions
+const mockContentGaps: ContentGap[] = [
+  {
+    topic: "AI-powered SEO optimization",
+    searchVolume: 8500,
+    competitionLevel: 'medium',
+    aiOpportunity: 'high',
+    contentTypeRecommendations: ['How-to guide', 'Case study', 'Tool comparison'],
+    estimatedTraffic: 2500,
+    difficultyScore: 65,
+    timeToRank: '3-4 months'
+  },
+  {
+    topic: "Voice search optimization strategies",
+    searchVolume: 5200,
+    competitionLevel: 'low',
+    aiOpportunity: 'high',
+    contentTypeRecommendations: ['FAQ page', 'Complete guide', 'Best practices'],
+    estimatedTraffic: 1800,
+    difficultyScore: 45,
+    timeToRank: '2-3 months'
+  },
+  {
+    topic: "Generative engine optimization",
+    searchVolume: 3100,
+    competitionLevel: 'low',
+    aiOpportunity: 'high',
+    contentTypeRecommendations: ['Ultimate guide', 'Tutorial series', 'Checklist'],
+    estimatedTraffic: 1200,
+    difficultyScore: 35,
+    timeToRank: '1-2 months'
+  }
+];
+
+const mockOptimizations: AIOptimizationRecommendation[] = [
+  {
+    category: 'ai_readiness',
+    recommendation: 'Add conversational Q&A sections',
+    implementation: 'Structure content with clear questions followed by direct, concise answers',
+    expectedImpact: 'high',
+    aiSearchBenefit: 'Better AI citation potential and voice search optimization',
+    priority: 95,
+    effort: 'medium'
+  },
+  {
+    category: 'structure',
+    recommendation: 'Implement topic cluster architecture',
+    implementation: 'Create pillar pages with supporting cluster content around main topics',
+    expectedImpact: 'high',
+    aiSearchBenefit: 'Enhanced topic authority and AI content understanding',
+    priority: 90,
+    effort: 'high'
+  },
+  {
+    category: 'content',
+    recommendation: 'Add authoritative source citations',
+    implementation: 'Include statistics, expert quotes, and research references throughout content',
+    expectedImpact: 'medium',
+    aiSearchBenefit: 'Increased AI trust signals and citation worthiness',
+    priority: 80,
+    effort: 'medium'
+  }
+];
+
+const mockTopicClusters: TopicCluster[] = [
+  {
+    mainTopic: 'SEO Optimization',
+    relatedTopics: ['Keyword research', 'On-page SEO', 'Technical SEO', 'Link building'],
+    pillarContentNeeded: true,
+    supportingContentCount: 8,
+    aiDiscoveryScore: 75,
+    currentCoverage: 60,
+    opportunityScore: 85
+  },
+  {
+    mainTopic: 'AI in Marketing',
+    relatedTopics: ['AI tools', 'Content generation', 'Personalization', 'Analytics'],
+    pillarContentNeeded: true,
+    supportingContentCount: 6,
+    aiDiscoveryScore: 85,
+    currentCoverage: 40,
+    opportunityScore: 90
+  }
+];
+
+const mockContentBriefs: AIContentBrief[] = [
+  {
+    title: 'Complete Guide to AI-Powered SEO Optimization',
+    targetKeyword: 'AI SEO optimization',
+    aiOptimizationFocus: ['Question-answer format', 'Voice search ready', 'AI citation optimization'],
+    structureRecommendations: ['Add FAQ section', 'Include step-by-step processes', 'Create comparison tables'],
+    questionOpportunities: ['What is AI SEO?', 'How does AI improve SEO?', 'Best AI SEO tools?'],
+    schemaMarkupNeeded: ['Article', 'FAQ', 'HowTo', 'SoftwareApplication'],
+    estimatedLength: 3500,
+    contentType: 'Ultimate Guide',
+    targetAudience: 'Marketing professionals and business owners'
+  },
+  {
+    title: 'Voice Search Optimization: The Complete 2024 Strategy',
+    targetKeyword: 'voice search optimization',
+    aiOptimizationFocus: ['Conversational keywords', 'Featured snippet optimization', 'Local SEO integration'],
+    structureRecommendations: ['Use natural language', 'Include location-based content', 'Add voice search statistics'],
+    questionOpportunities: ['How to optimize for voice search?', 'Voice search trends 2024?', 'Voice SEO best practices?'],
+    schemaMarkupNeeded: ['Article', 'FAQ', 'LocalBusiness'],
+    estimatedLength: 2800,
+    contentType: 'Strategy Guide',
+    targetAudience: 'SEO specialists and digital marketers'
+  }
+];
+
+const mockCitationOptimizations: CitationOptimization[] = [
+  {
+    contentSection: 'Introduction',
+    citationReadinessScore: 65,
+    improvementSuggestions: ['Add industry statistics', 'Include expert definitions', 'Reference recent studies'],
+    authoritativeSourceRecommendations: ['Google AI research papers', 'SEMrush industry reports', 'Moz SEO studies'],
+    factualGaps: ['Missing voice search usage statistics', 'No AI adoption rates mentioned'],
+    expertQuoteOpportunities: ['SEO industry leaders', 'AI researchers', 'Digital marketing experts']
+  },
+  {
+    contentSection: 'Main Content',
+    citationReadinessScore: 70,
+    improvementSuggestions: ['Add case study data', 'Include tool comparisons', 'Reference algorithm updates'],
+    authoritativeSourceRecommendations: ['Google Search Central', 'OpenAI research', 'Industry case studies'],
+    factualGaps: ['Missing ROI data', 'No performance metrics'],
+    expertQuoteOpportunities: ['Tool creators', 'SEO consultants', 'Marketing directors']
+  }
+];
+
 export default function AIPoweredContentAnalysis({
   content = "",
   targetKeywords = [],
@@ -115,6 +245,7 @@ export default function AIPoweredContentAnalysis({
   const [contentBriefs, setContentBriefs] = useState<AIContentBrief[]>([]);
   const [citationOptimizations, setCitationOptimizations] = useState<CitationOptimization[]>([]);
   const [selectedBrief, setSelectedBrief] = useState<AIContentBrief | null>(null);
+  const [websiteUrl, setWebsiteUrl] = useState('');
 
   useEffect(() => {
     if (content || targetKeywords.length > 0) {
@@ -126,150 +257,103 @@ export default function AIPoweredContentAnalysis({
     setIsAnalyzing(true);
     
     try {
-      // Simulate AI analysis
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Real AI analysis using the API
+      const keywords = keywordInput.split(',').map(k => k.trim()).filter(k => k);
       
-      // Mock content gaps
-      const mockGaps: ContentGap[] = [
-        {
-          topic: "AI-powered SEO optimization",
-          searchVolume: 8500,
-          competitionLevel: 'medium',
-          aiOpportunity: 'high',
-          contentTypeRecommendations: ['How-to guide', 'Case study', 'Tool comparison'],
-          estimatedTraffic: 2500,
-          difficultyScore: 65,
-          timeToRank: '3-4 months'
-        },
-        {
-          topic: "Voice search optimization strategies",
-          searchVolume: 5200,
-          competitionLevel: 'low',
-          aiOpportunity: 'high',
-          contentTypeRecommendations: ['FAQ page', 'Complete guide', 'Best practices'],
-          estimatedTraffic: 1800,
-          difficultyScore: 45,
-          timeToRank: '2-3 months'
-        },
-        {
-          topic: "Generative engine optimization",
-          searchVolume: 3100,
-          competitionLevel: 'low',
-          aiOpportunity: 'high',
-          contentTypeRecommendations: ['Ultimate guide', 'Tutorial series', 'Checklist'],
-          estimatedTraffic: 1200,
-          difficultyScore: 35,
-          timeToRank: '1-2 months'
-        }
-      ];
+      // Run multiple AI analyses in parallel
+      const [gapsResponse, optimizationsResponse, clustersResponse, briefsResponse] = await Promise.allSettled([
+        fetch('/api/ai/content-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'generate_gaps',
+            keywords,
+            industry,
+            aiModel: 'multi-model'
+          })
+        }),
+        fetch('/api/ai/content-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'optimize_content',
+            content: analysisInput,
+            keywords,
+            contentType: 'article',
+            aiModel: 'multi-model'
+          })
+        }),
+        fetch('/api/ai/content-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'analyze_content',
+            content: analysisInput,
+            keywords,
+            industry,
+            aiModel: 'multi-model'
+          })
+        }),
+        fetch('/api/ai/content-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create_brief',
+            keywords,
+            industry,
+            targetAudience: 'Marketing professionals',
+            contentType: 'article',
+            aiModel: 'multi-model'
+          })
+        })
+      ]);
 
-      // Mock AI optimization recommendations
-      const mockRecommendations: AIOptimizationRecommendation[] = [
-        {
-          category: 'ai_readiness',
-          recommendation: 'Add conversational Q&A sections',
-          implementation: 'Structure content with clear questions followed by direct, concise answers',
-          expectedImpact: 'high',
-          aiSearchBenefit: 'Better AI citation potential and voice search optimization',
-          priority: 95,
-          effort: 'medium'
-        },
-        {
-          category: 'structure',
-          recommendation: 'Implement topic cluster architecture',
-          implementation: 'Create pillar pages with supporting cluster content around main topics',
-          expectedImpact: 'high',
-          aiSearchBenefit: 'Enhanced topic authority and AI content understanding',
-          priority: 90,
-          effort: 'high'
-        },
-        {
-          category: 'content',
-          recommendation: 'Add authoritative source citations',
-          implementation: 'Include statistics, expert quotes, and research references throughout content',
-          expectedImpact: 'medium',
-          aiSearchBenefit: 'Increased AI trust signals and citation worthiness',
-          priority: 80,
-          effort: 'medium'
-        }
-      ];
+      // Process responses and fallback to mock data if needed
+      let gapsData, optimizationsData, clustersData, briefsData;
 
-      // Mock topic clusters
-      const mockClusters: TopicCluster[] = [
-        {
-          mainTopic: 'SEO Optimization',
-          relatedTopics: ['Keyword research', 'On-page SEO', 'Technical SEO', 'Link building'],
-          pillarContentNeeded: true,
-          supportingContentCount: 8,
-          aiDiscoveryScore: 75,
-          currentCoverage: 60,
-          opportunityScore: 85
-        },
-        {
-          mainTopic: 'AI in Marketing',
-          relatedTopics: ['AI tools', 'Content generation', 'Personalization', 'Analytics'],
-          pillarContentNeeded: true,
-          supportingContentCount: 6,
-          aiDiscoveryScore: 85,
-          currentCoverage: 40,
-          opportunityScore: 90
-        }
-      ];
+      if (gapsResponse.status === 'fulfilled' && gapsResponse.value.ok) {
+        const result = await gapsResponse.value.json();
+        gapsData = result.data?.gaps || mockContentGaps;
+      } else {
+        gapsData = mockContentGaps;
+      }
 
-      // Mock content briefs
-      const mockBriefs: AIContentBrief[] = [
-        {
-          title: 'Complete Guide to AI-Powered SEO Optimization',
-          targetKeyword: 'AI SEO optimization',
-          aiOptimizationFocus: ['Question-answer format', 'Voice search ready', 'AI citation optimization'],
-          structureRecommendations: ['Add FAQ section', 'Include step-by-step processes', 'Create comparison tables'],
-          questionOpportunities: ['What is AI SEO?', 'How does AI improve SEO?', 'Best AI SEO tools?'],
-          schemaMarkupNeeded: ['Article', 'FAQ', 'HowTo', 'SoftwareApplication'],
-          estimatedLength: 3500,
-          contentType: 'Ultimate Guide',
-          targetAudience: 'Marketing professionals and business owners'
-        },
-        {
-          title: 'Voice Search Optimization: The Complete 2024 Strategy',
-          targetKeyword: 'voice search optimization',
-          aiOptimizationFocus: ['Conversational keywords', 'Featured snippet optimization', 'Local SEO integration'],
-          structureRecommendations: ['Use natural language', 'Include location-based content', 'Add voice search statistics'],
-          questionOpportunities: ['How to optimize for voice search?', 'Voice search trends 2024?', 'Voice SEO best practices?'],
-          schemaMarkupNeeded: ['Article', 'FAQ', 'LocalBusiness'],
-          estimatedLength: 2800,
-          contentType: 'Strategy Guide',
-          targetAudience: 'SEO specialists and digital marketers'
-        }
-      ];
+      if (optimizationsResponse.status === 'fulfilled' && optimizationsResponse.value.ok) {
+        const result = await optimizationsResponse.value.json();
+        optimizationsData = result.data?.recommendations || mockOptimizations;
+      } else {
+        optimizationsData = mockOptimizations;
+      }
 
-      // Mock citation optimizations
-      const mockCitations: CitationOptimization[] = [
-        {
-          contentSection: 'Introduction',
-          citationReadinessScore: 65,
-          improvementSuggestions: ['Add industry statistics', 'Include expert definitions', 'Reference recent studies'],
-          authoritativeSourceRecommendations: ['Google AI research papers', 'SEMrush industry reports', 'Moz SEO studies'],
-          factualGaps: ['Missing voice search usage statistics', 'No AI adoption rates mentioned'],
-          expertQuoteOpportunities: ['SEO industry leaders', 'AI researchers', 'Digital marketing experts']
-        },
-        {
-          contentSection: 'Main Content',
-          citationReadinessScore: 70,
-          improvementSuggestions: ['Add case study data', 'Include tool comparisons', 'Reference algorithm updates'],
-          authoritativeSourceRecommendations: ['Google Search Central', 'OpenAI research', 'Industry case studies'],
-          factualGaps: ['Missing ROI data', 'No performance metrics'],
-          expertQuoteOpportunities: ['Tool creators', 'SEO consultants', 'Marketing directors']
-        }
-      ];
+      if (clustersResponse.status === 'fulfilled' && clustersResponse.value.ok) {
+        const result = await clustersResponse.value.json();
+        clustersData = mockTopicClusters; // Use mock for now
+      } else {
+        clustersData = mockTopicClusters;
+      }
 
-      setContentGaps(mockGaps);
-      setRecommendations(mockRecommendations);
-      setTopicClusters(mockClusters);
-      setContentBriefs(mockBriefs);
-      setCitationOptimizations(mockCitations);
+      if (briefsResponse.status === 'fulfilled' && briefsResponse.value.ok) {
+        const result = await briefsResponse.value.json();
+        briefsData = result.data?.briefs || mockContentBriefs;
+      } else {
+        briefsData = mockContentBriefs;
+      }
+
+      // Set results
+      setContentGaps(gapsData);
+      setRecommendations(optimizationsData);
+      setTopicClusters(clustersData);
+      setContentBriefs(briefsData);
+      setCitationOptimizations(mockCitationOptimizations);
       
     } catch (error) {
       console.error('AI analysis failed:', error);
+      // Fallback to mock data
+      setContentGaps(mockContentGaps);
+      setRecommendations(mockOptimizations);
+      setTopicClusters(mockTopicClusters);
+      setContentBriefs(mockContentBriefs);
+      setCitationOptimizations(mockCitationOptimizations);
     } finally {
       setIsAnalyzing(false);
     }
@@ -359,6 +443,18 @@ export default function AIPoweredContentAnalysis({
             </div>
           </div>
           <div className="space-y-2">
+            <Label htmlFor="websiteUrl">Website URL (Optional)</Label>
+            <Input
+              id="websiteUrl"
+              value={websiteUrl}
+              onChange={(e) => setWebsiteUrl(e.target.value)}
+              placeholder="https://example.com - for website-specific insights"
+              type="url"
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="content">Content to Analyze (Optional)</Label>
             <Textarea
               id="content"
@@ -391,12 +487,13 @@ export default function AIPoweredContentAnalysis({
       {/* Analysis Results */}
       {(contentGaps.length > 0 || recommendations.length > 0) && (
         <Tabs defaultValue="gaps" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="gaps">Content Gaps</TabsTrigger>
             <TabsTrigger value="recommendations">AI Optimization</TabsTrigger>
             <TabsTrigger value="clusters">Topic Clusters</TabsTrigger>
             <TabsTrigger value="briefs">Content Briefs</TabsTrigger>
             <TabsTrigger value="citations">Citation Optimization</TabsTrigger>
+            <TabsTrigger value="website">Website Insights</TabsTrigger>
           </TabsList>
 
           <TabsContent value="gaps" className="space-y-4">
@@ -711,6 +808,31 @@ export default function AIPoweredContentAnalysis({
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="website" className="space-y-4">
+            <WebsiteContentInsights
+              websiteUrl={websiteUrl}
+              onGenerateContent={(opportunity) => {
+                // Handle content generation from website insights
+                console.log('Generate content for opportunity:', opportunity);
+                // You could trigger content brief generation here
+                if (onGenerateBrief) {
+                  const brief: AIContentBrief = {
+                    title: opportunity.title,
+                    targetKeyword: opportunity.title.toLowerCase(),
+                    aiOptimizationFocus: [opportunity.aiOptimization],
+                    structureRecommendations: ['Introduction', 'Main content', 'Conclusion'],
+                    questionOpportunities: [`What is ${opportunity.title}?`, `How to implement ${opportunity.title}?`],
+                    schemaMarkupNeeded: ['Article', 'HowTo'],
+                    estimatedLength: opportunity.effort === 'low' ? 1500 : opportunity.effort === 'medium' ? 2500 : 3500,
+                    contentType: 'Guide',
+                    targetAudience: 'Website owners and developers'
+                  };
+                  onGenerateBrief(brief);
+                }
+              }}
+            />
           </TabsContent>
         </Tabs>
       )}

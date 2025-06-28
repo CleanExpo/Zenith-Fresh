@@ -9,6 +9,7 @@ import {
   CogIcon,
   UserGroupIcon,
   BoltIcon,
+  TargetIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
@@ -16,6 +17,7 @@ const navigation = [
   { name: 'Projects', href: '/projects', icon: FolderIcon },
   { name: 'Teams', href: '/teams', icon: UserGroupIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
+  { name: 'Competitive Intel', href: '/competitive-intelligence', icon: TargetIcon },
   { name: 'Integrations', href: '/integrations', icon: BoltIcon },
   { name: 'Settings', href: '/settings', icon: CogIcon },
 ];

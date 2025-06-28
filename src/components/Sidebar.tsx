@@ -7,11 +7,15 @@ import {
   ChartBarIcon,
   DocumentTextIcon,
   Cog6ToothIcon,
+  TargetIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
+  { name: 'AI Content', href: '/ai-content', icon: SparklesIcon },
+  { name: 'Competitive Intel', href: '/competitive-intelligence', icon: TargetIcon },
   { name: 'Projects', href: '/projects', icon: DocumentTextIcon },
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
 ];
