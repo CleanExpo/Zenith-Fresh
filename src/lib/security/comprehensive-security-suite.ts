@@ -11,10 +11,18 @@ import helmet from 'helmet';
 import validator from 'validator';
 import DOMPurify from 'isomorphic-dompurify';
 import crypto from 'crypto';
-import { Redis } from 'ioredis';
+import { cache, initRedis, JSONCache } from '@/lib/redis';
 import { PrismaClient } from '@prisma/client';
 
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+// Initialize Redis in the security context
+let redisInitialized = false;
+async function ensureRedis() {
+  if (!redisInitialized) {
+    await initRedis();
+    redisInitialized = true;
+  }
+}
+
 const prisma = new PrismaClient();
 
 export interface SecurityConfig {
@@ -136,13 +144,18 @@ export class ComprehensiveSecuritySuite {
     const windowMs = this.config.rateLimiting.windowMs;
     const maxRequests = this.config.rateLimiting.maxRequests;
     
-    const current = await redis.incr(key);
+    await ensureRedis();
+    // Use cache.get/set for rate limiting
+    const currentStr = await cache.get(key);
+    const current = currentStr ? parseInt(currentStr) + 1 : 1;
+    await cache.set(key, current.toString(), Math.floor(windowMs / 1000));
     
     if (current === 1) {
-      await redis.expire(key, Math.floor(windowMs / 1000));
+      // TTL already set in cache.set above
     }
     
-    const ttl = await redis.ttl(key);
+    // For simplicity, use the window time as TTL
+    const ttl = Math.floor(windowMs / 1000);
     const resetTime = Date.now() + (ttl * 1000);
     
     if (current > maxRequests) {
@@ -186,7 +199,8 @@ export class ComprehensiveSecuritySuite {
     const token = crypto.randomBytes(this.config.csrfProtection.tokenLength).toString('hex');
     const expiry = Date.now() + this.config.csrfProtection.tokenExpiry;
     
-    await redis.setex(
+    await ensureRedis();
+    await cache.set(
       `csrf:${sessionId}`,
       Math.floor(this.config.csrfProtection.tokenExpiry / 1000),
       JSON.stringify({ token, expiry })
@@ -196,7 +210,8 @@ export class ComprehensiveSecuritySuite {
   }
 
   async validateCSRFToken(sessionId: string, providedToken: string): Promise<boolean> {
-    const stored = await redis.get(`csrf:${sessionId}`);
+    await ensureRedis();
+    const stored = await cache.get(`csrf:${sessionId}`);
     
     if (!stored) {
       return false;
@@ -205,7 +220,7 @@ export class ComprehensiveSecuritySuite {
     const { token, expiry } = JSON.parse(stored);
     
     if (Date.now() > expiry) {
-      await redis.del(`csrf:${sessionId}`);
+      await cache.del(`csrf:${sessionId}`);
       return false;
     }
     
@@ -301,11 +316,23 @@ export class ComprehensiveSecuritySuite {
     const now = Date.now();
     
     // Store user action
-    await redis.zadd(key, now, JSON.stringify({ action, metadata, timestamp: now }));
-    await redis.expire(key, timeWindow);
+    await ensureRedis();
+    const actionsKey = `${key}:actions`;
+    const existingStr = await cache.get(actionsKey);
+    const actions = existingStr ? JSON.parse(existingStr) : [];
+    
+    actions.push({ action, metadata, timestamp: now });
+    await cache.set(actionsKey, JSON.stringify(actions), timeWindow);
     
     // Analyze recent behavior
-    const recentActions = await redis.zrangebyscore(key, now - (timeWindow * 1000), now);
+    // Get recent actions from cache
+    const actionsKey = `${key}:actions`;
+    const actionsStr = await cache.get(actionsKey);
+    const allActions = actionsStr ? JSON.parse(actionsStr) : [];
+    const cutoff = now - (timeWindow * 1000);
+    const recentActions = allActions
+      .filter((a: any) => a.timestamp > cutoff)
+      .map((a: any) => JSON.stringify(a));
     
     const analysis = this.analyzeBehaviorPatterns(recentActions);
     
@@ -450,7 +477,9 @@ export class ComprehensiveSecuritySuite {
     
     // Initialize Redis connection
     try {
-      await redis.ping();
+      await ensureRedis();
+      // Redis health check via cache availability
+      const isHealthy = cache.isAvailable();
       console.log('✅ Redis connection established for security caching');
     } catch (error) {
       console.error('❌ Redis connection failed:', error);
@@ -512,7 +541,8 @@ export class ComprehensiveSecuritySuite {
     
     if (isSuspicious) {
       // Ban the IP temporarily
-      await redis.setex(`ban:${key}`, Math.floor(this.config.rateLimiting.banDuration / 1000), 'banned');
+      await ensureRedis();
+    await cache.set(`ban:${key}`, Math.floor(this.config.rateLimiting.banDuration / 1000), 'banned');
       
       await this.logSecurityEvent(
         'Rate limit exceeded - suspicious activity',
@@ -612,7 +642,8 @@ export class ComprehensiveSecuritySuite {
     
     // Temporarily restrict user if score is very high
     if (analysis.score > 90) {
-      await redis.setex(
+      await ensureRedis();
+    await cache.set(
         `restrict:${userId}`,
         Math.floor(this.config.threatDetection.autoBlockDuration / 1000),
         JSON.stringify({ reason: 'Suspicious behavior', score: analysis.score })

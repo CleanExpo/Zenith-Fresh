@@ -95,11 +95,15 @@ export class EnterpriseMonitoringSystem extends EventEmitter {
 
   constructor(config: MonitoringConfig) {
     super();
-    this.redis = new Redis(process.env.REDIS_URL!);
     this.prisma = new PrismaClient();
     this.config = config;
     this.initializeAlerts();
     this.initializeSLATargets();
+    this.init();
+  }
+
+  private async init() {
+    await initRedis();
   }
 
   /**

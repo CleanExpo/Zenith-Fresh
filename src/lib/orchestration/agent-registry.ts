@@ -7,7 +7,7 @@
 
 import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
-import { Redis } from 'ioredis';
+import { cache, initRedis, JSONCache } from '@/lib/redis';
 import { Agent, AgentCapability } from './master-conductor';
 
 export interface ServiceEndpoint {
@@ -86,17 +86,21 @@ export interface AgentHealth {
  * Agent Registry - Service discovery and registration
  */
 export class AgentRegistry extends EventEmitter {
-  private redis: Redis;
+  private cache = cache;
   private registrations: Map<string, AgentRegistration> = new Map();
   private healthStatus: Map<string, AgentHealth> = new Map();
   private discoveryCache: Map<string, { query: DiscoveryQuery; results: string[]; expires: Date }> = new Map();
   private healthCheckInterval: NodeJS.Timeout | null = null;
   private cacheCleanupInterval: NodeJS.Timeout | null = null;
 
-  constructor(redisUrl: string) {
+  constructor(redisUrl?: string) {
     super();
-    this.redis = new Redis(redisUrl);
+    this.init();
     this.setupEventHandlers();
+  }
+
+  private async init() {
+    await initRedis();
   }
 
   /**

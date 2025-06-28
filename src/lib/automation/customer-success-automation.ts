@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { Redis } from 'ioredis';
+import { cache, initRedis, JSONCache } from '@/lib/redis';
 import { EventEmitter } from 'events';
 
 interface CustomerProfile {
@@ -70,15 +70,22 @@ interface CustomerInsight {
 
 export class CustomerSuccessAutomation extends EventEmitter {
   private prisma: PrismaClient;
-  private redis: Redis;
+  private cache = cache;
   private automationRules: Map<string, Function> = new Map();
   private isRunning: boolean = false;
 
   constructor() {
     super();
     this.prisma = new PrismaClient();
-    this.redis = new Redis(process.env.REDIS_URL!);
     this.initializeAutomationRules();
+    this.init();
+  }
+
+  /**
+   * Initialize Redis connection
+   */
+  private async init(): Promise<void> {
+    await initRedis();
   }
 
   /**
@@ -135,7 +142,7 @@ export class CustomerSuccessAutomation extends EventEmitter {
   async stop(): Promise<void> {
     console.log('Stopping Customer Success Automation Engine...');
     this.isRunning = false;
-    await this.redis.disconnect();
+    await cache.disconnect();
     await this.prisma.$disconnect();
     console.log('Customer Success Automation Engine stopped');
   }
@@ -638,7 +645,7 @@ export class CustomerSuccessAutomation extends EventEmitter {
   }
 
   private async storeHealthScore(customerId: string, healthScore: HealthScore): Promise<void> {
-    await this.redis.setex(
+    await cache.set(
       `health_score:${customerId}`,
       24 * 60 * 60,
       JSON.stringify(healthScore)

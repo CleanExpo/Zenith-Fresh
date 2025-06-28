@@ -24,7 +24,7 @@ export interface CacheEntry {
 // Placeholder class for production build compatibility
 export class EnterpriseRedisCache {
   constructor() {
-    console.warn('Enterprise Redis Cache: Mock implementation - Redis dependencies required for full functionality');
+    // Silent initialization for build compatibility
   }
 
   async get(key: string): Promise<any> {

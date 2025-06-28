@@ -3,7 +3,7 @@
  * Advanced performance optimization with real-time monitoring and auto-tuning
  */
 
-import { Redis } from 'ioredis';
+import { cache, initRedis, JSONCache } from '@/lib/redis';
 import { PrismaClient } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -27,7 +27,7 @@ interface OptimizationStrategy {
 }
 
 export class PerformanceOptimizer {
-  private redis: Redis;
+  private cache = cache;
   private prisma: PrismaClient;
   private metrics: Map<string, PerformanceMetrics> = new Map();
   private strategies: OptimizationStrategy[] = [];
@@ -40,9 +40,13 @@ export class PerformanceOptimizer {
   }> = [];
 
   constructor() {
-    this.redis = new Redis(process.env.REDIS_URL!);
     this.prisma = new PrismaClient();
     this.initializeStrategies();
+    this.init();
+  }
+
+  private async init() {
+    await initRedis();
   }
 
   /**
