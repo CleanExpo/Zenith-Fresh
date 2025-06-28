@@ -12,8 +12,8 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   },
-  // Force Next.js to use standalone output mode for Vercel
-  output: 'standalone',
+  // Remove standalone output for Vercel compatibility
+  // output: 'standalone',
   // Disable static optimization for problematic routes
   async rewrites() {
     return [];
