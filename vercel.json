@@ -1,8 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "framework": "nextjs",
   "functions": {
     "app/api/**/*.ts": {
       "memory": 3008,
