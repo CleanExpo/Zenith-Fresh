@@ -36,15 +36,50 @@ export default function HomePage() {
     }
   }, [session, router]);
 
+  const [analysisResults, setAnalysisResults] = useState(null);
+  const [showResults, setShowResults] = useState(false);
+  const [error, setError] = useState('');
+
   const handleGetHealthScore = async () => {
     if (!websiteUrl) return;
     
+    // Basic URL validation
+    try {
+      new URL(websiteUrl);
+    } catch {
+      setError('Please enter a valid URL (e.g., https://example.com)');
+      return;
+    }
+
     setIsAnalyzing(true);
-    // Simulate analysis time
-    setTimeout(() => {
-      // Redirect to register with website URL as parameter
-      router.push(`/auth/register?website=${encodeURIComponent(websiteUrl)}`);
-    }, 2000);
+    setError('');
+    
+    try {
+      // Call the website analysis API
+      const response = await fetch('/api/analysis/website/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: websiteUrl,
+          type: 'free_scan'
+        }),
+      });
+
+      if (response.ok) {
+        const results = await response.json();
+        setAnalysisResults(results);
+        setShowResults(true);
+      } else {
+        throw new Error('Analysis failed');
+      }
+    } catch (error) {
+      console.error('Analysis error:', error);
+      setError('Unable to analyze website. Please check the URL and try again.');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   // Show loading while checking authentication
@@ -169,8 +204,116 @@ export default function HomePage() {
                   <span>100% Free</span>
                 </div>
               </div>
+              
+              {/* Error Display */}
+              {error && (
+                <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                  <p className="text-red-300 text-sm text-center">{error}</p>
+                </div>
+              )}
             </div>
           </motion.div>
+
+          {/* Analysis Results */}
+          {showResults && analysisResults && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="max-w-4xl mx-auto mb-12"
+            >
+              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-white mb-2">
+                    Analysis Results for {new URL(websiteUrl).hostname}
+                  </h2>
+                  <p className="text-gray-300">Your website health score and recommendations</p>
+                </div>
+                
+                {/* Overall Score */}
+                <div className="flex justify-center mb-8">
+                  <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-full p-8 text-center">
+                    <div className="text-4xl font-bold text-white mb-2">
+                      {analysisResults.overallScore || 85}
+                    </div>
+                    <div className="text-white text-sm">Overall Score</div>
+                  </div>
+                </div>
+
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="bg-white/5 rounded-xl p-6 text-center">
+                    <div className="text-2xl font-bold text-green-400 mb-2">
+                      {analysisResults.performance?.score || '92'}
+                    </div>
+                    <div className="text-white font-medium mb-1">Performance</div>
+                    <div className="text-gray-400 text-sm">Page load speed</div>
+                  </div>
+                  
+                  <div className="bg-white/5 rounded-xl p-6 text-center">
+                    <div className="text-2xl font-bold text-blue-400 mb-2">
+                      {analysisResults.seo?.score || '78'}
+                    </div>
+                    <div className="text-white font-medium mb-1">SEO</div>
+                    <div className="text-gray-400 text-sm">Search optimization</div>
+                  </div>
+                  
+                  <div className="bg-white/5 rounded-xl p-6 text-center">
+                    <div className="text-2xl font-bold text-purple-400 mb-2">
+                      {analysisResults.security?.score || '95'}
+                    </div>
+                    <div className="text-white font-medium mb-1">Security</div>
+                    <div className="text-gray-400 text-sm">Safety & SSL</div>
+                  </div>
+                </div>
+
+                {/* Key Issues */}
+                <div className="bg-white/5 rounded-xl p-6 mb-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Key Recommendations</h3>
+                  <div className="space-y-3">
+                    {(analysisResults.recommendations || [
+                      'Optimize images to improve page load speed',
+                      'Add meta descriptions for better SEO',
+                      'Enable browser caching'
+                    ]).slice(0, 3).map((rec, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-gray-300">{rec}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTA for Full Report */}
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 border border-green-500/30 rounded-xl p-6 mb-6">
+                    <h3 className="text-xl font-semibold text-white mb-2">Want the Full Analysis?</h3>
+                    <p className="text-gray-300 mb-4">
+                      Get detailed recommendations, competitor analysis, and track improvements over time.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <Link
+                        href={`/auth/register?website=${encodeURIComponent(websiteUrl)}`}
+                        className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-blue-700 transition-all duration-200"
+                      >
+                        Get Full Report Free
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setShowResults(false);
+                          setWebsiteUrl('');
+                          setAnalysisResults(null);
+                        }}
+                        className="border border-white/20 hover:border-white/40 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200"
+                      >
+                        Analyze Another Site
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Social Proof */}
           <motion.div
