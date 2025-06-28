@@ -12,18 +12,7 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['prisma', '@prisma/client'],
   },
-  // Ensure proper build output generation
-  generateBuildId: async () => {
-    // Use a consistent build ID to avoid manifest issues
-    return process.env.VERCEL_GIT_COMMIT_SHA || 'local-build';
-  },
-  // Explicitly configure for Vercel deployment
-  trailingSlash: false,
-  // Disable static optimization for problematic routes
-  async rewrites() {
-    return [];
-  },
-  // Custom webpack configuration to ensure proper build output
+  // Custom webpack configuration
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals.push('@prisma/client');
