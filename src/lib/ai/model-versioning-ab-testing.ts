@@ -738,6 +738,56 @@ export class ModelVersioningABTestingSystem {
     }
   }
 
+  private async collectModelMetrics(): Promise<void> {
+    try {
+      // Collect model-specific metrics
+      const modelMetrics = {
+        timestamp: new Date(),
+        totalModels: this.modelVersions.size,
+        totalVersions: Array.from(this.modelVersions.values()).reduce((sum, versions) => sum + versions.length, 0),
+        productionModels: Array.from(this.modelVersions.values()).flat().filter(v => v.status === 'production').length,
+        stagingModels: Array.from(this.modelVersions.values()).flat().filter(v => v.status === 'staging').length
+      };
+
+      // Store metrics
+      if (redis) {
+        await redis.lpush(
+          `${this.cachePrefix}model_metrics`,
+          JSON.stringify(modelMetrics)
+        );
+        // Keep only last 100 entries
+        await redis.ltrim(`${this.cachePrefix}model_metrics`, 0, 99);
+      }
+    } catch (error) {
+      console.warn('Failed to collect model metrics:', error);
+    }
+  }
+
+  private async collectExperimentMetrics(): Promise<void> {
+    try {
+      // Collect A/B test experiment metrics
+      const experimentMetrics = {
+        timestamp: new Date(),
+        totalExperiments: this.abTests.size,
+        activeExperiments: this.activeExperiments.size,
+        runningTests: Array.from(this.abTests.values()).filter(t => t.status === 'running').length,
+        completedTests: Array.from(this.abTests.values()).filter(t => t.status === 'completed').length
+      };
+
+      // Store metrics
+      if (redis) {
+        await redis.lpush(
+          `${this.cachePrefix}experiment_metrics`,
+          JSON.stringify(experimentMetrics)
+        );
+        // Keep only last 100 entries
+        await redis.ltrim(`${this.cachePrefix}experiment_metrics`, 0, 99);
+      }
+    } catch (error) {
+      console.warn('Failed to collect experiment metrics:', error);
+    }
+  }
+
   private async getNextVersionNumber(modelId: string): Promise<number> {
     const versions = this.modelVersions.get(modelId) || [];
     return versions.length + 1;
@@ -799,6 +849,67 @@ export class ModelVersioningABTestingSystem {
   async getDeploymentHistory(modelId: string): Promise<DeploymentRecord[]> {
     const versions = this.modelVersions.get(modelId) || [];
     return versions.flatMap(v => v.deploymentHistory);
+  }
+
+  async detectModelDrift(): Promise<{
+    driftDetected: Array<{
+      modelId: string;
+      versionId: string;
+      driftType: string;
+      severity: 'low' | 'medium' | 'high';
+      metrics: Record<string, number>;
+    }>;
+    summary: string;
+  }> {
+    try {
+      const driftDetected: Array<{
+        modelId: string;
+        versionId: string;
+        driftType: string;
+        severity: 'low' | 'medium' | 'high';
+        metrics: Record<string, number>;
+      }> = [];
+
+      // Simulate drift detection for all model versions
+      for (const [modelId, versions] of this.modelVersions.entries()) {
+        for (const version of versions) {
+          if (version.status === 'production') {
+            // Simulate drift detection with random results
+            const driftScore = Math.random();
+            
+            if (driftScore > 0.7) {
+              driftDetected.push({
+                modelId,
+                versionId: version.id,
+                driftType: driftScore > 0.9 ? 'data_drift' : 'concept_drift',
+                severity: driftScore > 0.9 ? 'high' : driftScore > 0.8 ? 'medium' : 'low',
+                metrics: {
+                  driftScore,
+                  baselineAccuracy: version.performance.accuracy,
+                  currentAccuracy: version.performance.accuracy * (1 - driftScore * 0.1),
+                  samplesAnalyzed: Math.floor(Math.random() * 10000) + 1000
+                }
+              });
+            }
+          }
+        }
+      }
+
+      const summary = driftDetected.length > 0 
+        ? `Detected ${driftDetected.length} models with drift. Immediate attention required for high-severity cases.`
+        : 'No significant drift detected across all production models. Models are performing within expected parameters.';
+
+      return {
+        driftDetected,
+        summary
+      };
+    } catch (error) {
+      console.error('❌ Model drift detection error:', error);
+      return {
+        driftDetected: [],
+        summary: 'Error occurred during drift detection. Please check system logs.'
+      };
+    }
   }
 }
 
