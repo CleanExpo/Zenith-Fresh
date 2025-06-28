@@ -1,15 +1,8 @@
 {
   "version": 2,
-  "framework": "nextjs",
   "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
-  "regions": ["iad1"],
-  "build": {
-    "env": {
-      "NODE_ENV": "production",
-      "NODE_OPTIONS": "--max-old-space-size=4096"
-    }
-  },
+  "installCommand": "npm install",
+  "framework": "nextjs",
   "functions": {
     "app/api/**/*.ts": {
       "memory": 3008,
