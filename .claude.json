@@ -17,6 +17,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "PS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith> vercel --prod\nVercel CLI 42.3.0\n🔍  Inspect: https://vercel.com/admin-cleanexpo247s-projects/zenith-mvp-clean/k3E3z1Kt8oGVJbq48JgitQEJs7S9 [1s]\n✅  Production: https://zenith-mvp-clean-70d7vi7hj-admin-cleanexpo247s-projects.vercel.app [1s]\nError: Command \"npm install\" exited with 127\nError: Check your logs at https://zenith-mvp-clean-70d7vi7hj-admin-cleanexpo247s-projects.vercel.app/_logs or run `vercel logs zenith-mvp-clean-70d7vi7hj-admin-cleanexpo247s-projects.vercel.app`\nPS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith> ",
+          "pastedContents": {}
+        },
+        {
           "display": "[Pasted text #1 +22 lines]",
           "pastedContents": {
             "1": {
@@ -672,10 +676,6 @@
         },
         {
           "display": "push and commit all changes to github repo and then push to vercel production",
-          "pastedContents": {}
-        },
-        {
-          "display": "pusha dn commit all changes to the github repo and then push to production in vercel",
           "pastedContents": {}
         }
       ],
