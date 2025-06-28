@@ -17,6 +17,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "Framework Settings: Framework Preset=Next.js   Build Command=npm run build   Ourput Directory=.next   Root Directory = Blank",
+          "pastedContents": {}
+        },
+        {
           "display": "PS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith> vercel --prod\nVercel CLI 42.3.0\n🔍  Inspect: https://vercel.com/admin-cleanexpo247s-projects/zenith-mvp-clean/k3E3z1Kt8oGVJbq48JgitQEJs7S9 [1s]\n✅  Production: https://zenith-mvp-clean-70d7vi7hj-admin-cleanexpo247s-projects.vercel.app [1s]\nError: Command \"npm install\" exited with 127\nError: Check your logs at https://zenith-mvp-clean-70d7vi7hj-admin-cleanexpo247s-projects.vercel.app/_logs or run `vercel logs zenith-mvp-clean-70d7vi7hj-admin-cleanexpo247s-projects.vercel.app`\nPS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith> ",
           "pastedContents": {}
         },
@@ -672,10 +676,6 @@
         },
         {
           "display": "9c2635e\nMove TypeScript to production dependencies this is the last time you broke the console error causing the site to continue to operate in an old cashe deployment showing mock data. We are not showing mock data any more and we are a live site. Lets fix, address, and rid this problem from coming back and re-occuring. We are running the new build with all the No Bullshit Production Planned Roadmap.md",
-          "pastedContents": {}
-        },
-        {
-          "display": "push and commit all changes to github repo and then push to vercel production",
           "pastedContents": {}
         }
       ],
