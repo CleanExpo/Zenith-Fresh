@@ -2,6 +2,8 @@
 // Predictive Analytics API - AI-powered market predictions and competitor forecasting
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { predictiveAnalyticsEngine } from '@/lib/intelligence/predictive-analytics-engine';

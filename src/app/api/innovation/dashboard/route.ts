@@ -6,6 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { auth } from '@/lib/auth';
 import { innovationAgent } from '@/lib/agents/innovation-agent';
 import { innovationBriefGenerator } from '@/lib/services/innovation-brief-generator';

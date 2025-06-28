@@ -1,5 +1,7 @@
 // src/app/api/competitive/intelligence/alerts/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { competitiveAlertsEngine } from '@/lib/services/competitive-alerts-engine';

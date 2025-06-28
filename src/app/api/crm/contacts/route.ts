@@ -1,6 +1,8 @@
 // src/app/api/crm/contacts/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/prisma';
 import CommunicationsAgent from '@/lib/agents/communications-agent';
 import OperationsAgent from '@/lib/agents/operations-agent';

@@ -2,6 +2,8 @@
 // Intelligence Automation API - Automated competitive monitoring and alerts
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { intelligenceAutomationEngine } from '@/lib/intelligence/automation-engine';

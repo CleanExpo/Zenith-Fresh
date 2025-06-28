@@ -4,6 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { auth } from '@/lib/auth';
 import { enhancedAIAnalyzer } from '@/lib/ai/website-analysis';
 import { analytics } from '@/lib/analytics/analytics-enhanced';

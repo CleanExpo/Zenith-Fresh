@@ -4,6 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { z } from 'zod';
 import { modelTrainingEngine } from '@/lib/ai/training/model-training-engine';
 import { modelRegistry } from '@/lib/ai/training/model-registry';

@@ -4,6 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { z } from 'zod';
 import { multiModalProcessor } from '@/lib/ai/advanced/multi-modal-processor';
 

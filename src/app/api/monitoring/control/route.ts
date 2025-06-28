@@ -4,6 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { monitoringAgent, activateMonitoring, deactivateMonitoring, getMonitoringReport } from '@/lib/agents/advanced-monitoring-observability-agent';
 
 export async function GET(request: NextRequest) {

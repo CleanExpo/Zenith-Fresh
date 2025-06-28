@@ -1,6 +1,8 @@
 // src/app/api/integrations/architect/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import IntegrationArchitectAgent from '@/lib/agents/integration-architect-agent';
 
 const integrationAgent = new IntegrationArchitectAgent();

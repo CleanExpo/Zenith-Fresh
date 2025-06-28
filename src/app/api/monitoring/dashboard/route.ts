@@ -4,6 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { monitoringAgent } from '@/lib/agents/advanced-monitoring-observability-agent';
 import { apiMonitor } from '@/lib/api/api-performance-monitor';
 import { securityMonitor } from '@/lib/security/security-monitor';

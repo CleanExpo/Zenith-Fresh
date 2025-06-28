@@ -1,5 +1,7 @@
 // src/app/api/competitive/traffic-theft/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import TrafficThiefAgent from '@/lib/agents/traffic-thief-agent';
 
 export async function POST(request: NextRequest) {

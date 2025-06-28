@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { deploymentPipeline } from '@/lib/deployment/zero-downtime-pipeline';
 import { auth } from '@/lib/auth';
 

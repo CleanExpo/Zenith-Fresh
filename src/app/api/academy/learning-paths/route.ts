@@ -1,5 +1,7 @@
 // src/app/api/academy/learning-paths/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import TrainingAgent from '@/lib/agents/training-agent';
 
 export async function POST(request: NextRequest) {

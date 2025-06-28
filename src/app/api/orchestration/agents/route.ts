@@ -6,6 +6,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // Mock agent data generator
 const generateMockAgent = (id?: string) => {
   const types = ['content', 'analytics', 'monitoring', 'integration', 'security'];

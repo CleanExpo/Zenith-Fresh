@@ -4,6 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';

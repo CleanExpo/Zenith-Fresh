@@ -6,6 +6,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // Mock task data generator
 const generateMockTask = (id?: string) => {
   const types = ['data-processing', 'content-analysis', 'performance-check', 'integration-sync', 'security-scan'];

@@ -5,6 +5,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { auth } from '@/lib/auth';
 import { competitorFeatureTracker } from '@/lib/services/competitor-feature-tracker';
 import { analyticsEngine } from '@/lib/analytics/analytics-enhanced';

@@ -4,6 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { logger } from '@/lib/monitoring/enhanced-sentry';

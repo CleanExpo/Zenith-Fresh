@@ -6,6 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { advancedAIMLPipelineAgent } from '@/lib/agents/advanced-ai-ml-pipeline-agent';

@@ -5,6 +5,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { headers } from 'next/headers';
 
 // Mock data (in production, this would come from the actual orchestration system)

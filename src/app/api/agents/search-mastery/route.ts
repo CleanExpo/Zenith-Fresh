@@ -1,5 +1,7 @@
 // src/app/api/agents/search-mastery/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import SearchMasteryAgent from '@/lib/agents/search-mastery-agent';
 
 export async function POST(request: NextRequest) {

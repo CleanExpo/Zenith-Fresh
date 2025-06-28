@@ -3,6 +3,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { getServerSession } from 'next-auth';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';

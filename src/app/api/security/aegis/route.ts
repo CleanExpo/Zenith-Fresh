@@ -2,6 +2,8 @@
 // Autonomous security monitoring and incident response
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { aegisAgent } from '@/lib/agents/aegis-agent';
 
 export async function GET(request: NextRequest) {

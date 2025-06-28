@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { googleCloudStorage, generateFileName, validateFileSize, validateFileType } from '@/lib/google-cloud-storage';

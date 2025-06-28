@@ -1,6 +1,8 @@
 // src/app/api/integrations/hub/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { enterpriseIntegrationHub } from '@/lib/agents/enterprise-integration-hub-agent';
 import { auth } from '@/lib/auth';
 

@@ -1,5 +1,7 @@
 // src/app/api/competitive/analysis/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import CompetitiveAdvantageAgent from '@/lib/agents/competitive-advantage-agent';
 
 export async function POST(request: NextRequest) {

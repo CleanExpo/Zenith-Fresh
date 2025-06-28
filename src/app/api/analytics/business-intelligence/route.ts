@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { auth } from '@/lib/auth';
 import { businessIntelligence } from '@/lib/analytics/business-intelligence-integration';
 import { auditLogger } from '@/lib/audit/audit-logger';

@@ -4,6 +4,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // System metrics storage (use external monitoring in production)
 let systemMetrics = {
   timestamp: Date.now(),
