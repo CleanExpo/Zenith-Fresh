@@ -78,3 +78,6 @@ dist-ssr
 
 # SSH keys
 .ssh/ .git-credentials
+
+# MongoDB Certificates
+certificates/

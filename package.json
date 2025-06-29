@@ -27,7 +27,8 @@
     "deploy:quick": "git add . && git commit -m 'Quick deploy' && git push origin main",
     "deploy:check": "git status && npm run build",
     "mongodb:init": "node scripts/mongodb/init-database.js",
-    "mongodb:health": "curl -s http://localhost:3000/api/health/mongodb | jq"
+    "mongodb:health": "curl -s http://localhost:3000/api/health/mongodb | jq",
+    "mongodb:setup-x509": "node scripts/mongodb/setup-x509.js"
   },
   "keywords": [],
   "author": "",
