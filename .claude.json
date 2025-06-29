@@ -18,6 +18,10 @@
       "allowedTools": [],
       "history": [
         {
+          "display": "FOR FUCK SAKE DICKHEAD.........YOU ARE A FUCKING LOOSER",
+          "pastedContents": {}
+        },
+        {
           "display": "push and commit all changes to GitHub repo and then push to Vercel for production",
           "pastedContents": {}
         },
@@ -613,10 +617,6 @@
         },
         {
           "display": "it is running-- npm run build and it also has npm install in the Install Command",
-          "pastedContents": {}
-        },
-        {
-          "display": "S C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith-Fresh> vercel --prod --force\nVercel CLI 42.3.0\n🔍  Inspect: https://vercel.com/admin-cleanexpo247s-projects/zenith-fresh/AHw7p4kjmQxQkrAatVNGgqfoyQv4 [2s]\n✅  Production: https://zenith-fresh-gob31h3yd-admin-cleanexpo247s-projects.vercel.app [2s]\nError: Command \"npm ci && node build-optimized.js\" exited with 1\nError: Check your logs at https://zenith-fresh-gob31h3yd-admin-cleanexpo247s-projects.vercel.app/_logs or run `vercel logs zenith-fresh-gob31h3yd-admin-cleanexpo247s-projects.vercel.app`\nPS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith-Fresh> ",
           "pastedContents": {}
         }
       ],

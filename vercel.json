@@ -1,16 +1,1 @@
-{
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next",
-      "config": {
-        "buildCommand": "npm run vercel-build"
-      }
-    }
-  ],
-  "functions": {
-    "app/api/**/*.js": {
-      "maxDuration": 30
-    }
-  }
-}
+{}
