@@ -16,28 +16,39 @@ const options = {
   useNewUrlParser: true,
 };
 
-// Add SSL certificate configuration for X.509 authentication if needed
+// Configure X.509 certificate authentication if specified
 if (uri.includes('authMechanism=MONGODB-X509')) {
-  console.log('🔐 Using X.509 certificate authentication');
+  console.log('🔐 Using MongoDB X.509 certificate authentication');
   
-  // Check for certificate files
+  // For X.509 authentication, certificates can be embedded in the connection string
+  // or provided as separate files. MongoDB Atlas typically uses connection string auth.
+  
+  // Check for certificate files (optional for self-managed certificates)
   if (process.env.MONGODB_SSL_CERT_PATH) {
     const fs = require('fs');
     try {
-      options.sslCert = fs.readFileSync(process.env.MONGODB_SSL_CERT_PATH);
-      if (process.env.MONGODB_SSL_KEY_PATH) {
-        options.sslKey = fs.readFileSync(process.env.MONGODB_SSL_KEY_PATH);
-      }
+      // Read client certificate (contains both cert and key for MongoDB)
+      const certData = fs.readFileSync(process.env.MONGODB_SSL_CERT_PATH);
+      options.tlsCertificateKeyFile = process.env.MONGODB_SSL_CERT_PATH;
+      
+      // Optional: Read CA certificate for additional validation
       if (process.env.MONGODB_SSL_CA_PATH) {
-        options.sslCA = fs.readFileSync(process.env.MONGODB_SSL_CA_PATH);
+        options.tlsCAFile = process.env.MONGODB_SSL_CA_PATH;
       }
-      console.log('✅ SSL certificates loaded for X.509 authentication');
+      
+      // Enable TLS/SSL
+      options.tls = true;
+      options.tlsAllowInvalidCertificates = false; // Ensure certificate validation
+      
+      console.log('✅ X.509 certificate files loaded successfully');
     } catch (error) {
-      console.warn('⚠️ Warning: X.509 certificates not found:', error.message);
-      console.warn('Falling back to connection string authentication');
+      console.warn('⚠️ Warning: X.509 certificate files not found:', error.message);
+      console.log('Continuing with connection string authentication...');
     }
   } else {
-    console.warn('⚠️ Warning: MONGODB_SSL_CERT_PATH not specified for X.509 authentication');
+    console.log('📝 Using X.509 authentication via connection string (Atlas managed)');
+    // For Atlas-managed X.509, the certificate is handled by the connection string
+    options.tls = true;
   }
 }
 

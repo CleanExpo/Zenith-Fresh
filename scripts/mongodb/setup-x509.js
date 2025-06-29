@@ -105,5 +105,9 @@ if (allFilesExist) {
   console.log('📥 Please download and place the certificate files in the certificates/ directory.');
 }
 
-console.log('\n🔗 MongoDB Atlas X.509 Documentation:');
-console.log('https://docs.atlas.mongodb.com/security-x509-auth/');
+console.log('\n📚 Documentation:');
+console.log('====================================');
+console.log('📖 Complete Setup Guide: ./docs/MONGODB_X509_SETUP.md');
+console.log('🔗 MongoDB Atlas Docs: https://www.mongodb.com/docs/atlas/security-self-managed-x509/');
+console.log('🔧 Interactive Setup: npm run mongodb:setup-x509');
+console.log('🧪 Test Connection: npm run mongodb:init');
