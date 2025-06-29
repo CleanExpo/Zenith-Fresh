@@ -39,19 +39,31 @@ if (!fs.existsSync(certDir)) {
   }
 }
 
-console.log('📋 X.509 Certificate Setup Instructions:');
-console.log('=========================================\n');
+console.log('📋 X.509 Certificate Setup Instructions (MongoDB Atlas):');
+console.log('=======================================================\n');
 
-console.log('1. Download certificates from MongoDB Atlas:');
-console.log('   - Go to your MongoDB Atlas cluster');
-console.log('   - Navigate to Security > Advanced');
-console.log('   - Download the client certificate files');
+console.log('🔐 STEP 1: Configure Self-Managed X.509 in Atlas');
+console.log('1. Go to MongoDB Atlas Dashboard');
+console.log('2. Select your project');
+console.log('3. Navigate to Security > Advanced');
+console.log('4. Toggle "Self-Managed X.509 Authentication" to ON');
+console.log('5. Upload your Certificate Authority (CA) .pem file');
 console.log('');
 
-console.log('2. Place certificate files in the certificates/ directory:');
-console.log('   - client.pem (client certificate)');
-console.log('   - client-key.pem (client private key)');
-console.log('   - ca.pem (certificate authority)');
+console.log('👤 STEP 2: Create Database User with Certificate');
+console.log('1. Go to Security > Database Access');
+console.log('2. Click "Add New Database User"');
+console.log('3. Select "CERTIFICATE" as authentication method');
+console.log('4. Enter Distinguished Name (DN) from your certificate');
+console.log('   Example: CN=client,OU=users,O=YourOrg,L=City,ST=State,C=US');
+console.log('5. Assign appropriate database privileges');
+console.log('6. Click "Add User"');
+console.log('');
+
+console.log('📄 STEP 3: Prepare Certificate Files');
+console.log('Place your certificate files in the certificates/ directory:');
+console.log('   - client.pem (client certificate with private key)');
+console.log('   - ca.pem (certificate authority - optional for validation)');
 console.log('');
 
 console.log('3. Update your .env file with these variables:');
