@@ -1,0 +1,58 @@
+import { MongoClient } from 'mongodb';
+
+const uri = process.env.MONGODB_URI;
+const dbName = process.env.MONGODB_DB_NAME || 'zenith_production';
+
+if (!uri) {
+  throw new Error('Please add your MongoDB URI to .env file');
+}
+
+let client;
+let clientPromise;
+
+if (process.env.NODE_ENV === 'development') {
+  // In development mode, use a global variable so the value
+  // is preserved across module reloads caused by HMR (Hot Module Replacement).
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri, {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+    });
+    global._mongoClientPromise = client.connect();
+  }
+  clientPromise = global._mongoClientPromise;
+} else {
+  // In production mode, it's best to not use a global variable.
+  client = new MongoClient(uri, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+  });
+  clientPromise = client.connect();
+}
+
+// Export a module-scoped MongoClient promise. By doing this in a
+// separate module, the client can be shared across functions.
+export { clientPromise, dbName };
+
+// Utility function to get database
+export async function getDatabase() {
+  const client = await clientPromise;
+  return client.db(dbName);
+}
+
+// Utility function to get a specific collection
+export async function getCollection(collectionName) {
+  const db = await getDatabase();
+  return db.collection(collectionName);
+}
+
+// Health check function
+export async function checkMongoConnection() {
+  try {
+    const client = await clientPromise;
+    await client.db().admin().ping();
+    return { status: 'connected', message: 'MongoDB connection successful' };
+  } catch (error) {
+    return { status: 'error', message: error.message };
+  }
+}

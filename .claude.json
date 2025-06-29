@@ -11,12 +11,20 @@
     "todo-list": 5
   },
   "memoryUsageCount": 1,
-  "promptQueueUseCount": 44,
+  "promptQueueUseCount": 45,
   "userID": "468b1b912da1854ab06a89a6231c73c8443717687b52e5812ce2485b79f327fb",
   "projects": {
     "/root": {
       "allowedTools": [],
       "history": [
+        {
+          "display": "Set up the environments and then connect mongodb and then i will change the credentials",
+          "pastedContents": {}
+        },
+        {
+          "display": "python -m pip install \"pymongo[srv]\"",
+          "pastedContents": {}
+        },
         {
           "display": "FOR FUCK SAKE DICKHEAD.........YOU ARE A FUCKING LOOSER",
           "pastedContents": {}
@@ -609,14 +617,6 @@
         },
         {
           "display": "I am going to delete and start a new one. I will create a boiler plate new project, explain the steps after creating the bioler plate to insert the github repo",
-          "pastedContents": {}
-        },
-        {
-          "display": "This is gettig rediculous: PS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith-Fresh> vercel --prod --force\nVercel CLI 42.3.0\n🔍  Inspect: https://vercel.com/admin-cleanexpo247s-projects/zenith-fresh/AzERKBL9B5ZBb4LK7447TWbHkAuf [2s]\n✅  Production: https://zenith-fresh-1zlnpzjz5-admin-cleanexpo247s-projects.vercel.app [2s]\nError: Command \"npm ci && node build-optimized.js\" exited with 1\nError: Check your logs at https://zenith-fresh-1zlnpzjz5-admin-cleanexpo247s-projects.vercel.app/_logs or run `vercel logs zenith-fresh-1zlnpzjz5-admin-cleanexpo247s-projects.vercel.app`\nPS C:\\Users\\Disaster Recovery 4\\Desktop\\Zenith-Fresh> ",
-          "pastedContents": {}
-        },
-        {
-          "display": "it is running-- npm run build and it also has npm install in the Install Command",
           "pastedContents": {}
         }
       ],
