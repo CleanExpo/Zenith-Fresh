@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+const { MongoClient } = require('mongodb');
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'zenith_production';
@@ -11,10 +11,7 @@ let client;
 let clientPromise;
 
 // MongoDB connection options
-const options = {
-  useUnifiedTopology: true,
-  useNewUrlParser: true,
-};
+const options = {};
 
 // Configure X.509 certificate authentication if specified
 if (uri.includes('authMechanism=MONGODB-X509')) {
@@ -68,22 +65,21 @@ if (process.env.NODE_ENV === 'development') {
 
 // Export a module-scoped MongoClient promise. By doing this in a
 // separate module, the client can be shared across functions.
-export { clientPromise, dbName };
 
 // Utility function to get database
-export async function getDatabase() {
+async function getDatabase() {
   const client = await clientPromise;
   return client.db(dbName);
 }
 
 // Utility function to get a specific collection
-export async function getCollection(collectionName) {
+async function getCollection(collectionName) {
   const db = await getDatabase();
   return db.collection(collectionName);
 }
 
 // Health check function
-export async function checkMongoConnection() {
+async function checkMongoConnection() {
   try {
     const client = await clientPromise;
     await client.db().admin().ping();
@@ -92,3 +88,11 @@ export async function checkMongoConnection() {
     return { status: 'error', message: error.message };
   }
 }
+
+module.exports = { 
+  clientPromise, 
+  dbName, 
+  getDatabase, 
+  getCollection, 
+  checkMongoConnection 
+};
