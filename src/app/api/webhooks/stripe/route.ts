@@ -11,11 +11,29 @@ import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { auditLogger } from '@/lib/audit/audit-logger';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-});
+// Lazy initialization of Stripe client to avoid build-time errors
+let stripe: Stripe | null = null;
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+function getStripeClient(): Stripe {
+  if (!stripe) {
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    if (!apiKey) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not configured');
+    }
+    stripe = new Stripe(apiKey, {
+      apiVersion: '2024-06-20',
+    });
+  }
+  return stripe;
+}
+
+function getWebhookSecret(): string {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error('STRIPE_WEBHOOK_SECRET environment variable is not configured');
+  }
+  return secret;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,7 +49,9 @@ export async function POST(request: NextRequest) {
     let event: Stripe.Event;
 
     try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+      const stripeClient = getStripeClient();
+      const webhookSecret = getWebhookSecret();
+      event = stripeClient.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (error) {
       console.error('Webhook signature verification failed:', error);
       return NextResponse.json(

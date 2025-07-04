@@ -10,9 +10,21 @@ import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { auditLogger } from '@/lib/audit/audit-logger';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-});
+// Lazy initialization of Stripe client to avoid build-time errors
+let stripe: Stripe | null = null;
+
+function getStripeClient(): Stripe {
+  if (!stripe) {
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    if (!apiKey) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not configured');
+    }
+    stripe = new Stripe(apiKey, {
+      apiVersion: '2024-06-20',
+    });
+  }
+  return stripe;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -113,9 +125,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create or get Stripe customer
+    const stripeClient = getStripeClient();
     let customerId = team.stripeCustomerId;
     if (!customerId) {
-      const customer = await stripe.customers.create({
+      const customer = await stripeClient.customers.create({
         email: user.email,
         name: user.name || undefined,
         metadata: {
@@ -133,11 +146,11 @@ export async function POST(request: NextRequest) {
 
     // Attach payment method
     if (paymentMethodId) {
-      await stripe.paymentMethods.attach(paymentMethodId, {
+      await stripeClient.paymentMethods.attach(paymentMethodId, {
         customer: customerId,
       });
 
-      await stripe.customers.update(customerId, {
+      await stripeClient.customers.update(customerId, {
         invoice_settings: {
           default_payment_method: paymentMethodId,
         },
@@ -145,7 +158,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create subscription
-    const stripeSubscription = await stripe.subscriptions.create({
+    const stripeSubscription = await stripeClient.subscriptions.create({
       customer: customerId,
       items: [{ price: plan.stripePriceId! }],
       trial_period_days: 14,
@@ -255,11 +268,12 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update Stripe subscription
-    const stripeSubscription = await stripe.subscriptions.retrieve(
+    const stripeClient = getStripeClient();
+    const stripeSubscription = await stripeClient.subscriptions.retrieve(
       subscription.stripeSubscriptionId
     );
 
-    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+    await stripeClient.subscriptions.update(subscription.stripeSubscriptionId, {
       items: [{
         id: stripeSubscription.items.data[0].id,
         price: newPlan.stripePriceId!,
@@ -345,9 +359,11 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'No active subscription' }, { status: 404 });
     }
 
+    const stripeClient = getStripeClient();
+    
     if (immediate) {
       // Cancel immediately
-      await stripe.subscriptions.cancel(subscription.stripeSubscriptionId);
+      await stripeClient.subscriptions.cancel(subscription.stripeSubscriptionId);
       
       await prisma.subscription.update({
         where: { id: subscription.id },
@@ -368,7 +384,7 @@ export async function DELETE(request: NextRequest) {
       });
     } else {
       // Cancel at period end
-      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      await stripeClient.subscriptions.update(subscription.stripeSubscriptionId, {
         cancel_at_period_end: true,
       });
 

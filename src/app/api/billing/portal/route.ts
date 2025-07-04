@@ -9,9 +9,21 @@ import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { auditLogger } from '@/lib/audit/audit-logger';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-});
+// Lazy initialization of Stripe client to avoid build-time errors
+let stripe: Stripe | null = null;
+
+function getStripeClient(): Stripe {
+  if (!stripe) {
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    if (!apiKey) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not configured');
+    }
+    stripe = new Stripe(apiKey, {
+      apiVersion: '2024-06-20',
+    });
+  }
+  return stripe;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,7 +60,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create portal session
-    const portalSession = await stripe.billingPortal.sessions.create({
+    const stripeClient = getStripeClient();
+    const portalSession = await stripeClient.billingPortal.sessions.create({
       customer: team.stripeCustomerId,
       return_url: returnUrl,
     });
