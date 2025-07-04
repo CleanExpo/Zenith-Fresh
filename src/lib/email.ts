@@ -1,8 +1,19 @@
 import { Resend } from 'resend';
 import * as Sentry from '@sentry/nextjs';
 
-// Initialize Resend with API key from environment
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization of Resend client to avoid build-time errors
+let resend: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resend) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not configured');
+    }
+    resend = new Resend(apiKey);
+  }
+  return resend;
+}
 
 export interface EmailParams {
   to: string | string[];
@@ -71,7 +82,8 @@ export async function sendEmail(params: EmailParams): Promise<EmailResponse> {
     if (params.attachments) emailPayload.attachments = params.attachments;
     if (params.tags) emailPayload.tags = params.tags;
 
-    const response = await resend.emails.send(emailPayload);
+    const resendClient = getResendClient();
+    const response = await resendClient.emails.send(emailPayload);
 
     if (response.error) {
       throw new Error(`Resend API error: ${response.error.message}`);
@@ -343,7 +355,8 @@ export async function createResendApiKey(name: string) {
       throw new Error('RESEND_API_KEY not configured');
     }
 
-    const response = await resend.apiKeys.create({ name });
+    const resendClient = getResendClient();
+    const response = await resendClient.apiKeys.create({ name });
     
     if (response.error) {
       throw new Error(`Failed to create API key: ${response.error.message}`);
@@ -370,7 +383,8 @@ export async function listResendApiKeys() {
       throw new Error('RESEND_API_KEY not configured');
     }
 
-    const response = await resend.apiKeys.list();
+    const resendClient = getResendClient();
+    const response = await resendClient.apiKeys.list();
     
     if (response.error) {
       throw new Error(`Failed to list API keys: ${response.error.message}`);
