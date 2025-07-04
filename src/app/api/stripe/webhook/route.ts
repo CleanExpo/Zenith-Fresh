@@ -5,11 +5,29 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: '2025-05-28.basil',
-});
+// Lazy initialization of Stripe client to avoid build-time errors
+let stripe: Stripe | null = null;
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
+function getStripeClient(): Stripe {
+  if (!stripe) {
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    if (!apiKey) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not configured');
+    }
+    stripe = new Stripe(apiKey, {
+      apiVersion: '2025-05-28.basil',
+    });
+  }
+  return stripe;
+}
+
+function getWebhookSecret(): string {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error('STRIPE_WEBHOOK_SECRET environment variable is not configured');
+  }
+  return secret;
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -18,7 +36,9 @@ export async function POST(req: NextRequest) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    const stripeClient = getStripeClient();
+    const webhookSecret = getWebhookSecret();
+    event = stripeClient.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err);
     return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 });
@@ -48,7 +68,8 @@ export async function POST(req: NextRequest) {
       case 'invoice.payment_succeeded':
         const invoice = event.data.object as any;
         if (invoice.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+          const stripeClient = getStripeClient();
+          const subscription = await stripeClient.subscriptions.retrieve(invoice.subscription as string);
           const team = await prisma.team.findFirst({
             where: { stripeSubscriptionId: subscription.id },
           });
@@ -65,7 +86,8 @@ export async function POST(req: NextRequest) {
       case 'invoice.payment_failed':
         const failedInvoice = event.data.object as any;
         if (failedInvoice.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(failedInvoice.subscription as string);
+          const stripeClient = getStripeClient();
+          const subscription = await stripeClient.subscriptions.retrieve(failedInvoice.subscription as string);
           const team = await prisma.team.findFirst({
             where: { stripeSubscriptionId: subscription.id },
           });
@@ -133,7 +155,8 @@ export async function POST(req: NextRequest) {
       case 'invoice.payment_action_required':
         const actionRequiredInvoice = event.data.object as any;
         if (actionRequiredInvoice.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(actionRequiredInvoice.subscription as string);
+          const stripeClient = getStripeClient();
+          const subscription = await stripeClient.subscriptions.retrieve(actionRequiredInvoice.subscription as string);
           const paymentTeam = await prisma.team.findFirst({
             where: { stripeSubscriptionId: subscription.id },
           });
