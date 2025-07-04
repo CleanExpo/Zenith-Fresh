@@ -1,0 +1,12 @@
+# Vercel ignore file
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db
+node_modules/
+out/
+coverage/
+.nyc_output/
+.cache/
+dist/

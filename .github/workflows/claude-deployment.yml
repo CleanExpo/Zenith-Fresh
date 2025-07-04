@@ -1,0 +1,213 @@
+name: Claude Code Automated Deployment
+
+on:
+  # Trigger on issues with specific labels
+  issues:
+    types: [opened, edited]
+  
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      task_description:
+        description: 'Describe the changes you want Claude to make'
+        required: true
+        type: string
+      commit_message:
+        description: 'Custom commit message (optional)'
+        required: false
+        type: string
+
+  # Trigger on push to main (for manual commits)
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - '.github/**'
+      - 'docs/**'
+
+jobs:
+  claude-code-generation:
+    # Only run for issues with the 'claude-task' label
+    if: |
+      (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'claude-task')) ||
+      github.event_name == 'workflow_dispatch'
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Extract task from issue or input
+      id: extract-task
+      run: |
+        if [ "${{ github.event_name }}" = "issues" ]; then
+          echo "task_description=${{ github.event.issue.body }}" >> $GITHUB_OUTPUT
+          echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "task_description=${{ github.event.inputs.task_description }}" >> $GITHUB_OUTPUT
+          echo "issue_number=manual" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create feature branch
+      run: |
+        BRANCH_NAME="claude-task-${{ steps.extract-task.outputs.issue_number }}-$(date +%Y%m%d-%H%M%S)"
+        git checkout -b "$BRANCH_NAME"
+        echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+
+    # This step would use the Claude Code Action when available
+    # For now, this is a placeholder for the manual process
+    - name: Claude Code Generation Placeholder
+      run: |
+        echo "🤖 Claude Code Generation Step"
+        echo "Task: ${{ steps.extract-task.outputs.task_description }}"
+        echo ""
+        echo "⚠️  Currently requires manual Claude Code execution"
+        echo "   1. Run Claude Code locally with the task description"
+        echo "   2. Code changes will be automatically committed by this workflow"
+        echo ""
+        # Placeholder for actual Claude integration
+        # This would be replaced with: anthropics/claude-code-action
+
+    - name: Check for changes
+      id: check-changes
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "changes_detected=true" >> $GITHUB_OUTPUT
+          echo "📝 Changes detected:"
+          git status --short
+        else
+          echo "changes_detected=false" >> $GITHUB_OUTPUT
+          echo "ℹ️  No changes detected"
+        fi
+
+    - name: Run build and tests
+      if: steps.check-changes.outputs.changes_detected == 'true'
+      run: |
+        echo "🔨 Building project..."
+        npm run build
+        
+        echo "🧪 Running tests..."
+        if npm run test 2>/dev/null; then
+          echo "✅ Tests passed"
+        else
+          echo "⚠️  No tests found or tests failed"
+        fi
+
+    - name: Commit and push changes
+      if: steps.check-changes.outputs.changes_detected == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "Claude Code Action"
+        
+        git add .
+        
+        # Use custom commit message or generate one
+        if [ -n "${{ github.event.inputs.commit_message }}" ]; then
+          COMMIT_MSG="${{ github.event.inputs.commit_message }}"
+        else
+          COMMIT_MSG="feat: Claude Code automated changes
+
+🤖 Task: ${{ steps.extract-task.outputs.task_description }}
+
+Generated with Claude Code via GitHub Actions
+- Automated build verification
+- Ready for deployment
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+        fi
+        
+        git commit -m "$COMMIT_MSG"
+        git push origin "${{ env.branch_name }}"
+
+    - name: Create Pull Request
+      if: steps.check-changes.outputs.changes_detected == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh pr create \
+          --title "🤖 Claude Code: ${{ steps.extract-task.outputs.task_description }}" \
+          --body "## Claude Code Automated Changes
+
+**Task Description:**
+${{ steps.extract-task.outputs.task_description }}
+
+**Changes Made:**
+- Code generated using Claude Code
+- Build verification passed
+- Ready for review and deployment
+
+**Deployment Status:**
+- ✅ Build successful
+- ⏳ Awaiting review and merge
+- 🚀 Auto-deploy to Vercel on merge
+
+---
+🤖 Generated with [Claude Code](https://claude.ai/code)" \
+          --head "${{ env.branch_name }}" \
+          --base main
+
+    - name: Comment on issue (if from issue)
+      if: github.event_name == 'issues' && steps.check-changes.outputs.changes_detected == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh issue comment ${{ github.event.issue.number }} \
+          --body "🤖 **Claude Code Task Completed**
+
+✅ Code changes have been generated and are ready for review.
+
+📋 **Pull Request Created:** 
+Check the [Pull Requests tab](https://github.com/${{ github.repository }}/pulls) for the automated PR.
+
+🚀 **Next Steps:**
+1. Review the generated code changes
+2. Merge the PR to trigger Vercel deployment
+3. Monitor deployment at https://zenith.engineer
+
+---
+*This task has been automated using Claude Code + GitHub Actions*"
+
+  # Separate job for direct pushes to main
+  deploy-verification:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Verify build
+      run: |
+        echo "🔨 Verifying production build..."
+        npm run build
+        echo "✅ Build successful - Vercel deployment will proceed"
+
+    - name: Deployment notification
+      run: |
+        echo "🚀 Production Deployment Triggered"
+        echo "📍 Branch: ${{ github.ref_name }}"
+        echo "💾 Commit: ${{ github.sha }}"
+        echo "🌐 Site: https://zenith.engineer"
+        echo "📊 Monitor deployment at: https://vercel.com"

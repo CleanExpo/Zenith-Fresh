@@ -1,0 +1,65 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "functions": {
+    "app/api/deployment/intelligence.js": {
+      "maxDuration": 30
+    },
+    "app/api/deployment/resolve.js": {
+      "maxDuration": 60
+    },
+    "app/api/deployment/deploy.js": {
+      "maxDuration": 300
+    },
+    "app/api/health/mongodb.js": {
+      "maxDuration": 10
+    },
+    "app/api/analytics/**.js": {
+      "maxDuration": 30
+    },
+    "app/api/enterprise/**.js": {
+      "maxDuration": 45
+    }
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://zenith.engineer"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/docs/build",
+      "destination": "https://github.com/zenith-platform/docs/blob/main/BUILD.md",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/health",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/health/mongodb",
+      "destination": "/api/health/mongodb"
+    }
+  ]
+}

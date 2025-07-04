@@ -1,0 +1,5 @@
+[user]
+	name = Claude Assistant
+	email = assistant@claude.ai
+[credential]
+	helper = store

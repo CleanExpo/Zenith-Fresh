@@ -1,0 +1,84 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+/playwright-report
+/test-results
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+.env
+.env.development
+.env.test
+.env.production
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+.cursor-server/
+.claude/
+
+# misc
+*.swp
+*.swo
+*.suo
+*.ntvs*
+
+# Logs
+logs
+*.log
+
+# Database
+*.sqlite
+*.sqlite3
+
+# Cache
+.cache
+.npm
+.eslintcache
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# SSH keys
+.ssh/ .git-credentials
+
+# MongoDB Certificates
+certificates/
+.docker/
