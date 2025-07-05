@@ -563,24 +563,3 @@ export class FeatureGateManager {
 }
 
 export const featureGates = FeatureGateManager.getInstance();
-
-/**
- * React hook for feature gates
- */
-export function useFeatureGate(featureKey: string, teamId: string) {
-  const [hasAccess, setHasAccess] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAccess = async () => {
-      setLoading(true);
-      const access = await featureGates.hasAccess(teamId, featureKey);
-      setHasAccess(access);
-      setLoading(false);
-    };
-
-    checkAccess();
-  }, [featureKey, teamId]);
-
-  return { hasAccess, loading };
-}
