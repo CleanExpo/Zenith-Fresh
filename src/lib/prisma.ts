@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { createDatabaseMonitor } from './monitoring/database-performance-monitor';
+// TEMPORARILY DISABLED: Database monitor causing server errors
+// import { createDatabaseMonitor } from './monitoring/database-performance-monitor';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -26,12 +27,14 @@ export const prisma =
     errorFormat: 'pretty'
   });
 
+// TEMPORARILY DISABLED: Database monitoring causing server errors
 // Initialize advanced database monitoring
-if (!globalForPrisma.dbMonitor) {
-  globalForPrisma.dbMonitor = createDatabaseMonitor(prisma);
-}
+// if (!globalForPrisma.dbMonitor) {
+//   globalForPrisma.dbMonitor = createDatabaseMonitor(prisma);
+// }
 
-export const dbMonitor = globalForPrisma.dbMonitor;
+// export const dbMonitor = globalForPrisma.dbMonitor;
+export const dbMonitor = null; // Disabled for debugging
 
 // Global Prisma instance management
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
