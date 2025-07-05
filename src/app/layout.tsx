@@ -25,14 +25,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        {/* ALL PROVIDERS DISABLED FOR ULTRA MINIMAL TEST */}
         {/* <GoogleAnalytics /> */}
-        {/* TEMPORARILY DISABLED FOR DEBUGGING */}
         {/* <StagingBanner /> */}
-        <Providers>
+        {/* <Providers> */}
           <Suspense fallback={<div>Loading...</div>}>
             {children}
           </Suspense>
-        </Providers>
+        {/* </Providers> */}
       </body>
     </html>
   );
