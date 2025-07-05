@@ -22,7 +22,12 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <SessionProvider>
+    <SessionProvider
+      // Make SessionProvider more robust for deployment
+      session={null}
+      refetchInterval={0}
+      refetchOnWindowFocus={false}
+    >
       <QueryClientProvider client={queryClient}>
         <ThemeProvider
           attribute="class"
@@ -35,4 +40,4 @@ export function Providers({ children }: ProvidersProps) {
       </QueryClientProvider>
     </SessionProvider>
   );
-} 
+}

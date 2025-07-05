@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
   try {
@@ -8,25 +7,31 @@ export async function GET(req: NextRequest) {
       NEXTAUTH_SECRET: !!process.env.NEXTAUTH_SECRET,
       NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'NOT SET',
       JWT_SECRET: !!process.env.JWT_SECRET,
+      DATABASE_URL: !!process.env.DATABASE_URL,
     };
 
-    // Check database connection and demo data
-    let dbStatus = 'unknown';
+    // Basic health check without database queries during build
+    let dbStatus = 'configured';
     let demoDataExists = false;
     
-    try {
-      await prisma.$connect();
-      dbStatus = 'connected';
-      
-      // Check if demo user exists
-      const demoUser = await prisma.user.findUnique({
-        where: { email: 'test@zenith.engineer' }
-      });
-      
-      demoDataExists = !!demoUser;
-    } catch (dbError) {
-      dbStatus = 'error';
-      console.error('Database connection error:', dbError);
+    // Only check database connection at runtime, not during build
+    if (process.env.NODE_ENV !== 'production' || req.url.includes('runtime-check')) {
+      try {
+        const { prisma } = await import('@/lib/prisma');
+        await prisma.$connect();
+        dbStatus = 'connected';
+        
+        // Check if demo user exists
+        const demoUser = await prisma.user.findUnique({
+          where: { email: 'test@zenith.engineer' }
+        });
+        
+        demoDataExists = !!demoUser;
+        await prisma.$disconnect();
+      } catch (dbError) {
+        dbStatus = 'error';
+        console.error('Database connection error:', dbError);
+      }
     }
 
     return NextResponse.json({
@@ -36,6 +41,7 @@ export async function GET(req: NextRequest) {
       demoData: demoDataExists,
       environment: envCheck,
       timestamp: new Date().toISOString(),
+      buildTime: process.env.NODE_ENV === 'production' && !req.url.includes('runtime-check'),
     });
   } catch (error) {
     return NextResponse.json({

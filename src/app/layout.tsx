@@ -28,12 +28,11 @@ export default function RootLayout({
         {/* <GoogleAnalytics /> */}
         {/* TEMPORARILY DISABLED FOR DEBUGGING */}
         {/* <StagingBanner /> */}
-        {/* TEMPORARILY DISABLED FOR DEBUGGING */}
-        {/* <Providers> */}
+        <Providers>
           <Suspense fallback={<div>Loading...</div>}>
             {children}
           </Suspense>
-        {/* </Providers> */}
+        </Providers>
       </body>
     </html>
   );
