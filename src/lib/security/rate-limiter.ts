@@ -68,13 +68,21 @@ interface RateLimitResult {
 
 export class EnterpriseRateLimiter {
   private redis: Redis | null = null;
+  private redisUrl?: string;
   private memoryStore: Map<string, { count: number; resetTime: number }> = new Map();
   private configs: Map<string, RateLimitConfig> = new Map();
 
   constructor(redisUrl?: string) {
-    if (redisUrl) {
+    this.redisUrl = redisUrl;
+    // Lazy initialization - Redis client created when needed
+  }
+
+  private getRedisClient(): Redis | null {
+    if (!this.redisUrl) return null;
+    
+    if (!this.redis) {
       try {
-        this.redis = new Redis(redisUrl, {
+        this.redis = new Redis(this.redisUrl, {
           retryDelayOnFailover: 100,
           maxRetriesPerRequest: 3,
           enableReadyCheck: true,
@@ -87,8 +95,10 @@ export class EnterpriseRateLimiter {
         });
       } catch (error) {
         console.warn('Failed to connect to Redis, using memory store for rate limiting');
+        return null;
       }
     }
+    return this.redis;
   }
 
   // Configure rate limits for different endpoints
@@ -112,8 +122,9 @@ export class EnterpriseRateLimiter {
     const now = Date.now();
     const resetTime = now + windowMs;
 
-    if (this.redis) {
-      return await this.checkLimitRedis(key, config, windowMs, now, resetTime);
+    const redisClient = this.getRedisClient();
+    if (redisClient) {
+      return await this.checkLimitRedis(key, config, windowMs, now, resetTime, redisClient);
     } else {
       return await this.checkLimitMemory(key, config, windowMs, now, resetTime);
     }
@@ -125,7 +136,8 @@ export class EnterpriseRateLimiter {
     config: RateLimitConfig,
     windowMs: number,
     now: number,
-    resetTime: number
+    resetTime: number,
+    redisClient: Redis
   ): Promise<RateLimitResult> {
     const rateLimitKey = `rate_limit:${key}`;
     
