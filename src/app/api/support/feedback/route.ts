@@ -3,7 +3,19 @@ import { prisma } from '@/lib/prisma';
 import { auditLogger } from '@/lib/audit/audit-logger';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization of Resend client to avoid build-time errors
+let resend: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resend) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not configured');
+    }
+    resend = new Resend(apiKey);
+  }
+  return resend;
+}
 
 interface FeedbackRequest {
   type: 'bug' | 'feature' | 'general' | 'urgent';
@@ -122,7 +134,8 @@ export async function POST(request: NextRequest) {
           </div>
         `;
 
-        await resend.emails.send({
+        const resendClient = getResendClient();
+        await resendClient.emails.send({
           from: 'Zenith Support <support@zenith.engineer>',
           to: [process.env.SUPPORT_EMAIL],
           subject: `${priorityEmoji[body.type]} New ${body.type} feedback - ${feedback.id}`,
@@ -144,7 +157,8 @@ export async function POST(request: NextRequest) {
       try {
         const responseMessage = getAutoResponseMessage(body.type);
         
-        await resend.emails.send({
+        const resendClient = getResendClient();
+        await resendClient.emails.send({
           from: 'Zenith Support <support@zenith.engineer>',
           to: [body.email],
           subject: `We received your ${body.type} feedback - ${feedback.id}`,
