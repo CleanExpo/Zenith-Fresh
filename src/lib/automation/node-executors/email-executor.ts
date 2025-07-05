@@ -23,10 +23,21 @@ interface EmailConfig {
 }
 
 export class EmailExecutor implements NodeExecutor {
-  private resend: Resend;
+  private resend: Resend | null = null;
 
   constructor() {
-    this.resend = new Resend(process.env.RESEND_API_KEY);
+    // Lazy initialization - resend client created when needed
+  }
+
+  private getResendClient(): Resend {
+    if (!this.resend) {
+      const apiKey = process.env.RESEND_API_KEY;
+      if (!apiKey) {
+        throw new Error('RESEND_API_KEY environment variable is not configured');
+      }
+      this.resend = new Resend(apiKey);
+    }
+    return this.resend;
   }
 
   async execute(node: WorkflowNode, context: ExecutionContext): Promise<any> {
@@ -96,10 +107,11 @@ export class EmailExecutor implements NodeExecutor {
     }
 
     try {
-      const result = await this.resend.emails.send(emailData);
+      const resendClient = this.getResendClient();
+      const result = await resendClient.emails.send(emailData);
       return result.data;
     } catch (error) {
-      throw new Error(`Failed to send email: ${error.message}`);
+      throw new Error(`Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
