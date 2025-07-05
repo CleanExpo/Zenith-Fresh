@@ -395,4 +395,28 @@ export class EmailAutomation {
   }
 }
 
-export const emailAutomation = new EmailAutomation(process.env.RESEND_API_KEY || '');
+// Lazy initialization to avoid build-time errors
+let emailAutomationInstance: EmailAutomation | null = null;
+
+export function getEmailAutomation(): EmailAutomation {
+  if (!emailAutomationInstance) {
+    emailAutomationInstance = new EmailAutomation(process.env.RESEND_API_KEY || '');
+  }
+  return emailAutomationInstance;
+}
+
+// For backward compatibility
+export const emailAutomation = {
+  get triggerOnboardingSequence() {
+    return getEmailAutomation().triggerOnboardingSequence.bind(getEmailAutomation());
+  },
+  get scheduleEmail() {
+    return getEmailAutomation().scheduleEmail.bind(getEmailAutomation());
+  },
+  get sendEmail() {
+    return getEmailAutomation().sendEmail.bind(getEmailAutomation());
+  },
+  get trackEmailEngagement() {
+    return getEmailAutomation().trackEmailEngagement.bind(getEmailAutomation());
+  }
+};

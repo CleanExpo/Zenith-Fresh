@@ -352,18 +352,47 @@ export const defaultRateLimitConfigs = {
   },
 };
 
-// Create singleton instance
-export const rateLimiter = new EnterpriseRateLimiter(process.env.REDIS_URL);
+// Lazy initialization to avoid build-time errors
+let rateLimiterInstance: EnterpriseRateLimiter | null = null;
 
-// Configure default rate limits
-Object.entries(defaultRateLimitConfigs).forEach(([name, config]) => {
-  rateLimiter.configure(name, config);
-});
+function getRateLimiter(): EnterpriseRateLimiter {
+  if (!rateLimiterInstance) {
+    rateLimiterInstance = new EnterpriseRateLimiter(process.env.REDIS_URL);
+    
+    // Configure default rate limits
+    Object.entries(defaultRateLimitConfigs).forEach(([name, config]) => {
+      rateLimiterInstance!.configure(name, config);
+    });
 
-// Start cleanup interval for memory store
-setInterval(() => {
-  rateLimiter.cleanup();
-}, 60000); // Clean up every minute
+    // Start cleanup interval for memory store
+    setInterval(() => {
+      rateLimiterInstance!.cleanup();
+    }, 60000); // Clean up every minute
+  }
+  return rateLimiterInstance;
+}
+
+// Export singleton instance with lazy initialization
+export const rateLimiter = {
+  get checkLimit() {
+    return getRateLimiter().checkLimit.bind(getRateLimiter());
+  },
+  get configure() {
+    return getRateLimiter().configure.bind(getRateLimiter());
+  },
+  get getStatus() {
+    return getRateLimiter().getStatus.bind(getRateLimiter());
+  },
+  get reset() {
+    return getRateLimiter().reset.bind(getRateLimiter());
+  },
+  get cleanup() {
+    return getRateLimiter().cleanup.bind(getRateLimiter());
+  },
+  get close() {
+    return getRateLimiter().close.bind(getRateLimiter());
+  }
+};
 
 // Express/Next.js middleware factory
 export function createRateLimitMiddleware(configName: string = 'default') {
