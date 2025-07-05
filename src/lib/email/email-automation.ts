@@ -1,6 +1,18 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization of Resend client to avoid build-time errors
+let resend: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resend) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not configured');
+    }
+    resend = new Resend(apiKey);
+  }
+  return resend;
+}
 
 export interface EmailTemplate {
   id: string;
@@ -272,7 +284,8 @@ export class EmailAutomation {
         return '';
       });
 
-      await resend.emails.send({
+      const resendClient = getResendClient();
+      await resendClient.emails.send({
         from: 'Zenith <noreply@zenith.engineer>',
         to,
         subject,
