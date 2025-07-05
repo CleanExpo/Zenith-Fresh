@@ -7,8 +7,23 @@ const globalForPrisma = globalThis as unknown as {
   dbMonitor: any;
 };
 
-// Enterprise Database Configuration
+// Enterprise Database Configuration with fallback
 const DATABASE_URL = process.env.DATABASE_URL || 'file:./dev.db';
+
+// Validate DATABASE_URL format
+function validateDatabaseUrl(url: string): string {
+  if (url.startsWith('file:')) {
+    return url; // SQLite is valid
+  }
+  if (url.startsWith('postgresql://') || url.startsWith('postgres://')) {
+    return url; // PostgreSQL is valid
+  }
+  // If invalid, fallback to SQLite
+  console.warn('Invalid DATABASE_URL format, falling back to SQLite');
+  return 'file:./dev.db';
+}
+
+const validatedDatabaseUrl = validateDatabaseUrl(DATABASE_URL);
 
 // Enterprise-grade Prisma configuration with optimizations
 export const prisma =
@@ -16,7 +31,7 @@ export const prisma =
   new PrismaClient({
     datasources: {
       db: {
-        url: DATABASE_URL
+        url: validatedDatabaseUrl
       }
     },
     log: process.env.NODE_ENV === 'development' 
