@@ -1,94 +1,77 @@
 import { createClient } from 'redis';
+import { captureException } from './sentry';
 
-const isRedisEnabled = process.env.REDIS_URL && process.env.NODE_ENV !== 'development';
+const redisClient = createClient({
+  url: process.env.REDIS_URL,
+});
 
-let redisClient = null;
-let isRedisAvailable = false;
+redisClient.on('error', (error) => {
+  captureException(error, { context: 'redis-client' });
+});
 
-export async function initRedis() {
-  if (!isRedisEnabled) return;
-  try {
-    redisClient = createClient({ url: process.env.REDIS_URL });
-    redisClient.on('error', (err) => {
-      console.warn('⚠️ Redis error:', err.message);
-      isRedisAvailable = false;
-    });
-    await redisClient.connect();
-    isRedisAvailable = true;
-    console.log('✅ Connected to Redis');
-  } catch (err) {
-    console.warn('🚫 Redis connection failed:', err.message);
-    redisClient = null;
-    isRedisAvailable = false;
+// Cache configuration
+const DEFAULT_TTL = 3600; // 1 hour in seconds
+
+export class Cache {
+  private static instance: Cache;
+  private client = redisClient;
+
+  private constructor() {
+    this.connect();
   }
-}
 
-// Exported cache interface with safe fallbacks
-export const cache = {
-  async get(key: string): Promise<string | null> {
-    if (isRedisAvailable && redisClient) {
-      try {
-        return await redisClient.get(key);
-      } catch (error) {
-        console.warn('Redis get error:', error);
-        return null;
-      }
+  public static getInstance(): Cache {
+    if (!Cache.instance) {
+      Cache.instance = new Cache();
     }
-    return null;
-  },
+    return Cache.instance;
+  }
 
-  async set(key: string, value: string, ttl: number = 3600): Promise<void> {
-    if (isRedisAvailable && redisClient) {
-      try {
-        await redisClient.setEx(key, ttl, value);
-      } catch (error) {
-        console.warn('Redis set error:', error);
-      }
+  private async connect() {
+    try {
+      await this.client.connect();
+    } catch (error) {
+      captureException(error as Error, { context: 'redis-connect' });
     }
-  },
+  }
+
+  async get<T>(key: string): Promise<T | null> {
+    try {
+      const data = await this.client.get(key);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      captureException(error as Error, { context: 'redis-get', key });
+      return null;
+    }
+  }
+
+  async set(key: string, value: any, ttl: number = DEFAULT_TTL): Promise<void> {
+    try {
+      await this.client.set(key, JSON.stringify(value), {
+        EX: ttl,
+      });
+    } catch (error) {
+      captureException(error as Error, { context: 'redis-set', key });
+    }
+  }
 
   async del(key: string): Promise<void> {
-    if (isRedisAvailable && redisClient) {
-      try {
-        await redisClient.del(key);
-      } catch (error) {
-        console.warn('Redis del error:', error);
-      }
+    try {
+      await this.client.del(key);
+    } catch (error) {
+      captureException(error as Error, { context: 'redis-del', key });
     }
-  },
-
-  async disconnect(): Promise<void> {
-    if (redisClient) {
-      await redisClient.quit();
-      isRedisAvailable = false;
-    }
-  },
-
-  isAvailable: () => isRedisAvailable
-};
-
-// Helper class for JSON caching
-export class JSONCache {
-  static async get<T>(key: string): Promise<T | null> {
-    const data = await cache.get(key);
-    if (data) {
-      try {
-        return JSON.parse(data);
-      } catch {
-        return null;
-      }
-    }
-    return null;
   }
 
-  static async set(key: string, value: any, ttl?: number): Promise<void> {
+  async flush(): Promise<void> {
     try {
-      await cache.set(key, JSON.stringify(value), ttl);
-    } catch {
-      // Ignore JSON stringify errors
+      await this.client.flushAll();
+    } catch (error) {
+      captureException(error as Error, { context: 'redis-flush' });
     }
   }
 }
 
-// Export for backward compatibility
+// Export a singleton instance
+export const cache = Cache.getInstance();
 export const redis = redisClient;

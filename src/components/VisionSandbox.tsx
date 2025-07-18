@@ -57,7 +57,7 @@ export default function VisionSandbox({ isOpen, onClose }: { isOpen: boolean; on
   }, [recommendations]);
   
   const handleApplyScenario = (scenario: any) => {
-    if (tierLevels[userTier as keyof typeof tierLevels] < tierLevels['Enterprise']) { 
+    if (tierLevels[userTier] < tierLevels['Enterprise']) { 
       alert('AI Scenarios are an Enterprise feature.'); 
       return; 
     }
@@ -81,7 +81,6 @@ export default function VisionSandbox({ isOpen, onClose }: { isOpen: boolean; on
       <div className="fixed inset-0 bg-gray-900 text-white z-50 flex items-center justify-center font-sans">
         <div className="w-full max-w-3xl text-center p-8">
           <div className="flex justify-between items-center mb-8">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://i.imgur.com/gC3v66I.png" alt="Zenith Logo" className="h-20 w-auto invert" />
             <button onClick={onClose} className="text-gray-400 hover:text-white">
               <X className="w-6 h-6" />
@@ -101,13 +100,13 @@ export default function VisionSandbox({ isOpen, onClose }: { isOpen: boolean; on
               type="text" 
               placeholder="https://competitor-one.com (Optional, Enterprise Plan)" 
               className="w-full p-4 text-lg bg-gray-700 border-2 border-gray-600 rounded-lg disabled:opacity-50 text-white" 
-              disabled={tierLevels[userTier as keyof typeof tierLevels] < tierLevels['Enterprise']} 
+              disabled={tierLevels[userTier] < tierLevels['Enterprise']} 
             />
             <input 
               type="text" 
               placeholder="https://competitor-two.com (Optional, Enterprise Plan)" 
               className="w-full p-4 text-lg bg-gray-700 border-2 border-gray-600 rounded-lg disabled:opacity-50 text-white" 
-              disabled={tierLevels[userTier as keyof typeof tierLevels] < tierLevels['Enterprise']} 
+              disabled={tierLevels[userTier] < tierLevels['Enterprise']} 
             />
             <button 
               onClick={handleAnalyzeSite} 
@@ -153,11 +152,11 @@ export default function VisionSandbox({ isOpen, onClose }: { isOpen: boolean; on
                 key={scenario.id} 
                 onClick={() => handleApplyScenario(scenario)} 
                 className="w-full text-left p-2 mb-1 rounded-md hover:bg-gray-100 disabled:opacity-50" 
-                disabled={tierLevels[userTier as keyof typeof tierLevels] < tierLevels['Enterprise']}
+                disabled={tierLevels[userTier] < tierLevels['Enterprise']}
               >
                 <p className="font-bold flex items-center gap-2">
                   {scenario.name} 
-                  {tierLevels[userTier as keyof typeof tierLevels] < tierLevels['Enterprise'] && <Lock className="w-4 h-4 text-gray-400" />}
+                  {tierLevels[userTier] < tierLevels['Enterprise'] && <Lock className="w-4 h-4 text-gray-400" />}
                 </p>
                 <p className="text-xs text-gray-500">{scenario.description}</p>
               </button>
@@ -170,11 +169,11 @@ export default function VisionSandbox({ isOpen, onClose }: { isOpen: boolean; on
                 type="checkbox" 
                 id="comp-toggle" 
                 onChange={(e) => setShowCompetitorOverlay(e.target.checked)} 
-                disabled={tierLevels[userTier as keyof typeof tierLevels] < tierLevels['Enterprise']} 
+                disabled={tierLevels[userTier] < tierLevels['Enterprise']} 
                 className="h-4 w-4 rounded text-purple-600 focus:ring-purple-500" 
               />
               <label htmlFor="comp-toggle" className="font-semibold text-md">Competitive Overlay</label>
-              {tierLevels[userTier as keyof typeof tierLevels] < tierLevels['Enterprise'] && <Lock className="w-4 h-4 text-gray-400" />}
+              {tierLevels[userTier] < tierLevels['Enterprise'] && <Lock className="w-4 h-4 text-gray-400" />}
             </div>
           </div>
 

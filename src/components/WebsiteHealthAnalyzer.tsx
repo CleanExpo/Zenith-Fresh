@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
@@ -44,7 +44,7 @@ interface WebsiteHealthAnalyzerProps {
   initialUrl?: string;
 }
 
-const WebsiteHealthAnalyzer = memo(function WebsiteHealthAnalyzer({ isOpen, onClose, initialUrl = '' }: WebsiteHealthAnalyzerProps) {
+export default function WebsiteHealthAnalyzer({ isOpen, onClose, initialUrl = '' }: WebsiteHealthAnalyzerProps) {
   const [url, setUrl] = useState(initialUrl);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<HealthScore | null>(null);
@@ -80,14 +80,14 @@ const WebsiteHealthAnalyzer = memo(function WebsiteHealthAnalyzer({ isOpen, onCl
     }
   }, [isAnalyzing]);
 
-  const validateUrl = useCallback((input: string): boolean => {
+  const validateUrl = (input: string): boolean => {
     try {
       const urlObject = new URL(input);
       return urlObject.protocol === 'http:' || urlObject.protocol === 'https:';
     } catch {
       return false;
     }
-  }, []);
+  };
 
   const analyzeWebsite = async () => {
     if (!url || !validateUrl(url)) {
@@ -121,7 +121,7 @@ const WebsiteHealthAnalyzer = memo(function WebsiteHealthAnalyzer({ isOpen, onCl
       
       const healthResponse = await fetch(`/api/analysis/website/${urlId}/health`, {
         headers: {
-          'x-user-tier': 'premium' // Give full access to all users
+          'x-user-tier': 'freemium' // Simulate freemium user
         }
       });
 
@@ -164,25 +164,25 @@ const WebsiteHealthAnalyzer = memo(function WebsiteHealthAnalyzer({ isOpen, onCl
     }
   };
 
-  const getScoreColor = useCallback((score: number) => {
+  const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-400';
     if (score >= 60) return 'text-yellow-400';
     return 'text-red-400';
-  }, []);
+  };
 
-  const getScoreIcon = useCallback((score: number) => {
+  const getScoreIcon = (score: number) => {
     if (score >= 80) return <CheckCircle2 className="w-5 h-5 text-green-400" />;
     if (score >= 60) return <AlertTriangle className="w-5 h-5 text-yellow-400" />;
     return <X className="w-5 h-5 text-red-400" />;
-  }, []);
+  };
 
-  const pillarNames = useMemo(() => ({
+  const pillarNames = {
     performance: 'Performance',
     technicalSEO: 'Technical SEO',
     onPageSEO: 'On-Page SEO',
     security: 'Security',
     accessibility: 'Accessibility'
-  }), []);
+  };
 
   if (!isOpen) return null;
 
@@ -263,7 +263,7 @@ const WebsiteHealthAnalyzer = memo(function WebsiteHealthAnalyzer({ isOpen, onCl
                 </div>
 
                 <div className="bg-white/5 rounded-2xl p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">What You&apos;ll Get:</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">What You'll Get:</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     {[
                       { icon: <Zap className="w-5 h-5" />, text: 'Performance Analysis', color: 'text-yellow-400' },
@@ -445,33 +445,25 @@ const WebsiteHealthAnalyzer = memo(function WebsiteHealthAnalyzer({ isOpen, onCl
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 border border-green-500/30 rounded-xl p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <CheckCircle2 className="w-5 h-5 text-green-400" />
-                      <span className="font-semibold text-white">Free Comprehensive Analysis</span>
-                    </div>
-                    <p className="text-gray-300 text-sm mb-4">
-                      Your complete website health analysis is ready! Get detailed recommendations and actionable insights.
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="flex items-center gap-2 text-green-400">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Performance Analysis</span>
+                  {results.tier === 'freemium' && (
+                    <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Crown className="w-5 h-5 text-yellow-400" />
+                        <span className="font-semibold text-white">Upgrade to see detailed insights</span>
                       </div>
-                      <div className="flex items-center gap-2 text-green-400">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>SEO Optimization</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-green-400">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Security Assessment</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-green-400">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Accessibility Check</span>
+                      <p className="text-gray-300 text-sm mb-4">
+                        Get specific recommendations, competitor analysis, and priority fixes with our Premium plan.
+                      </p>
+                      <div className="flex gap-3">
+                        <button className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold text-white hover:scale-105 transition-all">
+                          Upgrade to Premium
+                        </button>
+                        <button className="px-4 py-2 border border-white/20 rounded-lg text-gray-300 hover:bg-white/10 transition-colors">
+                          View Sample Report
+                        </button>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
@@ -506,6 +498,4 @@ const WebsiteHealthAnalyzer = memo(function WebsiteHealthAnalyzer({ isOpen, onCl
       </motion.div>
     </AnimatePresence>
   );
-});
-
-export default WebsiteHealthAnalyzer;
+}

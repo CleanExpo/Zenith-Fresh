@@ -19,13 +19,6 @@ const DelegationRequestSchema = z.object({
   }).optional()
 });
 
-interface AgentTask {
-  agentType: string;
-  taskType: string;
-  inputs: any;
-  dependsOn: string[];
-}
-
 interface DelegationResponse {
   missionId: string;
   status: 'accepted';
@@ -57,7 +50,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Decompose goal into agent tasks (simplified for MVP)
-    const agentTasks: AgentTask[] = await decomposeGoal(validatedRequest.goal, validatedRequest.context);
+    const agentTasks = await decomposeGoal(validatedRequest.goal, validatedRequest.context);
     
     // Create mission tasks
     const createdTasks = await Promise.all(
@@ -69,7 +62,7 @@ export async function POST(request: NextRequest) {
             taskType: task.taskType,
             status: 'QUEUED',
             inputs: task.inputs,
-            dependsOn: task.dependsOn,
+            dependsOn: task.dependsOn || [],
           }
         })
       )
@@ -89,16 +82,13 @@ export async function POST(request: NextRequest) {
     // TODO: Queue tasks with BullMQ (Phase 2)
     console.log(`Queuing ${initialTasks.length} initial tasks for mission ${mission.id}`);
 
-    const agentTypes = agentTasks.map(t => t.agentType);
-    const uniqueAgentTypes = Array.from(new Set(agentTypes));
-
     const response: DelegationResponse = {
       missionId: mission.id,
       status: 'accepted',
       estimatedCompletion: calculateEstimatedCompletion(createdTasks.length),
-      agentsAssigned: uniqueAgentTypes,
+      agentsAssigned: [...new Set(agentTasks.map(t => t.agentType))],
       realTimeChannelId: `mission_${mission.id}`,
-      message: `Mission accepted! ${agentTasks.length} tasks queued across ${uniqueAgentTypes.length} specialized agents.`
+      message: `Mission accepted! ${agentTasks.length} tasks queued across ${new Set(agentTasks.map(t => t.agentType)).size} specialized agents.`
     };
 
     return NextResponse.json(response, { status: 202 });
@@ -145,9 +135,9 @@ function calculateEstimatedCompletion(taskCount: number): Date {
 }
 
 // Goal Decomposition Engine (MVP - simplified)
-async function decomposeGoal(goal: string, context?: any): Promise<AgentTask[]> {
+async function decomposeGoal(goal: string, context?: any) {
   const goalLower = goal.toLowerCase();
-  const tasks: AgentTask[] = [];
+  const tasks = [];
 
   // Pattern matching for common business goals
   if (goalLower.includes('landing page') || goalLower.includes('page')) {
@@ -162,14 +152,14 @@ async function decomposeGoal(goal: string, context?: any): Promise<AgentTask[]> 
       agentType: 'MediaAgent', 
       taskType: 'generate_hero_image',
       inputs: { context },
-      dependsOn: []
+      dependsOn: [tasks[0]] // Depends on copy being written first
     });
 
     tasks.push({
       agentType: 'UIUXAgent',
       taskType: 'create_landing_section',
       inputs: { goal },
-      dependsOn: []
+      dependsOn: [tasks[0], tasks[1]] // Depends on both copy and image
     });
   }
 
@@ -192,7 +182,7 @@ async function decomposeGoal(goal: string, context?: any): Promise<AgentTask[]> 
       agentType: 'SocialAgent',
       taskType: 'schedule_posts',
       inputs: { goal },
-      dependsOn: []
+      dependsOn: [tasks[tasks.length-2], tasks[tasks.length-1]]
     });
   }
 
@@ -208,7 +198,7 @@ async function decomposeGoal(goal: string, context?: any): Promise<AgentTask[]> 
       agentType: 'SEOAgent',
       taskType: 'optimize_content',
       inputs: { goal },
-      dependsOn: []
+      dependsOn: [tasks[tasks.length-1]]
     });
   }
 
@@ -225,7 +215,7 @@ async function decomposeGoal(goal: string, context?: any): Promise<AgentTask[]> 
       agentType: 'UIUXAgent',
       taskType: 'create_custom_component',
       inputs: { goal },
-      dependsOn: []
+      dependsOn: [tasks[0]]
     });
   }
 

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
@@ -22,12 +22,7 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <SessionProvider
-      // Make SessionProvider more robust for deployment
-      session={null}
-      refetchInterval={0}
-      refetchOnWindowFocus={false}
-    >
+    <SessionProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider
           attribute="class"

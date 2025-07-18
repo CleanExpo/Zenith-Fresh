@@ -2,8 +2,6 @@
 // Zenith Design System - Enhanced Card Component
 // Following glassmorphic design tokens from landing page
 
-'use client';
-
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 

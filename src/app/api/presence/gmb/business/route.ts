@@ -1,13 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getGmbBusinessInfo } from '@/lib/services/gmb';
 
-// Force dynamic rendering to prevent static generation issues
+// Explicitly mark as dynamic to prevent static generation
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Import dynamically to avoid issues with headers during static generation
-    const { getGmbBusinessInfo } = await import('@/lib/services/gmb');
     const businessInfo = await getGmbBusinessInfo();
     
     if (businessInfo.error) {

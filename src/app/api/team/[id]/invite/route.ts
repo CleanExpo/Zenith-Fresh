@@ -1,32 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { sendTeamInvitationEmail } from '@/lib/email';
-import * as Sentry from '@sentry/nextjs';
+import { PrismaClient } from '@prisma/client';
+import { auth } from '@/middleware/auth';
+import { sendEmail } from '@/lib/email';
+import { generateToken } from '@/lib/token';
 
-function generateInviteToken(): string {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36);
-}
+const prisma = new PrismaClient();
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const user = await auth(request);
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { email, role = 'member' } = await request.json();
+    const { email, role } = await request.json();
     const teamId = params.id;
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
-    }
 
     // Verify team exists and user has permission
     const team = await prisma.team.findUnique({
@@ -44,36 +35,14 @@ export async function POST(
       return NextResponse.json({ error: 'Team not found' }, { status: 404 });
     }
 
-    // Check if current user is a member of the team
-    const currentUserMember = team.members.find(m => m.user.email === session.user.email);
-    if (!currentUserMember) {
-      return NextResponse.json({ error: 'You are not a member of this team' }, { status: 403 });
-    }
-
     // Check if user is already a member
     const existingMember = team.members.find(m => m.user.email === email);
     if (existingMember) {
-      return NextResponse.json({ error: 'User is already a member of this team' }, { status: 400 });
-    }
-
-    // Check for existing pending invitation
-    const existingInvitation = await prisma.teamInvitation.findFirst({
-      where: {
-        teamId,
-        email,
-        status: 'pending',
-        expiresAt: {
-          gt: new Date()
-        }
-      }
-    });
-
-    if (existingInvitation) {
-      return NextResponse.json({ error: 'Invitation already sent to this email' }, { status: 400 });
+      return NextResponse.json({ error: 'User is already a member' }, { status: 400 });
     }
 
     // Generate invitation token
-    const token = generateInviteToken();
+    const token = await generateToken();
 
     // Create invitation
     const invitation = await prisma.teamInvitation.create({
@@ -82,50 +51,33 @@ export async function POST(
         email,
         role,
         token,
-        invitedBy: currentUserMember.userId,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-        status: 'pending'
+        invitedBy: user.id,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
       }
     });
 
-    // Send invitation email using Resend
-    const emailResult = await sendTeamInvitationEmail(
-      email,
-      session.user.name || session.user.email,
-      team.name,
-      token
-    );
+    // Send invitation email
+    const teamName = team.name;
+    const inviterName = user.email;
+    const acceptUrl = `${process.env.NEXT_PUBLIC_APP_URL}/team/join?token=${token}`;
 
-    if (!emailResult.success) {
-      // Delete the invitation if email failed
-      await prisma.teamInvitation.delete({
-        where: { id: invitation.id }
-      });
-      
-      return NextResponse.json({ 
-        error: 'Failed to send invitation email',
-        details: emailResult.error 
-      }, { status: 500 });
-    }
+    const data = {
+      teamName,
+      inviterName,
+      role,
+      acceptUrl
+    };
 
-    return NextResponse.json({ 
-      message: 'Invitation sent successfully',
-      invitationId: invitation.id,
-      emailSent: true
+    await sendEmail({
+      to: email,
+      subject: 'Team Invitation',
+      template: 'team-invitation',
+      data
     });
+
+    return NextResponse.json({ message: 'Invitation sent successfully' });
   } catch (error) {
     console.error('Team invitation error:', error);
-    Sentry.captureException(error as Error, {
-      extra: {
-        context: 'team-invitation',
-        teamId: params.id,
-        userEmail: (await getServerSession(authOptions))?.user?.email,
-      }
-    });
-    
-    return NextResponse.json({ 
-      error: 'Failed to send invitation',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to send invitation' }, { status: 500 });
   }
 } 

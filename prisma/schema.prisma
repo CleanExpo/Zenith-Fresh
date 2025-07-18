@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -19,11 +19,10 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  role          String    @default("USER")
-  
+  projects      Project[]
   accounts      Account[]
   sessions      Session[]
-  projects      Project[]
+  role          String    @default("USER")
   tasks         Task[]
   files         File[]
   analytics     Analytics[]
@@ -44,16 +43,10 @@ model User {
   gmbAccountName String?
   gmbLocationName String?
   
-  // Enhanced Website Analyzer
-  websiteAnalyses WebsiteAnalysis[]
-  
-  // Enterprise Integration
-  active         Boolean   @default(true)
-  lastLoginAt    DateTime?
-  scimExternalId String?
-  deletedAt      DateTime?
-  tenantId       String?
-  assignedTasks  Task[]    @relation("TaskAssignee")
+  // Agent Orchestrator
+  missions      Mission[]
+  approvalRequests ApprovalRequest[]
+  autoApprovalRules AutoApprovalRule[]
 }
 
 model Account {
@@ -62,12 +55,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?
-  access_token      String?
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
+  id_token          String? @db.Text
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -138,11 +131,6 @@ model Task {
   project     Project   @relation(fields: [projectId], references: [id])
   notifications Notification[]
   activityLogs  ActivityLog[]
-  
-  // GitHub Integration
-  githubIssueNumber Int?
-  assignedToId      String?
-  assignedTo        User?    @relation("TaskAssignee", fields: [assignedToId], references: [id])
 }
 
 model File {
@@ -163,9 +151,9 @@ model File {
 
 model Analytics {
   id          String    @id @default(cuid())
-  type        String
-  action      String
-  metadata    String?   // JSON string instead of Json type
+  type        String    // e.g., 'page_view', 'api_call', 'error'
+  action      String    // e.g., 'view_dashboard', 'create_project'
+  metadata    String?   // Additional data about the event (JSON string)
   createdAt   DateTime  @default(now())
   userId      String?
   user        User?     @relation(fields: [userId], references: [id])
@@ -175,15 +163,15 @@ model Analytics {
 
 model SystemMetrics {
   id          String    @id @default(cuid())
-  type        String
+  type        String    // e.g., 'cpu_usage', 'memory_usage', 'api_latency'
   value       Float
   timestamp   DateTime  @default(now())
-  metadata    String?   // JSON string instead of Json type
+  metadata    String?   // Additional metrics data (JSON string)
 }
 
 model Notification {
   id          String    @id @default(cuid())
-  type        String
+  type        String    // e.g., 'task_assigned', 'project_updated', 'file_uploaded'
   message     String
   read        Boolean   @default(false)
   createdAt   DateTime  @default(now())
@@ -199,7 +187,7 @@ model Notification {
 
 model UserPreferences {
   id                String    @id @default(cuid())
-  theme             String    @default("light")
+  theme             String    @default("light") // light, dark, system
   language          String    @default("en")
   emailNotifications Boolean  @default(true)
   pushNotifications Boolean  @default(true)
@@ -214,8 +202,8 @@ model UserPreferences {
 
 model ActivityLog {
   id          String    @id @default(cuid())
-  action      String
-  details     String?
+  action      String    // e.g., 'login', 'create_project', 'update_task'
+  details     String?   // Additional activity details (JSON string)
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime  @default(now())
@@ -231,31 +219,31 @@ model ActivityLog {
 
 model AuditLog {
   id          String    @id @default(cuid())
-  action      String
-  entityType  String
+  action      String    // e.g., 'create', 'update', 'delete', 'login', 'logout'
+  entityType  String    // e.g., 'user', 'project', 'task', 'file'
   entityId    String?
-  oldValue    String?
-  newValue    String?
-  metadata    String?   // JSON string instead of Json type
+  oldValue    String?   // Previous state (JSON string)
+  newValue    String?   // New state (JSON string)
+  metadata    String?   // Additional audit data (JSON string)
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime  @default(now())
-  userId      String?
-  user        User?     @relation(fields: [userId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
 }
 
 model DataExport {
   id          String    @id @default(cuid())
-  type        String
-  format      String
-  status      String
-  url         String?
-  error       String?
+  type        String    // e.g., 'projects', 'tasks', 'files', 'all'
+  format      String    // e.g., 'json', 'csv', 'excel'
+  status      String    // e.g., 'pending', 'processing', 'completed', 'failed'
+  url         String?   // Download URL
+  error       String?   // Error message if failed
   createdAt   DateTime  @default(now())
   completedAt DateTime?
   userId      String
   user        User      @relation(fields: [userId], references: [id])
-  metadata    String?   // JSON string instead of Json type
+  metadata    String?   // Export configuration (JSON string)
 }
 
 model ProjectMember {
@@ -275,19 +263,6 @@ model Team {
   id          String    @id @default(cuid())
   name        String
   description String?
-  tenantId    String?
-  
-  // Stripe subscription fields
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
-  subscriptionStatus   String?
-  subscriptionPlan     String?   @default("freemium")
-  subscriptionStartDate DateTime?
-  subscriptionEndDate  DateTime?
-  scheduledCancellationDate DateTime?
-  cancellationReason   String?
-  lastPaymentFailure   DateTime?
-  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   members     TeamMember[]
@@ -297,10 +272,6 @@ model Team {
   billing     TeamBilling?
   settings    TeamSettings?
   integrations TeamIntegration[]
-  
-  // New relations for subscription features
-  websiteScans         WebsiteScan[]
-  competitiveReports   CompetitiveReport[]
 }
 
 model TeamMember {
@@ -320,7 +291,7 @@ model TeamInvitation {
   id          String    @id @default(cuid())
   email       String
   role        String    @default("VIEWER")
-  status      String    @default("pending")
+  status      String    @default("pending") // pending, accepted, rejected
   token       String    @unique
   expiresAt   DateTime
   createdAt   DateTime  @default(now())
@@ -336,7 +307,7 @@ model ApiKey {
   id          String    @id @default(cuid())
   name        String
   key         String    @unique
-  scopes      String
+  scopes      String    // Permission scopes (comma-separated)
   lastUsed    DateTime?
   expiresAt   DateTime?
   createdAt   DateTime  @default(now())
@@ -441,60 +412,117 @@ model TeamIntegration {
   id          String    @id @default(cuid())
   teamId      String
   team        Team      @relation(fields: [teamId], references: [id])
-  type        String
-  config      String
+  type        String    // e.g., 'slack', 'github', 'jira'
+  config      String    // Store integration configuration (JSON string)
   status      String    @default("active")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
 
-// Subscription Usage Tracking Models
-model WebsiteScan {
-  id          String    @id @default(cuid())
-  teamId      String
-  team        Team      @relation(fields: [teamId], references: [id])
-  url         String
-  status      String    @default("pending")
-  healthScore String?   // JSON string instead of Json type
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+// Agent Orchestrator Models
+model Mission {
+  id              String            @id @default(cuid())
+  goal            String
+  status          MissionStatus     @default(PENDING)
+  priority        Priority          @default(NORMAL)
+  results         Json?
+  estimatedHours  Float?
+  actualHours     Float?
+  clientId        String
+  client          User              @relation(fields: [clientId], references: [id])
+  tasks           MissionTask[]
+  approvalRequests ApprovalRequest[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  completedAt     DateTime?
   
-  @@index([teamId, createdAt])
+  @@map("missions")
 }
 
-model CompetitiveReport {
-  id          String    @id @default(cuid())
-  teamId      String
-  team        Team      @relation(fields: [teamId], references: [id])
-  targetDomain String
-  competitors  String?   // JSON string instead of Json type
-  status      String    @default("pending")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+model MissionTask {
+  id          String      @id @default(cuid())
+  missionId   String
+  mission     Mission     @relation(fields: [missionId], references: [id])
+  agentType   String      // 'ContentAgent', 'MediaAgent', etc.
+  taskType    String      // 'write_copy', 'generate_image', etc.
+  status      TaskStatus  @default(QUEUED)
+  inputs      Json
+  outputs     Json?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+  dependsOn   String[]    // Task IDs this task depends on
   
-  @@index([teamId, createdAt])
+  @@map("mission_tasks")
 }
 
-// Enhanced Website Analyzer - Week 2 Feature
-model WebsiteAnalysis {
-  id                    String    @id @default(cuid())
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id])
-  url                   String
-  analysisId            String    @unique
-  overallScore          Int
-  contentQualityScore   Int?
-  seoScore              Int?
-  uxScore               Int?
-  performanceScore      Int?
-  accessibilityScore    Int?
-  recommendationCount   Int       @default(0)
-  issueCount           String?
-  analysisData         String    // JSON string instead of Json type
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
+enum MissionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETE
+  FAILED
+  CANCELLED
+}
 
-  @@index([userId, url, createdAt])
-  @@index([overallScore])
-  @@index([analysisId])
+enum TaskStatus {
+  QUEUED
+  IN_PROGRESS
+  COMPLETE
+  FAILED
+  RETRYING
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+// Approval Center Models
+model ApprovalRequest {
+  id              String            @id @default(cuid())
+  missionId       String
+  mission         Mission           @relation(fields: [missionId], references: [id])
+  agentType       String
+  taskType        String
+  contentType     String            // 'social_post', 'blog_article', 'review_reply'
+  originalContent Json
+  editedContent   Json?
+  status          ApprovalStatus    @default(PENDING)
+  priority        Priority          @default(NORMAL)
+  clientId        String
+  client          User              @relation(fields: [clientId], references: [id])
+  reviewedAt      DateTime?
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  autoApprovalRule String?          // Reference to rule that auto-approved
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("approval_requests")
+}
+
+model AutoApprovalRule {
+  id              String            @id @default(cuid())
+  name            String
+  clientId        String
+  client          User              @relation(fields: [clientId], references: [id])
+  agentType       String
+  conditions      Json              // Conditions for auto-approval
+  actions         Json              // Actions to take when conditions met
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@map("auto_approval_rules")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EDITING
+  AUTO_APPROVED
 }

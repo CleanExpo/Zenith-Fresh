@@ -1,38 +1,34 @@
-import { Suspense } from 'react';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import { Providers } from './providers';
-// TEMPORARILY DISABLED FOR DEBUGGING
-// import { StagingBanner } from '@/components/StagingBanner';
-// import { ErrorBoundary } from '@/components/ErrorBoundary';
-// import { LoadingSpinner } from '@/components/ui/loading-spinner';
-// import { Sidebar } from '@/components/Sidebar';
-// import { Header } from '@/components/Header';
-// import { GoogleAnalytics } from '@/components/GoogleAnalytics';
+// src/app/layout.tsx
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
 
-const inter = Inter({ subsets: ['latin'] });
+// This sets up the primary font for the application.
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
-export const metadata = {
-  title: 'Zenith Platform',
-  description: 'AI-Powered Content Management Platform',
+// This sets up the site's metadata for SEO and browser tabs.
+export const metadata: Metadata = {
+  title: "Zenith - Build Apps That Think & Scale",
+  description: "Deploy AI-powered applications in minutes, not months.",
 };
 
+/**
+ * This is the root layout for the entire application.
+ * It wraps every page with the <html> and <body> tags.
+ * Most importantly, it imports the global CSS file which enables Tailwind CSS.
+ * @param {object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components to be rendered.
+ * @returns {JSX.Element} The root layout component.
+ */
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        {/* ALL PROVIDERS DISABLED FOR ULTRA MINIMAL TEST */}
-        {/* <GoogleAnalytics /> */}
-        {/* <StagingBanner /> */}
-        {/* <Providers> */}
-          <Suspense fallback={<div>Loading...</div>}>
-            {children}
-          </Suspense>
-        {/* </Providers> */}
+        {children}
       </body>
     </html>
   );

@@ -25,8 +25,6 @@ This document outlines all environment variables used in the application, their 
 
 ### Payment Processing
 - `STRIPE_SECRET_KEY` - Stripe secret key for payment processing
-- `STRIPE_PUBLISHABLE_KEY` - Stripe publishable key for client-side integration
-- `STRIPE_WEBHOOK_SECRET` - Stripe webhook endpoint secret for verifying webhooks
 
 ### WebSocket
 - `CORS_ORIGIN` - Allowed CORS origin for WebSocket connections
@@ -76,8 +74,6 @@ SMTP_FROM="noreply@example.com"
 
 # Payment
 STRIPE_SECRET_KEY="your-stripe-secret-key"
-STRIPE_PUBLISHABLE_KEY="your-stripe-publishable-key"
-STRIPE_WEBHOOK_SECRET="your-stripe-webhook-secret"
 
 # WebSocket
 CORS_ORIGIN="http://localhost:3000"

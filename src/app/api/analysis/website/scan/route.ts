@@ -10,7 +10,6 @@ import { auth } from '@/lib/auth';
 // Request validation schema
 const scanRequestSchema = z.object({
   url: z.string().url('Please provide a valid URL'),
-  type: z.enum(['free_scan', 'full_scan']).optional().default('full_scan'),
   options: z.object({
     includePerformance: z.boolean().default(true),
     includeSEO: z.boolean().default(true),
@@ -42,34 +41,7 @@ export async function POST(request: NextRequest) {
       )
     ]) as any;
     
-    // Format response for landing page free scan
-    if (validatedData.type === 'free_scan') {
-      const responseData = {
-        overallScore: healthScore.overall || Math.floor(Math.random() * 20) + 75, // 75-95
-        performance: {
-          score: healthScore.pillars?.performance?.score || Math.floor(Math.random() * 20) + 80
-        },
-        seo: {
-          score: Math.floor((healthScore.pillars?.technicalSEO?.score + healthScore.pillars?.onPageSEO?.score) / 2) || Math.floor(Math.random() * 25) + 70
-        },
-        security: {
-          score: healthScore.pillars?.security?.score || Math.floor(Math.random() * 15) + 85
-        },
-        recommendations: [
-          'Optimize images to improve page load speed',
-          'Add meta descriptions for better SEO',
-          'Enable browser caching',
-          'Improve mobile responsiveness',
-          'Add structured data markup'
-        ].slice(0, 3),
-        url: validatedData.url,
-        tier: 'free'
-      };
-      
-      return NextResponse.json(responseData);
-    }
-
-    // Apply freemium gating for full scans as per Strategic Roadmap A2.1
+    // Apply freemium gating as per Strategic Roadmap A2.1
     const responseData: any = {
       scanId: healthScore.crawlId,
       url: healthScore.url,
